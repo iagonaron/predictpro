@@ -3569,7 +3569,8 @@ let melActive=-1;      // ejercicio cuyo pentagrama tiene el ratón
 const MEL_NOTE_SEC=2, MEL_GAP_SEC=1;
 
 /* ===== MELÓDICO PRO — atonal (sin referencias tonales) + entrada cromática ===== */
-const MEL_LO=60, MEL_HI=79;                       // ámbito cromático (Do4..Sol5)
+let MEL_LO=60, MEL_HI=79;                       // ámbito cromático actual (sol: Do4..Sol5 · fa: Sol2..Do4)
+const MEL_RANGE={treble:{lo:60,hi:79}, bass:{lo:43,hi:60}};   // fa: Sol2(43)..Do4(60)
 const MEL_NAT_PC={0:'C',2:'D',4:'E',5:'F',7:'G',9:'A',11:'B'};
 const MEL_SHARP_PC={1:['C','#'],3:['D','#'],6:['F','#'],8:['G','#'],10:['A','#']};
 function melSpell(m){
@@ -3609,8 +3610,9 @@ function melGhostAcc(ex, slot, midi){
 // compensan por grado conjunto (2ª) en sentido contrario; saltos hasta una 8ª; la última no es la primera.
 function genMelodiaAtonal(){
   const size=d=>{const a=Math.abs(d); return a<=2?2:(a<=4?3:4);};
+  const MID=Math.round((MEL_LO+MEL_HI)/2);
   for(let attempt=0; attempt<6000; attempt++){
-    const start=Math.max(MEL_LO,Math.min(MEL_HI, 64+(mrint(9)-4)));
+    const start=Math.max(MEL_LO,Math.min(MEL_HI, MID+(mrint(9)-4)));
     const seq=[start];
     let thirds=0, comp=0, compDir=0, ok=true;
     for(let i=1;i<10;i++){
@@ -3636,7 +3638,7 @@ function genMelodiaAtonal(){
     const blacks=seq.filter(m=>[1,3,6,8,10].includes(((m%12)+12)%12)).length;   // >=4 alteraciones
     if(ok && seq.length===10 && seq[9]!==seq[0] && comp===0 && blacks>=4) return {midis:seq, notes:seq.map(m=>melVFatonal(m,null))};
   }
-  const seq=[64]; let dir=1;
+  const seq=[Math.round((MEL_LO+MEL_HI)/2)]; let dir=1;
   for(let i=1;i<10;i++){ let n=seq[i-1]+dir*2; if(n>MEL_HI||n<MEL_LO){dir=-dir;n=seq[i-1]+dir*2;} seq.push(Math.max(MEL_LO,Math.min(MEL_HI,n))); }
   if(seq[9]===seq[0]) seq[9]+= (seq[9]+1<=MEL_HI?1:-1);
   return {midis:seq, notes:seq.map(m=>melVFatonal(m,null))};
@@ -3649,13 +3651,15 @@ function nearestMidiByYChrom(idx,mouseY){
   return Math.max(MEL_LO, Math.min(MEL_HI, m));
 }
 function buildMelExos(){
+  const clef = (mrint(100)<50) ? 'bass' : 'treble';        // 50% clave de fa
+  const R=MEL_RANGE[clef]; MEL_LO=R.lo; MEL_HI=R.hi;        // fija el ámbito actual
   const mel=genMelodiaAtonal();
   const allowed=[]; for(let m=MEL_LO;m<=MEL_HI;m++){ if(MEL_NAT_PC[((m%12)+12)%12]!=null) allowed.push(m); } // solo notas naturales
   const slots=new Array(10).fill(null);
   const slotAcc=new Array(10).fill(0);
   slots[0]=mel.midis[0];                                   // primera nota dada
   slotAcc[0]=(melSpell(mel.midis[0]).acc==='#')?1:0;       // su alteración (si la tiene)
-  melExos=[{ key:{atonal:true, vfsig:'C', sig:0, name:'sin referencias tonales'},
+  melExos=[{ key:{atonal:true, vfsig:'C', sig:0, name:'sin referencias tonales'}, clef,
     sol:mel.notes, midis:mel.midis, allowed, sigPCs:new Set(), slots, slotAcc, _selSlot:null,
     listens:0, checked:false, scored:false, revealed:false, melSpeed:1 }];
 }
@@ -3796,7 +3800,7 @@ function drawMelBoard(idx){
   renderer.resize(W,H);
   const ctx=renderer.getContext();
   const stave=new VF.Stave(8,40,W-16);
-  stave.addClef('treble');
+  stave.addClef(ex.clef||'treble');
   if(ex.key.vfsig!=='C') stave.addKeySignature(ex.key.vfsig);
   stave.setContext(ctx).draw();
   const source = ex.revealed ? ex.midis : ex.slots;
@@ -3821,7 +3825,7 @@ function drawMelBoard(idx){
         pair.sort((a,b)=>a.midi-b.midi);                                   // tu nota (rojo) + correcta (azul)
         keys=pair.map(o=>o.key); accs=pair.map(o=>o.acc); styles=pair.map(o=>o.col);
       }
-      const sn=new VF.StaveNote({keys,duration:'w'});
+      const sn=new VF.StaveNote({keys,duration:'w',clef:ex.clef||'treble'});
       accs.forEach((a,k)=>{ if(a) sn.addModifier(new VF.Accidental(a),k); });
       styles.forEach((c,k)=>{ try{ sn.setKeyStyle(k,{fillStyle:c,strokeStyle:c}); }catch(e){} });
       notes.push(sn); continue;
@@ -3832,7 +3836,7 @@ function drawMelBoard(idx){
       let key, acc, col;
       if(stu!==null && stu!==undefined && stu===cor){ const z=melSlotVF(ex,i); key=z.letter.toLowerCase()+'/'+z.oct; acc=z.acc; col=GREEN; }
       else { const zc=melSpell(cor); key=zc.letter.toLowerCase()+'/'+zc.oct; acc=zc.acc; col=BLUE; }
-      const sn=new VF.StaveNote({keys:[key],duration:'w'});
+      const sn=new VF.StaveNote({keys:[key],duration:'w',clef:ex.clef||'treble'});
       if(acc) sn.addModifier(new VF.Accidental(acc),0);
       sn.setStyle({fillStyle:col,strokeStyle:col});
       notes.push(sn); continue;
@@ -3841,12 +3845,13 @@ function drawMelBoard(idx){
     if(m!==null && m!==undefined){
       const z=melSlotVF(ex,i); const sp={letter:z.letter, oct:z.oct, acc:z.acc};
       const sign=melAccSign(accState, sp);                        // alteración visible (con arrastre)
-      const sn=new VF.StaveNote({keys:[sp.letter.toLowerCase()+'/'+sp.oct],duration:'w'});  // línea = letra natural
+      const sn=new VF.StaveNote({keys:[sp.letter.toLowerCase()+'/'+sp.oct],duration:'w',clef:ex.clef||'treble'});  // línea = letra natural
       if(sign) sn.addModifier(new VF.Accidental(sign),0);
       if(i===0) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); // 1ª nota dada (oro)
       notes.push(sn);
     } else {
-      const sn=new VF.StaveNote({keys:['b/4'],duration:'w'});
+      const _emptyKey=(ex.clef==='bass')?'d/3':'b/4';   // nota central de la clave: sin líneas adicionales fantasma
+      const sn=new VF.StaveNote({keys:[_emptyKey],duration:'w',clef:ex.clef||'treble'});
       sn.setStyle({fillStyle:'rgba(0,0,0,0)',strokeStyle:'rgba(0,0,0,0)'});
       notes.push(sn);
     }
@@ -3871,8 +3876,9 @@ function drawMelBoard(idx){
         if(ys && ys.length){ ex._anchor={midi:wm, y:ys[0], step:diatonicStep(wm)}; ex._half=lineSpacing/2; break; }
       }
     }
-    if(!ex._anchor){ // sin notas: anclar en B4 = línea central
-      ex._anchor={midi:71, y:stave.getYForLine(2), step:diatonicStep(71)}; ex._half=lineSpacing/2;
+    if(!ex._anchor){ // sin notas: anclar en la línea central (B4 en sol, D3 en fa)
+      const _am=(ex.clef==='bass')?50:71;
+      ex._anchor={midi:_am, y:stave.getYForLine(2), step:diatonicStep(_am)}; ex._half=lineSpacing/2;
     }
   }catch(e){ ex._anchor={midi:71, y:80, step:diatonicStep(71)}; ex._half=5; }
   // números 1..10 bajo el pentagrama
@@ -4003,7 +4009,9 @@ function showGhost(idx,slot,midi){
   // líneas adicionales: comparar el step de la nota con las líneas del pentagrama
   // líneas del pentagrama (clave sol): Mi4=64 (inferior) ... Fa5=77 (superior)
   const stepNote=diatonicStep(midi);
-  const stepBottom=diatonicStep(64), stepTop=diatonicStep(77);
+  // límites del pentagrama según la clave: sol = Mi4(64)/Fa5(77) · fa = Sol2(43)/La3(57)
+  const _bassClef=(ex.clef==='bass');
+  const stepBottom=diatonicStep(_bassClef?43:64), stepTop=diatonicStep(_bassClef?57:77);
   const half=ex._half||5;
   // ledger lines por debajo: en Do4(step de 60), La3, ... cada 2 steps bajo Mi4
   // ledger lines por encima: La5, Do6,... cada 2 steps sobre Fa5
