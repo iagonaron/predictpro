@@ -708,6 +708,71 @@
   .mel-accpop button.on{border-color:var(--gold1);background:rgba(212,175,55,.22);color:var(--gold-soft)}
   .mel-accpop .ap-x{color:#ff9b9b}
   .mel-accpop .ap-x:hover{border-color:var(--red);background:var(--red-soft);color:#ffd3d3}
+  /* ===== TonCom Pro drill ===== */
+  .drillp{max-width:880px;margin:0 auto;position:relative}
+  .drill-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}
+  .drill-round{font-size:15px;color:var(--ink-dim,#b6a36a)} .drill-round b{color:var(--gold-soft,#e9c96a);font-size:18px}
+  .drill-play{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:rgba(233,201,106,.08);color:var(--gold-soft,#e9c96a);font-size:18px;display:grid;place-items:center}
+  .drill-play.playing{border-color:var(--gold1,#d4af37)}
+  .drill-play.beat,.drill-play.beat-strong{transform:scale(1.2);background:rgba(233,201,106,.34);border-color:var(--gold1,#d4af37)}
+  .drill-play{transition:transform .08s ease, background .12s ease}
+  @keyframes drillready{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.45)}50%{box-shadow:0 0 0 7px rgba(212,175,55,0)}}
+  .drill-play.ready{animation:drillready 1.6s ease-out infinite}
+  .drill-play:disabled{opacity:.4}
+  .drill-secs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:stretch}
+  .dsec{border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.02);display:flex;flex-direction:column;align-items:center;gap:10px}
+  .dsec-t{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim,#b6a36a)}
+  .dwheel-r{position:relative;width:130px}
+  .dwheel-vp{height:138px;overflow:hidden;position:relative;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+  .dwheel-vp:active{cursor:grabbing}
+  .dwheel-list{transition:transform .18s cubic-bezier(.22,.61,.36,1)}
+  .dwheel-it{height:46px;display:grid;place-items:center;font-size:20px;color:var(--ink-dim,#9a8a5a);opacity:.45}
+  .dwheel-it.sel{opacity:1;color:var(--ink,#f3eddc);font-weight:700;font-size:23px}
+  .dwheel-r::after{content:'';position:absolute;left:0;right:0;top:46px;height:46px;border-top:1px solid var(--gold2,#b8932f);border-bottom:1px solid var(--gold2,#b8932f);pointer-events:none;opacity:.5;border-radius:6px}
+  .drow{display:flex;gap:8px;justify-content:center;width:100%}
+  .dbt{min-width:46px;height:42px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:rgba(233,201,106,.06);color:var(--ink,#efe7cf);font-size:17px;font-weight:600;cursor:pointer;font-family:inherit}
+  .dbt.wide{flex:1}
+  .dbt:hover{border-color:var(--gold2,#b8932f)}
+  .dbt.on{border-color:var(--gold1,#d4af37);background:rgba(212,175,55,.22);color:var(--gold-soft,#e9c96a)}
+  .dcompas{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;width:100%;flex:1}
+  .dsec-cps{justify-content:flex-start}
+  .dsec-arm .dwheel-r{margin:auto 0}
+  .dbt.cps{height:100%;min-height:66px}
+  .dbt.cps{font-size:28px;font-weight:700}
+  .dsummary{margin-top:18px}
+  .dsum-lab{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim,#b6a36a);text-align:center;margin-bottom:8px}
+  .dsum-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .sum-cell{border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;background:rgba(255,255,255,.02)}
+  .sum-val{font-size:22px;font-weight:700;color:var(--ink,#efe7cf)}
+  .sum-fix{font-size:16px;font-weight:700;color:#3b82f6;margin-top:4px;min-height:0}
+  .sum-cell.ok{border-color:#15a06a;background:rgba(21,160,106,.14)} .sum-cell.ok .sum-val{color:#27c98a}
+  .sum-cell.no{border-color:#d23145;background:rgba(210,49,69,.12)} .sum-cell.no .sum-val{color:#ff6a7d}
+  @keyframes drillblink{0%,100%{opacity:1}50%{opacity:.25}}
+  .sum-cell.blink{animation:drillblink .7s ease-in-out infinite}
+  .drill-cd{position:absolute;inset:0;display:none;place-items:center;background:rgba(11,8,2,.78);border-radius:16px;z-index:20}
+  .drill-cd.on{display:grid}
+  .drill-cd{pointer-events:none}
+  .drill-cin{position:absolute;inset:0;display:none;place-items:center;pointer-events:none;z-index:25}
+  .drill-cin.on{display:grid}
+  .drill-cin span{font-size:120px;font-weight:800;color:var(--gold-soft,#e9c96a);text-shadow:0 4px 28px rgba(0,0,0,.85),0 0 16px rgba(212,175,55,.55)}
+  .drill-cin.pulse span{animation:drillpop .42s ease}
+  .drill-actions{text-align:center;margin-top:14px}
+  .drill-fwd{padding:11px 22px;border-radius:11px;border:1px solid var(--gold2,#b8932f);background:rgba(233,201,106,.10);color:var(--gold-soft,#e9c96a);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .drill-fwd:hover:not(:disabled){border-color:var(--gold1,#d4af37);background:rgba(212,175,55,.2)}
+  .drill-fwd:disabled{opacity:.35;cursor:default}
+  #drill-cdn{font-size:96px;font-weight:800;color:var(--gold-soft,#e9c96a)}
+  .drill-cd.pulse #drill-cdn{animation:drillpop .5s ease}
+  @keyframes drillpop{0%{transform:scale(.6);opacity:.2}40%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+  .drill-final{max-width:760px;margin:0 auto;text-align:center}
+  .drill-final h2{font-size:28px;color:var(--gold-soft,#e9c96a);margin:8px 0 18px}
+  .finaltab{width:100%;border-collapse:collapse;font-size:16px}
+  .finaltab th{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim,#b6a36a);padding:6px;border-bottom:1px solid var(--line)}
+  .finaltab td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .finaltab td.ok{color:#27c98a} .finaltab td.no{color:#ff6a7d}
+  .finaltab td .good{color:#3b82f6;font-weight:700;margin-left:6px}
+  .finaltab td.rn,.finaltab td.res{color:var(--ink,#efe7cf);font-weight:700}
+  .drill-restart{margin-top:20px;padding:12px 22px;border-radius:11px;border:1px solid var(--gold1,#d4af37);background:rgba(212,175,55,.18);color:var(--gold-soft,#e9c96a);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+  @media(max-width:720px){ .drill-secs{grid-template-columns:1fr;gap:14px} }
 </style>
 </head>
 <body>
@@ -3383,7 +3448,7 @@ const KEYS=[
 ];
 const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const NOTE_FLATS=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
-const TONIC_PC={'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'F#':6,'G':7,'Ab':8,'A':9,'Bb':10,'B':11};
+const TONIC_PC={'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'F#':6,'G':7,'G#':8,'Ab':8,'A':9,'Bb':10,'B':11};
 const SHARP_ORDER=[6,1,8,3,10,5,0];
 const FLAT_ORDER=[10,3,8,1,6,11,4];
 function keySigPCs(sig){const s=new Set();if(sig>0)for(let i=0;i<sig;i++)s.add(SHARP_ORDER[i]);if(sig<0)for(let i=0;i<-sig;i++)s.add(FLAT_ORDER[i]);return s;}
@@ -4146,7 +4211,7 @@ function dchance(p){ return DRND()<p; }
 
 // --- escalas / tonalidades (consistentes con el motor melódico) ---
 const SCALES_D = { major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10] };
-const TONIC_PC_D = {'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'F#':6,'G':7,'Ab':8,'A':9,'Bb':10,'B':11};
+const TONIC_PC_D = {'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'F#':6,'G':7,'G#':8,'Ab':8,'A':9,'Bb':10,'B':11};
 // 10 tonalidades
 const KEYS_D = [
   {name:'Do M', tonic:'C', mode:'major', sig:0},
@@ -4299,7 +4364,7 @@ function rhythmBin3(barIndex,isEdge,used){
    =========================================================== */
 function buildDictado(key, ts){
   // Adaptador: usa el motor DGEN (leyes melódicas Iago) y convierte su salida al formato events.
-  const pulsosPorCompas = (ts==='3/4')?3:((ts==='6/8')?2:2);
+  const pulsosPorCompas = {'2/4':2,'3/4':3,'6/8':2,'9/8':3}[ts] || 2;
   try{
     if(window.DGEN){
       // mapear nuestra key ("Do M" / "La m" ...) a la keyObj del DGEN por tónica+modo
@@ -4976,10 +5041,13 @@ function openToncom(){
   document.getElementById('evaHome').classList.add('hidden');
   document.getElementById('toncomView').classList.add('active');
   setBrand('predict');
-  startToncom();
+  const meta=document.querySelector('#toncomView .ex-meta'); if(meta) meta.textContent='Identifica tonalidad, armadura y compás · 5 rondas seguidas';
+  const dice=document.getElementById('regenBtnTon'); if(dice) dice.onclick=()=>startTonDrill();
+  const dl=document.querySelector('#toncomView .dice-label'); if(dl) dl.textContent='Nueva serie';
+  startTonDrill();
 }
 function startToncom(){ stopTonAudio(); buildTonExos(); renderTonExos(); const g=document.getElementById('globalScoreTon'); if(g){g.style.display='none';g.innerHTML='';} }
-function goHomeTon(){ setMode(null); stopTonAudio(); document.getElementById('toncomView').classList.remove('active'); document.getElementById('evaHome').classList.remove('hidden'); setBrand('lm'); }
+function goHomeTon(){ setMode(null); stopTonAudio(); try{stopTonDrill();}catch(e){} document.getElementById('toncomView').classList.remove('active'); document.getElementById('evaHome').classList.remove('hidden'); setBrand('lm'); }
 function openModos(){
   document.getElementById('evaHome').classList.add('hidden');
   document.getElementById('modosView').classList.add('active');
@@ -5005,6 +5073,7 @@ function brandNav(){
 function goPredictHome(){
   if(window.__modosStop) window.__modosStop();    // corta el audio del modos si sonaba
   try{ stopTonAudio(); }catch(e){}
+  try{ stopTonDrill(); }catch(e){}
   try{armStopAudio();}catch(e){}
   ['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView'].forEach(v=>{ const el=document.getElementById(v); if(el) el.classList.remove('active'); });
   document.getElementById('evaHome').classList.remove('hidden');
@@ -5967,6 +6036,307 @@ function goHomeArm(){
   setBrand('lm');
 }
 document.getElementById('regenBtnArm').addEventListener('click', armStartAll);
+
+</script>
+<script>
+/* ====== TONCOM PRO — modo rápido (drill de 5 rondas) ====== */
+(function(){
+  const WNOTES=['Si','La','Sol','Fa','Mi','Re','Do','—'];
+  const NOTE_PC={'Do':0,'Re':2,'Mi':4,'Fa':5,'Sol':7,'La':9,'Si':11};
+  const ARMLBL=['7♯','6♯','5♯','4♯','3♯','2♯','1♯','—','1♭','2♭','3♭','4♭','5♭','6♭','7♭'];
+  const ARMVAL=[7,6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6,-7];
+  const COMPASES=[{ts:'2/4',bpm:54},{ts:'3/4',bpm:54},{ts:'6/8',bpm:48},{ts:'9/8',bpm:48}];
+  const KEYS=[
+    {name:'Do M', tonic:'C', mode:'major', sig:0,  note:'Do', acc:''},
+    {name:'Sol M',tonic:'G', mode:'major', sig:1,  note:'Sol',acc:''},
+    {name:'Re M', tonic:'D', mode:'major', sig:2,  note:'Re', acc:''},
+    {name:'La M', tonic:'A', mode:'major', sig:3,  note:'La', acc:''},
+    {name:'Mi M', tonic:'E', mode:'major', sig:4,  note:'Mi', acc:''},
+    {name:'Si M', tonic:'B', mode:'major', sig:5,  note:'Si', acc:''},
+    {name:'Fa M', tonic:'F', mode:'major', sig:-1, note:'Fa', acc:''},
+    {name:'Sib M',tonic:'Bb',mode:'major', sig:-2, note:'Si', acc:'b'},
+    {name:'Mib M',tonic:'Eb',mode:'major', sig:-3, note:'Mi', acc:'b'},
+    {name:'Lab M',tonic:'Ab',mode:'major', sig:-4, note:'La', acc:'b'},
+    {name:'Reb M',tonic:'Db',mode:'major', sig:-5, note:'Re', acc:'b'},
+    {name:'La m', tonic:'A', mode:'minor', sig:0,  note:'La', acc:''},
+    {name:'Mi m', tonic:'E', mode:'minor', sig:1,  note:'Mi', acc:''},
+    {name:'Si m', tonic:'B', mode:'minor', sig:2,  note:'Si', acc:''},
+    {name:'Fa♯ m',tonic:'F#',mode:'minor', sig:3,  note:'Fa', acc:'#'},
+    {name:'Do♯ m',tonic:'C#',mode:'minor', sig:4,  note:'Do', acc:'#'},
+    {name:'Sol♯ m',tonic:'G#',mode:'minor',sig:5,  note:'Sol',acc:'#'},
+    {name:'Re m', tonic:'D', mode:'minor', sig:-1, note:'Re', acc:''},
+    {name:'Sol m',tonic:'G', mode:'minor', sig:-2, note:'Sol',acc:''},
+    {name:'Do m', tonic:'C', mode:'minor', sig:-3, note:'Do', acc:''},
+    {name:'Fa m', tonic:'F', mode:'minor', sig:-4, note:'Fa', acc:''},
+    {name:'Sib m',tonic:'Bb',mode:'minor', sig:-5, note:'Si', acc:'b'}
+  ];
+  const N=5;
+  const SC={major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10]};
+  const TPC={'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'E':4,'F':5,'F#':6,'G':7,'G#':8,'Ab':8,'A':9,'Bb':10,'B':11};
+  const GAP_NOTE=1.6, GAP_CHORD=1.2, GAP_INTRO=0.72, NOTE_GAIN=2.0, CHORD_GAIN=1.7;
+  let D=null;
+  const rnd=n=>Math.floor(Math.random()*n);
+  const pick=a=>a[rnd(a.length)];
+  const accSym=a=>a==='#'?'♯':a==='b'?'♭':'';
+  const armTxt=s=>s===0?'—':(Math.abs(s)+(s>0?'♯':'♭'));
+  function wheelTick(){ try{ const ctx=getCtx(); tickSound(ctx, ctx.destination, ctx.currentTime, false); }catch(e){} }
+
+  function scalePool(key,lo,hi){
+    const t=TPC[key.tonic], pcs=SC[key.mode].map(s=>(t+s)%12), out=[];
+    for(let m=lo;m<=hi;m++) if(pcs.includes(((m%12)+12)%12)) out.push(m);
+    return out;
+  }
+  function genDrillPiece(key,ts){
+    const tern=(ts==='6/8'||ts==='9/8');
+    const ppc={'2/4':2,'3/4':3,'6/8':2,'9/8':3}[ts];
+    const BARS=4;
+    let pool=scalePool(key,57,76);
+    if(key.mode==='minor'){ const lt=((TPC[key.tonic]-1)%12+12)%12; for(let m=57;m<=76;m++) if(((m%12)+12)%12===lt) pool.push(m); pool=[...new Set(pool)].sort((a,b)=>a-b); }
+    const tpc=TPC[key.tonic]; let tonic=64,bd=1e9;
+    pool.forEach(m=>{ if(((m%12)+12)%12===tpc){ const d=Math.abs(m-64); if(d<bd){bd=d;tonic=m;} } });
+    let cur=tonic; const events=[];
+    const add=(midi,dur)=>events.push({midi,dur,rest:false});
+    const step=()=>{ const near=pool.filter(m=>Math.abs(m-cur)<=4&&m!==cur); cur=near.length?pick(near):pick(pool); return cur; };
+    for(let bar=0;bar<BARS;bar++){
+      for(let beat=0;beat<ppc;beat++){
+        const last=(bar===BARS-1&&beat===ppc-1);
+        if(last){ add(tonic,1); cur=tonic; continue; }
+        const r=Math.random();
+        if(tern){
+          if(r<0.4) add(step(),1);
+          else if(r<0.75){ add(step(),2/3); add(step(),1/3); }
+          else { add(step(),1/3); add(step(),1/3); add(step(),1/3); }
+        } else {
+          if(r<0.5) add(step(),1);
+          else { add(step(),0.5); add(step(),0.5); }
+        }
+      }
+    }
+    return {ts, ppc, bars:BARS, events};
+  }
+
+  function buildRounds(){
+    const pool=KEYS.slice(), rounds=[];
+    for(let i=0;i<N;i++){ if(!pool.length) pool.push(...KEYS); const key=pool.splice(rnd(pool.length),1)[0]; const compas=pick(COMPASES); rounds.push({key, compas, piece:genDrillPiece(key,compas.ts)}); }
+    return rounds;
+  }
+  function freshAns(){ return {note:'—',acc:'',mode:null,arm:0,armT:false,compas:null}; }
+  function cur(){ return D.ans[D.round]; }
+
+  function startTonDrill(){
+    stopDrill();
+    D={rounds:buildRounds(), round:0, ans:[], timers:[], master:null, phase:'idle', tl:[], dur:0, elapsed:0, segStart:0};
+    for(let i=0;i<N;i++) D.ans.push(freshAns());
+    renderDrill();
+    startRound(0);
+  }
+  window.startTonDrill=startTonDrill;
+
+  function stopDrill(){
+    if(D){ (D.timers||[]).forEach(clearTimeout); D.timers=[]; if(D.master){try{D.master.gain.value=0;D.master.disconnect();}catch(e){}D.master=null;} }
+    try{ if(typeof stopSampler==='function') stopSampler(); }catch(e){}
+  }
+  window.stopTonDrill=stopDrill;
+
+  function renderDrill(){
+    const host=document.getElementById('tonContainer'); if(!host) return;
+    host.innerHTML=
+    '<div class="drillp">'
+    + '<div class="drill-head"><span class="drill-round">Ronda <b id="drill-rn">1</b> / '+N+'</span>'
+    +   '<button class="drill-play ready" id="drill-play"><span class="ico">▶</span></button></div>'
+    + '<div class="drill-secs">'
+    +   '<div class="dsec dsec-ton"><div class="dsec-t">Tonalidad</div>'
+    +     '<div class="dwheel" id="dw-note"></div>'
+    +     '<div class="drow"><button class="dbt" data-acc="b">♭</button><button class="dbt" data-acc="#">♯</button></div>'
+    +     '<div class="drow"><button class="dbt wide" data-mode="major">Mayor</button><button class="dbt wide" data-mode="minor">menor</button></div>'
+    +   '</div>'
+    +   '<div class="dsec dsec-arm"><div class="dsec-t">Armadura</div><div class="dwheel" id="dw-arm"></div></div>'
+    +   '<div class="dsec dsec-cps"><div class="dsec-t">Compás</div>'
+    +     '<div class="dcompas">'
+    +       '<button class="dbt cps" data-compas="2/4">2/4</button><button class="dbt cps" data-compas="3/4">3/4</button>'
+    +       '<button class="dbt cps" data-compas="6/8">6/8</button><button class="dbt cps" data-compas="9/8">9/8</button>'
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="dsummary"><div class="dsum-lab">Tu respuesta</div><div class="dsum-row">'
+    +   '<div class="sum-cell" id="sum-ton"><div class="sum-val">—</div><div class="sum-fix"></div></div>'
+    +   '<div class="sum-cell" id="sum-arm"><div class="sum-val">—</div><div class="sum-fix"></div></div>'
+    +   '<div class="sum-cell" id="sum-cps"><div class="sum-val">—</div><div class="sum-fix"></div></div>'
+    + '</div></div>'
+    + '<div class="drill-actions"><button class="drill-fwd" id="drill-fwd" disabled>Corregir y seguir</button></div>'
+    + '<div class="drill-cd" id="drill-cd"><span id="drill-cdn"></span></div>'
+    + '<div class="drill-cin" id="drill-cin"><span></span></div>'
+    + '</div>';
+    D.noteWheel=makeWheel(document.getElementById('dw-note'), WNOTES, WNOTES.indexOf('—'), i=>{ cur().note=WNOTES[i]; updateSummary(); });
+    D.armWheel =makeWheel(document.getElementById('dw-arm'),  ARMLBL, ARMLBL.indexOf('—'), i=>{ cur().arm=ARMVAL[i]; cur().armT=true; updateSummary(); });
+    host.querySelectorAll('[data-acc]').forEach(b=>b.addEventListener('click',()=>{ const a=cur(); a.acc=(a.acc===b.dataset.acc?'':b.dataset.acc); wheelTick(); syncBtns(); updateSummary(); }));
+    host.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{ cur().mode=b.dataset.mode; wheelTick(); syncBtns(); updateSummary(); }));
+    host.querySelectorAll('[data-compas]').forEach(b=>b.addEventListener('click',()=>{ cur().compas=b.dataset.compas; wheelTick(); syncBtns(); updateSummary(); }));
+    document.getElementById('drill-play').addEventListener('click', togglePlay);
+    document.getElementById('drill-fwd').addEventListener('click', correctNow);
+  }
+  function syncBtns(){
+    const a=cur(); if(!a) return;
+    document.querySelectorAll('[data-acc]').forEach(b=>b.classList.toggle('on',a.acc===b.dataset.acc));
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',a.mode===b.dataset.mode));
+    document.querySelectorAll('[data-compas]').forEach(b=>b.classList.toggle('on',a.compas===b.dataset.compas));
+  }
+  function tonText(a){ if(a.note==='—') return '—'; return a.note+accSym(a.acc)+(a.mode?' '+(a.mode==='major'?'M':'m'):''); }
+  function updateSummary(){
+    const a=cur(); if(!a) return;
+    const st=document.querySelector('#sum-ton .sum-val'); if(st) st.textContent=tonText(a);
+    const sa=document.querySelector('#sum-arm .sum-val'); if(sa) sa.textContent=a.armT?armTxt(a.arm):'—';
+    const sc=document.querySelector('#sum-cps .sum-val'); if(sc) sc.textContent=a.compas||'—';
+    const fwd=document.getElementById('drill-fwd'); if(fwd) fwd.disabled=!(a.note!=='—' && a.mode!=null && a.armT && a.compas!=null && (D.phase==='playing'||D.phase==='paused'||D.phase==='ready'));
+  }
+  function enable(on){ const s=document.querySelector('.drill-secs'); if(s){ s.style.pointerEvents=on?'auto':'none'; s.style.opacity=on?'1':'.55'; } }
+
+  function startRound(i){
+    D.round=i; D.phase='ready'; D.ans[i]=freshAns();
+    document.getElementById('drill-rn').textContent=(i+1);
+    D.noteWheel.set(WNOTES.indexOf('—')); D.armWheel.set(ARMLBL.indexOf('—'));
+    ['sum-ton','sum-arm','sum-cps'].forEach(id=>{ const c=document.getElementById(id); if(c){ c.classList.remove('ok','no','blink'); const f=c.querySelector('.sum-fix'); if(f) f.textContent=''; } });
+    syncBtns(); updateSummary(); enable(true);
+    const built=buildTimeline(i); D.tl=built.tl; D.dur=built.dur; D.elapsed=0;
+    if(D.master){ try{D.master.disconnect();}catch(e){} D.master=null; }
+    setPlayIcon('play');
+  }
+
+  function cinShow(n){ return ()=>{ const cd=document.getElementById('drill-cin'); if(!cd) return; const sp=cd.querySelector('span'); if(sp) sp.textContent=n; cd.classList.add('on'); cd.classList.remove('pulse'); void cd.offsetWidth; cd.classList.add('pulse'); }; }
+  function cinHide(){ const cd=document.getElementById('drill-cin'); if(cd) cd.classList.remove('on','pulse'); }
+  function dclick(strong){ return (ctx,m)=>{ try{ const o=ctx.createOscillator(),g=ctx.createGain(),t0=ctx.currentTime; o.frequency.value=1100; g.gain.setValueAtTime(strong?1.0:0.5,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+0.06); o.connect(g).connect(m); o.start(t0); o.stop(t0+0.07); }catch(e){} }; }
+  function beatFn(strong){ return ()=>{ const b=document.getElementById('drill-play'); if(!b) return; b.classList.add('beat'); D.timers.push(setTimeout(()=>b.classList.remove('beat'),130)); }; }
+  function buildTimeline(i){
+    const ex=D.rounds[i], key=ex.key; const tl=[]; let t=0;
+    const note=(midi,dur,gain)=>{ const mm=midi,dd=dur,gg=gain; tl.push({off:t, fn:(ctx,m)=>pianoPlay(ctx,m,ctx.currentTime,mm,dd,gg)}); };
+    const tpc=((NOTE_PC[key.note]+(key.acc==='#'?1:key.acc==='b'?-1:0))%12+12)%12;
+    let tonM=60; for(let mm=60;mm<=71;mm++) if(((mm%12)+12)%12===tpc){tonM=mm;break;}
+    const intro=()=>{
+      note(69,1.3,NOTE_GAIN); t+=GAP_NOTE;
+      note(tonM,1.3,NOTE_GAIN); t+=GAP_NOTE;
+      const tops=[tonM,tonM,tonM-1,tonM], degs=[0,3,4,0];
+      degs.forEach((dg,k)=>{
+        const tri=chordMidis(key,dg,tonM-7);
+        let top=tops[k], topPc=((top%12)+12)%12;
+        if(!tri.some(m=>((m%12)+12)%12===topPc)){ let bp=((tri[0]%12)+12)%12,bd=1e9; tri.forEach(m=>{const d=Math.abs(((m%12)+12)%12-topPc);if(d<bd){bd=d;bp=((m%12)+12)%12;}}); top=tonM; while(((top%12)+12)%12!==bp) top--; }
+        voiceUnderTop(tri,top).forEach(m=>note(m,1.4,CHORD_GAIN)); t+=GAP_CHORD;
+      });
+      t+=GAP_INTRO;
+    };
+    intro(); intro();
+    const bpm=ex.compas.bpm, pulseSec=60/bpm, ppc=ex.piece.ppc;
+    // cuenta atrás rápida 3·2·1 antes del dictado (en vez de un compás de claqueta)
+    const CIN=0.45;
+    ['3','2','1'].forEach((nstr,k)=>{ const off=t+k*CIN; tl.push({off, fn:cinShow(nstr)}); tl.push({off, fn:dclick(true)}); });
+    t+=3*CIN; tl.push({off:t, fn:cinHide}); t+=0.2;
+    const dStart=t;
+    ex.piece.events.forEach(ev=>{ if(!ev.rest&&ev.midi!=null) note(ev.midi, Math.max(0.2,ev.dur*pulseSec*0.92), NOTE_GAIN); t+=ev.dur*pulseSec; });
+    const totalPulsos=ex.piece.bars*ppc;
+    for(let p=0;p<totalPulsos;p++){ const acc=(p%ppc===0), off=dStart+p*pulseSec; tl.push({off, fn:dclick(acc)}); tl.push({off, fn:beatFn(false)}); }
+    return {tl, dur:t+0.4};
+  }
+  function togglePlay(){ if(!D) return; if(D.phase==='ready'||D.phase==='paused') playSeq(); else if(D.phase==='playing') pauseSeq(); }
+  function playSeq(){
+    const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+    if(!D.master){ D.master=ctx.createGain(); D.master.gain.value=1; D.master.connect(ctx.destination); }
+    D.phase='playing'; D.segStart=ctx.currentTime; D.timers=[];
+    D.tl.forEach(ev=>{ if(ev.off>=D.elapsed-0.0001) D.timers.push(setTimeout(()=>{ try{ev.fn(ctx,D.master);}catch(e){} }, Math.max(0,Math.round((ev.off-D.elapsed)*1000)))); });
+    D.timers.push(setTimeout(()=>{ D.phase='ended'; setPlayIcon('done'); endRound(D.round); }, Math.max(0,Math.round((D.dur-D.elapsed)*1000))));
+    setPlayIcon('stop');
+  }
+  function pauseSeq(){
+    const ctx=getCtx(); D.elapsed += (ctx.currentTime - D.segStart);
+    D.timers.forEach(clearTimeout); D.timers=[]; try{ if(typeof stopSampler==='function') stopSampler(); }catch(e){}
+    const pb=document.getElementById('drill-play'); if(pb) pb.classList.remove('beat','beat-strong');
+    D.phase='paused'; setPlayIcon('play');
+  }
+  function setPlayIcon(state){
+    const b=document.getElementById('drill-play'); if(!b) return; const ico=b.querySelector('.ico');
+    if(state==='stop'){ if(ico)ico.textContent='■'; b.classList.add('playing'); b.classList.remove('ready'); b.disabled=false; }
+    else if(state==='done'){ if(ico)ico.textContent='▶'; b.classList.remove('playing','ready','beat','beat-strong'); b.disabled=true; }
+    else { if(ico)ico.textContent='▶'; b.classList.remove('playing','beat','beat-strong'); b.classList.add('ready'); b.disabled=false; }
+  }
+
+  function correctNow(){
+    if(!D || (D.phase!=='playing' && D.phase!=='paused' && D.phase!=='ready')) return;
+    D.timers.forEach(clearTimeout); D.timers=[];
+    try{ if(typeof stopSampler==='function') stopSampler(); }catch(e){}
+    cinHide(); D.phase='ended'; setPlayIcon('done');
+    endRound(i_safe());
+  }
+  function i_safe(){ return D.round; }
+  function endRound(i){
+    enable(false); { const fwd=document.getElementById('drill-fwd'); if(fwd) fwd.disabled=true; } const pb=document.getElementById('drill-play'); if(pb) pb.classList.remove('beat','beat-strong');
+    correctRound(i);
+    D.timers.push(setTimeout(()=>{ countdown(()=>{ if(i+1<N) startRound(i+1); else showFinal(); }); }, 2600));
+  }
+  function correctRound(i){
+    const a=D.ans[i], k=D.rounds[i].key, ts=D.rounds[i].compas.ts;
+    mark('sum-ton', (a.note===k.note&&a.acc===k.acc&&a.mode===k.mode), (a.note!=='—'&&a.mode!=null), k.note+accSym(k.acc)+' '+(k.mode==='major'?'M':'m'));
+    mark('sum-arm', (a.armT&&a.arm===k.sig), a.armT, armTxt(k.sig));
+    mark('sum-cps', (a.compas===ts), a.compas!=null, ts);
+  }
+  function mark(id, ok, answered, correctTxt){
+    const c=document.getElementById(id); if(!c) return;
+    c.classList.remove('ok','no','blink'); c.classList.add(ok?'ok':'no');
+    if(!answered) c.classList.add('blink');
+    const f=c.querySelector('.sum-fix'); if(f) f.textContent = ok ? '' : correctTxt;
+  }
+  function countdown(done){
+    D.phase='count'; const cd=document.getElementById('drill-cd'), n=document.getElementById('drill-cdn');
+    if(!cd){ done(); return; }
+    cd.classList.add('on'); let k=3;
+    const tick=()=>{ if(k<=0){ cd.classList.remove('on'); done(); return; } n.textContent=k; cd.classList.remove('pulse'); void cd.offsetWidth; cd.classList.add('pulse'); k--; D.timers.push(setTimeout(tick,800)); };
+    tick();
+  }
+
+  function showFinal(){
+    stopDrill(); let correct=0;
+    const rows=D.rounds.map((ex,i)=>{
+      const a=D.ans[i], k=ex.key, ts=ex.compas.ts;
+      const tonOK=(a.note===k.note&&a.acc===k.acc&&a.mode===k.mode), armOK=(a.armT&&a.arm===k.sig), cpsOK=(a.compas===ts);
+      const all=tonOK&&armOK&&cpsOK; if(all) correct++;
+      const cell=(ok,mine,good)=>'<td class="'+(ok?'ok':'no')+'">'+mine+(ok?'':' <span class="good">'+good+'</span>')+'</td>';
+      return '<tr><td class="rn">'+(i+1)+'</td>'
+        + cell(tonOK, a.mode?tonText(a):'—', k.note+accSym(k.acc)+' '+(k.mode==='major'?'M':'m'))
+        + cell(armOK, a.armT?armTxt(a.arm):'—', armTxt(k.sig))
+        + cell(cpsOK, a.compas||'—', ts)
+        + '<td class="res">'+(all?'✓':'✗')+'</td></tr>';
+    }).join('');
+    document.getElementById('tonContainer').innerHTML='<div class="drill-final"><h2>'+correct+' / '+N+' correctas</h2>'
+      +'<table class="finaltab"><thead><tr><th>#</th><th>Tonalidad</th><th>Armadura</th><th>Compás</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'
+      +'<button class="drill-restart" onclick="startTonDrill()">Otra serie de 5</button></div>';
+  }
+
+  function makeWheel(host, items, init, onPick){
+    const H=46;
+    host.classList.add('dwheel-r'); host.innerHTML='';
+    const vp=document.createElement('div'); vp.className='dwheel-vp';
+    const list=document.createElement('div'); list.className='dwheel-list';
+    items.forEach((t,i)=>{ const it=document.createElement('div'); it.className='dwheel-it'; it.textContent=t; it.dataset.i=i; list.appendChild(it); });
+    vp.appendChild(list); host.appendChild(vp);
+    let idx=init, startY=0, dragging=false, moved=0, live=init, wheelAcc=0, wheelLock=false, wheelClr=null;
+    const hi=k=>list.querySelectorAll('.dwheel-it').forEach((e,i)=>e.classList.toggle('sel',i===k));
+    const placeAt=ix=>{ list.style.transform='translateY('+(-(ix*H)+H)+'px)'; };
+    const commit=(ni,fire)=>{ idx=Math.max(0,Math.min(items.length-1,ni)); live=idx; list.style.transition=''; placeAt(idx); hi(idx); if(fire){ wheelTick(); onPick(idx); } };
+    const onMove=e=>{ if(!dragging) return; const y=(e.touches?e.touches[0].clientY:e.clientY); const dy=y-startY; moved=Math.max(moved,Math.abs(dy)); list.style.transform='translateY('+(-(idx*H)+H+dy)+'px)'; const c=Math.max(0,Math.min(items.length-1,Math.round(idx-dy/H))); if(c!==live){ live=c; hi(c); wheelTick(); } if(e.cancelable) e.preventDefault(); };
+    const detach=()=>{ ['pointermove','mousemove','touchmove'].forEach(t=>window.removeEventListener(t,onMove)); ['pointerup','mouseup','touchend','pointercancel'].forEach(t=>window.removeEventListener(t,onUp)); };
+    function onUp(e){ if(!dragging) return; dragging=false; detach(); list.style.transition=''; const y=(e.changedTouches?e.changedTouches[0].clientY:(e.clientY!=null?e.clientY:startY)); const dy=y-startY; if(Math.abs(dy)<6){ placeAt(idx); hi(idx); return; } commit(Math.round(idx-dy/H), true); }
+    const onDown=e=>{ dragging=true; moved=0; live=idx; startY=(e.touches?e.touches[0].clientY:e.clientY); list.style.transition='none'; window.addEventListener('pointermove',onMove); window.addEventListener('pointerup',onUp); window.addEventListener('pointercancel',onUp); window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp); window.addEventListener('touchmove',onMove,{passive:false}); window.addEventListener('touchend',onUp); if(e.cancelable) e.preventDefault(); };
+    vp.addEventListener('pointerdown',onDown);
+    vp.addEventListener('mousedown',e=>{ if(!window.PointerEvent) onDown(e); });
+    vp.addEventListener('touchstart',e=>{ if(!window.PointerEvent) onDown(e); },{passive:false});
+    vp.addEventListener('wheel',e=>{ e.preventDefault();
+      wheelAcc+=e.deltaY;
+      if(wheelClr) clearTimeout(wheelClr); wheelClr=setTimeout(()=>{wheelAcc=0;},160);
+      if(wheelLock) return;
+      if(Math.abs(wheelAcc)>=24){ commit(idx+(wheelAcc>0?1:-1), true); wheelAcc=0; wheelLock=true; setTimeout(()=>{wheelLock=false;},110); }
+    },{passive:false});
+    list.querySelectorAll('.dwheel-it').forEach(it=>it.addEventListener('click',()=>{ if(moved>6) return; commit(+it.dataset.i,true); }));
+    commit(init,false);
+    return { get:()=>idx, set:i=>commit(i,false), val:()=>items[idx] };
+  }
+})();
 
 </script>
 </body>
