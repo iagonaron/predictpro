@@ -702,6 +702,12 @@
     .arm-panels{grid-template-columns:repeat(2,1fr)}
   }
 
+  .mel-accpop{position:absolute;z-index:40;display:flex;gap:4px;background:rgba(20,16,4,.94);border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 8px 22px rgba(0,0,0,.55)}
+  .mel-accpop button{width:34px;height:34px;border-radius:7px;border:1px solid var(--line);background:rgba(233,201,106,.07);color:var(--ink);font-size:18px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1;font-family:inherit}
+  .mel-accpop button:hover{border-color:var(--gold2);background:rgba(233,201,106,.18)}
+  .mel-accpop button.on{border-color:var(--gold1);background:rgba(212,175,55,.22);color:var(--gold-soft)}
+  .mel-accpop .ap-x{color:#ff9b9b}
+  .mel-accpop .ap-x:hover{border-color:var(--red);background:var(--red-soft);color:#ffd3d3}
 </style>
 </head>
 <body>
@@ -3497,16 +3503,96 @@ let melExos=[];        // {key, sol:[midiVF...], midis:[...], slots:[null/midi],
 let melActive=-1;      // ejercicio cuyo pentagrama tiene el ratón
 const MEL_NOTE_SEC=2, MEL_GAP_SEC=1;
 
+/* ===== MELÓDICO PRO — atonal (sin referencias tonales) + entrada cromática ===== */
+const MEL_LO=60, MEL_HI=79;                       // ámbito cromático (Do4..Sol5)
+const MEL_NAT_PC={0:'C',2:'D',4:'E',5:'F',7:'G',9:'A',11:'B'};
+const MEL_SHARP_PC={1:['C','#'],3:['D','#'],6:['F','#'],8:['G','#'],10:['A','#']};
+function melSpell(m){
+  const pc=((m%12)+12)%12, oct=Math.floor(m/12)-1;
+  if(MEL_NAT_PC[pc]!=null) return {letter:MEL_NAT_PC[pc], acc:'', oct};
+  const sp=MEL_SHARP_PC[pc]; return {letter:sp[0], acc:'#', oct};
+}
+// alteración VISIBLE: tiene en cuenta el arrastre (una alteración afecta a las notas
+// siguientes de la misma letra+octava; volver a natural exige becuadro)
+function melAccSign(state, sp){
+  const k=sp.letter+sp.oct, cur=state[k]||'';
+  if(sp.acc===cur) return null;
+  state[k]=sp.acc;
+  return sp.acc===''?'n':sp.acc;   // a natural -> becuadro; si no, '#' o 'b'
+}
+// deletreo de la nota del alumno: línea natural + alteración elegida (♭/♯)
+function melSlotVF(ex,i){
+  const acc=(ex.slotAcc&&ex.slotAcc[i])||0;
+  const white=ex.slots[i]-acc;
+  const pc=((white%12)+12)%12, oct=Math.floor(white/12)-1;
+  const letter=MEL_NAT_PC[pc]||'C';
+  return {letter, oct, acc:(acc===-1?'b':acc===1?'#':''), white};
+}
+function melVFatonal(m, state){
+  const sp=melSpell(m);
+  const sign = state ? melAccSign(state, sp) : (sp.acc||null);
+  return {key:sp.letter.toLowerCase()+sp.acc+'/'+sp.oct, accidental:sign, midi:m};
+}
+function melGhostAcc(ex, slot, midi){
+  const state={};
+  for(let i=0;i<slot;i++){ const v=ex.revealed?ex.midis[i]:ex.slots[i]; if(v!=null) melAccSign(state, melSpell(v)); }
+  return melAccSign(state, melSpell(midi));
+}
+// melodía atonal: 10 notas cromáticas, primera dada, saltos de 2ªm a 5ªJ, sin centro tonal
+// melodía atonal con leyes melódicas: intervalos por semitonos (2ª=1-2, 3ª=3-4, 4ª o más=>=5).
+// Reglas: máx. 2 terceras seguidas; tras un salto de 4ª o más, las DOS notas siguientes
+// compensan por grado conjunto (2ª) en sentido contrario; saltos hasta una 8ª; la última no es la primera.
+function genMelodiaAtonal(){
+  const size=d=>{const a=Math.abs(d); return a<=2?2:(a<=4?3:4);};
+  for(let attempt=0; attempt<6000; attempt++){
+    const start=Math.max(MEL_LO,Math.min(MEL_HI, 64+(mrint(9)-4)));
+    const seq=[start];
+    let thirds=0, comp=0, compDir=0, ok=true;
+    for(let i=1;i<10;i++){
+      const prev=seq[i-1], left=9-i;
+      let cands=[];
+      for(let m=MEL_LO;m<=MEL_HI;m++){
+        if(m===prev) continue;
+        const d=m-prev, sz=size(d), dir=(d>0?1:-1);
+        if(comp>0){ if(sz!==2 || dir!==compDir) continue; }
+        else { if(sz===3 && thirds>=2) continue; if(sz===4 && (left<2 || Math.abs(d)>12)) continue; }
+        if(i>=2 && m===seq[i-2]) continue;
+        cands.push(m);
+      }
+      if(i===9) cands=cands.filter(m=>m!==seq[0]);
+      if(!cands.length){ ok=false; break; }
+      const next=mpick(cands), d=next-prev, sz=size(d), dir=(d>0?1:-1);
+      if(comp>0){ comp--; thirds=0; if(comp===0) compDir=0; }
+      else if(sz===4){ comp=2; compDir=-dir; thirds=0; }
+      else if(sz===3){ thirds++; }
+      else thirds=0;
+      seq.push(next);
+    }
+    const blacks=seq.filter(m=>[1,3,6,8,10].includes(((m%12)+12)%12)).length;   // >=4 alteraciones
+    if(ok && seq.length===10 && seq[9]!==seq[0] && comp===0 && blacks>=4) return {midis:seq, notes:seq.map(m=>melVFatonal(m,null))};
+  }
+  const seq=[64]; let dir=1;
+  for(let i=1;i<10;i++){ let n=seq[i-1]+dir*2; if(n>MEL_HI||n<MEL_LO){dir=-dir;n=seq[i-1]+dir*2;} seq.push(Math.max(MEL_LO,Math.min(MEL_HI,n))); }
+  if(seq[9]===seq[0]) seq[9]+= (seq[9]+1<=MEL_HI?1:-1);
+  return {midis:seq, notes:seq.map(m=>melVFatonal(m,null))};
+}
+function nearestMidiByYChrom(idx,mouseY){
+  const ex=melExos[idx];
+  if(!ex._anchor||ex._half==null) return null;
+  const pxPerSemi = ex._half*7/12;                // 12 semitonos por octava (7 pasos diatónicos)
+  const m = ex._anchor.midi + Math.round((ex._anchor.y - mouseY)/pxPerSemi);
+  return Math.max(MEL_LO, Math.min(MEL_HI, m));
+}
 function buildMelExos(){
-  const keys=chooseKeysForExercise();
-  melExos=keys.map(key=>{
-    const mel=genMelodia(key);
-    const {midis}=buildPitches(key);
-    const sigPCs=keySigPCs(key.sig);
-    const slots=new Array(10).fill(null);
-    slots[0]=mel.midis[0]; // tónica inicial dada
-    return {key, sol:mel.notes, midis:mel.midis, allowed:midis, sigPCs, slots, listens:0, checked:false, scored:false, revealed:false, melSpeed:1};
-  });
+  const mel=genMelodiaAtonal();
+  const allowed=[]; for(let m=MEL_LO;m<=MEL_HI;m++){ if(MEL_NAT_PC[((m%12)+12)%12]!=null) allowed.push(m); } // solo notas naturales
+  const slots=new Array(10).fill(null);
+  const slotAcc=new Array(10).fill(0);
+  slots[0]=mel.midis[0];                                   // primera nota dada
+  slotAcc[0]=(melSpell(mel.midis[0]).acc==='#')?1:0;       // su alteración (si la tiene)
+  melExos=[{ key:{atonal:true, vfsig:'C', sig:0, name:'sin referencias tonales'},
+    sol:mel.notes, midis:mel.midis, allowed, sigPCs:new Set(), slots, slotAcc, _selSlot:null,
+    listens:0, checked:false, scored:false, revealed:false, melSpeed:1 }];
 }
 
 /* --- Piano sintético (aditivo, decaimiento por parcial + martillo) --- */
@@ -3649,17 +3735,50 @@ function drawMelBoard(idx){
   if(ex.key.vfsig!=='C') stave.addKeySignature(ex.key.vfsig);
   stave.setContext(ctx).draw();
   const source = ex.revealed ? ex.midis : ex.slots;
-  // construir 10 StaveNotes (o invisibles si hueco)
-  const notes=[]; const colorMap = (ex.scored&&!ex.revealed) ? ex.slots.map((m,i)=> (m!==null&&m===ex.midis[i])?'#15a06a':'#d23145') : null;
+  const scored = ex.scored && !ex.revealed;
+  const notes=[];
+  const accState={};                              // arrastre de alteraciones (letra+octava)
+  const GREEN='#15a06a', RED='#d23145', BLUE='#2f6df6';
   for(let i=0;i<10;i++){
+    if(scored){
+      // corrección: verde = acierto · rojo = tu nota errónea · azul = la correcta
+      const stu=ex.slots[i], cor=ex.midis[i];
+      const zc=melSpell(cor); const corKey=zc.letter.toLowerCase()+'/'+zc.oct, corAcc=zc.acc;
+      let keys, accs, styles;
+      if(stu===null || stu===undefined){
+        keys=[corKey]; accs=[corAcc]; styles=[BLUE];                       // vacía -> solo la correcta en azul
+      } else if(stu===cor){
+        const z=melSlotVF(ex,i); keys=[z.letter.toLowerCase()+'/'+z.oct]; accs=[z.acc]; styles=[GREEN]; // acierto
+      } else {
+        const z=melSlotVF(ex,i);
+        const pair=[{key:z.letter.toLowerCase()+'/'+z.oct, acc:z.acc, midi:stu, col:RED},
+                    {key:corKey, acc:corAcc, midi:cor, col:BLUE}];
+        pair.sort((a,b)=>a.midi-b.midi);                                   // tu nota (rojo) + correcta (azul)
+        keys=pair.map(o=>o.key); accs=pair.map(o=>o.acc); styles=pair.map(o=>o.col);
+      }
+      const sn=new VF.StaveNote({keys,duration:'w'});
+      accs.forEach((a,k)=>{ if(a) sn.addModifier(new VF.Accidental(a),k); });
+      styles.forEach((c,k)=>{ try{ sn.setKeyStyle(k,{fillStyle:c,strokeStyle:c}); }catch(e){} });
+      notes.push(sn); continue;
+    }
+    if(ex.revealed){
+      // solución: tus aciertos en verde y con TU grafía (no reescribir); lo fallado/vacío, la solución en azul
+      const stu=ex.slots[i], cor=ex.midis[i];
+      let key, acc, col;
+      if(stu!==null && stu!==undefined && stu===cor){ const z=melSlotVF(ex,i); key=z.letter.toLowerCase()+'/'+z.oct; acc=z.acc; col=GREEN; }
+      else { const zc=melSpell(cor); key=zc.letter.toLowerCase()+'/'+zc.oct; acc=zc.acc; col=BLUE; }
+      const sn=new VF.StaveNote({keys:[key],duration:'w'});
+      if(acc) sn.addModifier(new VF.Accidental(acc),0);
+      sn.setStyle({fillStyle:col,strokeStyle:col});
+      notes.push(sn); continue;
+    }
     const m=source[i];
     if(m!==null && m!==undefined){
-      const vf=midiToVF(m,ex.key);
-      const sn=new VF.StaveNote({keys:[vf.key],duration:'w'});
-      if(vf.accidental) sn.addModifier(new VF.Accidental(vf.accidental),0);
-      const col=colorMap?colorMap[i]:null;
-      if(i===0 && !ex.scored && !ex.revealed) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); // tónica dada en azul (color del apartado)
-      else if(col) sn.setStyle({fillStyle:col,strokeStyle:col});
+      const z=melSlotVF(ex,i); const sp={letter:z.letter, oct:z.oct, acc:z.acc};
+      const sign=melAccSign(accState, sp);                        // alteración visible (con arrastre)
+      const sn=new VF.StaveNote({keys:[sp.letter.toLowerCase()+'/'+sp.oct],duration:'w'});  // línea = letra natural
+      if(sign) sn.addModifier(new VF.Accidental(sign),0);
+      if(i===0) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); // 1ª nota dada (oro)
       notes.push(sn);
     } else {
       const sn=new VF.StaveNote({keys:['b/4'],duration:'w'});
@@ -3683,7 +3802,8 @@ function drawMelBoard(idx){
       const m=source[i];
       if(m!==null && m!==undefined){
         const ys=notes[i].getYs ? notes[i].getYs() : null;
-        if(ys && ys.length){ ex._anchor={midi:m, y:ys[0], step:diatonicStep(m)}; ex._half=lineSpacing/2; break; }
+        const wm = ex.revealed ? (m-(melSpell(m).acc==='#'?1:0)) : (m-((ex.slotAcc&&ex.slotAcc[i])||0));
+        if(ys && ys.length){ ex._anchor={midi:wm, y:ys[0], step:diatonicStep(wm)}; ex._half=lineSpacing/2; break; }
       }
     }
     if(!ex._anchor){ // sin notas: anclar en B4 = línea central
@@ -3693,19 +3813,6 @@ function drawMelBoard(idx){
   // números 1..10 bajo el pentagrama
   ex._noteX=notes.map(n=>{try{return n.getAbsoluteX();}catch(e){return null;}});
   drawMelNumbers(idx);
-  // al puntuar: marcar con × roja los pulsos que quedaron sin rellenar (cuentan como fallo)
-  if(ex.scored && !ex.revealed){
-    const off=svgOffsetMel(idx);
-    for(let i=0;i<10;i++){
-      if(ex.slots[i]===null){
-        const x=ex._noteX[i]; if(x==null) continue;
-        const mark=document.createElement('div'); mark.className='mel-empty-x';
-        mark.style.left=(x+off.dx)+'px';
-        mark.innerHTML='×';
-        cont.appendChild(mark);
-      }
-    }
-  }
   // capa de interacción: editable siempre que no se haya revelado la solución
   // marcador de la nota que suena (banda azul)
   const melMark=document.createElement('div'); melMark.className='melhl'; melMark.id='melhl-'+idx; melMark.style.display='none';
@@ -3722,6 +3829,35 @@ function drawMelBoard(idx){
   // contenedor de la nota fantasma
   const gh=document.createElement('div'); gh.className='mel-ghost'; gh.id='melghost-'+idx; gh.style.display='none';
   cont.appendChild(gh);
+  // menú ♭ ♯ × sobre la nota seleccionada
+  if(!ex.revealed && ex._selSlot!=null && ex._selSlot>=1 && ex.slots[ex._selSlot]!=null) melShowAccPopup(idx);
+}
+function melShowAccPopup(idx){
+  const ex=melExos[idx]; const slot=ex._selSlot;
+  const cont=document.getElementById('melboard-'+idx); if(!cont) return;
+  const off=svgOffsetMel(idx);
+  const acc=(ex.slotAcc[slot]||0);
+  const white=ex.slots[slot]-acc;
+  const x=ex._noteX?ex._noteX[slot]:null; const ny=melYForMidi(idx,white);
+  const pop=document.createElement('div'); pop.className='mel-accpop'; pop.id='melpop-'+idx;
+  pop.innerHTML='<button class="ap-b'+(acc===-1?' on':'')+'" data-a="-1" title="Bemol">♭</button>'+
+                '<button class="ap-b'+(acc===1?' on':'')+'" data-a="1" title="Sostenido">♯</button>'+
+                '<button class="ap-x" data-a="x" title="Borrar">×</button>';
+  cont.appendChild(pop);
+  const px=((x!=null?x:60)+off.dx), py=((ny!=null?ny:70)+off.dy);
+  pop.style.left=Math.round(px-pop.offsetWidth/2)+'px';
+  pop.style.top=Math.max(2,Math.round(py-pop.offsetHeight-12))+'px';
+  pop.querySelectorAll('button').forEach(b=>b.addEventListener('click',(e)=>{ e.stopPropagation(); melSetAcc(idx,slot,b.dataset.a); }));
+}
+function melSetAcc(idx,slot,a){
+  const ex=melExos[idx]; if(ex.revealed) return;
+  const sl=document.getElementById('melscore-'+idx);
+  if(a==='x'){ ex.slots[slot]=null; ex.slotAcc[slot]=0; ex._selSlot=null; ex.scored=false; if(sl) sl.innerHTML=''; clearGhost(idx); drawMelBoard(idx); refreshMelControls(idx); return; }
+  const na=parseInt(a,10); const cur=ex.slotAcc[slot]||0; const white=ex.slots[slot]-cur;
+  const newAcc=(cur===na)?0:na;            // toggle: volver a pulsar la activa -> natural
+  ex.slotAcc[slot]=newAcc; ex.slots[slot]=white+newAcc;
+  ex.scored=false; if(sl) sl.innerHTML='';
+  drawMelBoard(idx); refreshMelControls(idx);
 }
 function drawMelNumbers(idx){
   const ex=melExos[idx];
@@ -3797,7 +3933,8 @@ function showGhost(idx,slot,midi){
   const off=svgOffsetMel(idx);
   const x=ex._noteX[slot]; const y=melYForMidi(idx,midi);
   if(x==null||y==null){gh.style.display='none';return;}
-  const vf=midiToVF(midi,ex.key);
+  const _sp=melSpell(midi);
+  const vf={key:_sp.letter.toLowerCase()+'/'+_sp.oct, accidental:null};
   // líneas adicionales: comparar el step de la nota con las líneas del pentagrama
   // líneas del pentagrama (clave sol): Mi4=64 (inferior) ... Fa5=77 (superior)
   const stepNote=diatonicStep(midi);
@@ -3840,7 +3977,9 @@ function onMelClick(idx,e){
   if(!g) return;
   const ex=melExos[idx];
   if(ex.revealed) return;
-  ex.slots[g.slot]=g.midi;
+  ex.slots[g.slot]=g.midi;         // g.midi es una nota natural (blanca)
+  ex.slotAcc[g.slot]=0;
+  ex._selSlot=g.slot;              // aparece el menú ♭ ♯ × sobre la nota
   ex.scored=false;                 // al editar, se retira el coloreado hasta re-comprobar
   const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
   drawMelBoard(idx); refreshMelControls(idx);
@@ -3860,7 +3999,8 @@ function onMelDelete(idx,e){
   if(ex.revealed) return;
   const slot=slotUnderCursor(idx,e);
   if(slot>=1 && ex.slots[slot]!==null){
-    ex.slots[slot]=null;
+    ex.slots[slot]=null; ex.slotAcc[slot]=0;
+    if(ex._selSlot===slot) ex._selSlot=null;
     ex.scored=false;
     const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
     clearGhost(idx);
@@ -3875,12 +4015,9 @@ function renderMelExos(){
   melExos.forEach((ex,idx)=>{
     const block=document.createElement('section');
     block.className='exo'; block.id='melexo-'+idx;
-    const altTxt = ex.key.sig===0?'sin alteraciones':(Math.abs(ex.key.sig)===1?'1 alteración':'2 alteraciones');
     block.innerHTML=
       '<div class="exo-head"><div class="exo-title">'+
-        '<span class="exo-num">Ejercicio '+(idx+1)+'</span>'+
-        '<h2>'+altTxt+'</h2>'+
-        '<span class="ts">tónica dada · 10 notas</span>'+
+        '<h2>Escribe las notas que escuches</h2>'+
       '</div><div class="exo-head-right"><div class="beatmon" id="melbeat-'+idx+'"></div></div></div>'+
       '<div class="exo-main">'+
         '<div class="board" id="melboard-'+idx+'" style="min-height:150px"></div>'+
@@ -3906,7 +4043,7 @@ function renderMelExos(){
           '</div>'+
         '</div>'+
       '</div>'+
-      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">Mueve sobre el pentagrama y la redonda salta de nota en nota: colócala donde corresponda. En tablet puedes ampliar si necesitas más precisión, y pulsar otra vez para reescribir. Para borrar una nota: clic derecho (ordenador) o dos dedos (tablet). Cuando termines, pulsa <b>¿Qué tal fue?</b> para corregir; después puedes escuchar de nuevo y corregir las falladas.</span></div>';
+      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio (sale natural) y, al ponerla, aparece encima un menú para añadirle <b>♭</b>, <b>♯</b> o borrarla (<b>×</b>). Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real. Da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>';
     cont.appendChild(block);
     block.querySelector('#melplay-'+idx).addEventListener('click',()=>playMel(idx));
     block.querySelector('#melcheck-'+idx).addEventListener('click',()=>onMelCheck(idx));
@@ -3940,6 +4077,7 @@ function melScoreOf(ex){
 }
 function onMelCheck(idx){
   const ex=melExos[idx];
+  ex._selSlot=null;
   // comprobar (o re-comprobar tras editar): colorea y puntúa, sigue editable
   ex.scored=true; ex.checked=true;
   const ok=melScoreOf(ex);
@@ -3956,7 +4094,7 @@ function onMelReveal(idx){
 function maybeShowMelGlobal(){
   // se muestra (y se recalcula) cuando los tres han sido comprobados al menos una vez
   if(!melExos.every(e=>e.scored||e.revealed)) return;
-  const total=30, ok=melExos.reduce((a,e)=>a+melScoreOf(e),0);
+  const total=melExos.length*10, ok=melExos.reduce((a,e)=>a+melScoreOf(e),0);
   const nota=(ok/total*10); const notaTxt=(Math.round(nota*10)/10).toString().replace('.',',');
   const panel=document.getElementById('globalScoreMel');
   panel.innerHTML='<div class="gs-inner">'+
