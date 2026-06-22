@@ -55,11 +55,12 @@
   .mode-card.m1 .edge{background:linear-gradient(var(--gold1),var(--gold2))}
   .mode-card.m2 .edge{background:linear-gradient(var(--gold1),var(--gold2))}
   .mode-card.m3 .edge{background:linear-gradient(var(--gold1),var(--gold2))}
+  .mode-card.m4 .edge,.mode-card.m5 .edge,.mode-card.m6 .edge{background:linear-gradient(var(--gold1),var(--gold2))}
   .mode-card .mc-kicker{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2)}
   .mode-card h2{font-size:40px;margin:18px 0 12px;font-weight:800;letter-spacing:-.5px;color:var(--ink)}
   .card-title{letter-spacing:.01em}
   .card-title .hl{font-weight:900;color:var(--ink)}
-  .card-title .dim{font-weight:300;color:var(--muted2);opacity:.65}
+  .card-title .dim{font-weight:100;color:var(--muted);-webkit-font-smoothing:antialiased}
   .mode-card[disabled] h2{color:var(--muted)}
   .mode-card p{font-size:15px;line-height:1.5;color:var(--muted);margin:0}
   .mode-card .go{margin-top:28px;font-size:14px;font-weight:700;color:var(--accent2);letter-spacing:.02em}
@@ -99,7 +100,7 @@
   .ex-meta{font-size:15px;letter-spacing:.01em;color:var(--ink);font-weight:500}
   .section-title{font-size:54px;font-weight:900;letter-spacing:-.02em;margin:4px 0 22px;line-height:1}
   .section-title .hl{font-weight:900;color:var(--ink)}
-  .section-title .dim{font-weight:300;color:var(--muted2);opacity:.65}
+  .section-title .dim{font-weight:200;color:var(--muted)}
   .tempo-ctl{display:flex;align-items:center;gap:8px;margin-top:4px}
   .tempo-ctl .ts{margin:0}
   .tempo-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font-size:16px;font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;transition:border-color .15s,background .15s}
@@ -399,11 +400,13 @@
   .opt-top{display:block;width:max-content;margin:18px auto 0}
   .eva-hero{text-align:center;margin:18px 0 34px}
   .eva-big{font-size:38px;font-weight:900;letter-spacing:-.01em;margin:0;line-height:1}
-  .eva-big .pre{color:var(--ink);font-weight:300;opacity:.6}
-  .eva-big .dict{color:var(--ink);font-weight:900}
+  .eva-big .pre{color:var(--ink);font-weight:900}
+  .eva-big .dict{color:var(--muted);font-weight:100;-webkit-font-smoothing:antialiased}
   .eva-big .home2{font-size:.5em;color:var(--gold-soft)}
   .eva-big .pro-tag-big{font-size:.36em;font-weight:900;letter-spacing:.12em;color:#1a1407;background:linear-gradient(135deg,var(--gold1),var(--gold2));padding:4px 10px;border-radius:7px;vertical-align:middle;margin-left:10px}
   .brand h1 .eav-pro{color:var(--gold1);font-weight:300}
+  .brand h1 .pro-tag-mini{font-size:.4em;font-weight:900;letter-spacing:.1em;color:#1a1407;background:linear-gradient(135deg,var(--gold1),var(--gold2));padding:2px 8px;border-radius:6px;vertical-align:middle;margin-left:8px}
+  body.in-modos .pending-banner{display:none}
   .pending-banner{background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(184,134,11,.08));border:1px solid rgba(212,175,55,.45);color:var(--gold-soft);font-size:13px;font-weight:600;text-align:center;padding:10px 16px;border-radius:11px;margin-bottom:22px;letter-spacing:.02em}
   .eva-tag{font-size:15px;color:var(--muted);margin:10px 0 0}
   @media (max-width:1100px){ .eva-big{font-size:32px} }
@@ -431,6 +434,20 @@
   .eva-foot{text-align:center;margin:34px 0 0}
   .maint-link{background:none;border:none;color:var(--muted2);font-size:12px;letter-spacing:.08em;cursor:pointer;opacity:.5;transition:opacity .15s}
   .maint-link:hover{opacity:1;color:var(--muted)}
+  /* enlace a la versión Elemental — arriba a la derecha, pequeño y discreto. Estética PreDict (azul). */
+  .to-elemental{position:fixed;right:18px;top:54px;z-index:60;display:inline-flex;align-items:center;gap:9px;
+    text-decoration:none;padding:8px 14px;border-radius:10px;
+    background:linear-gradient(135deg,rgba(91,157,255,.12),rgba(58,79,134,.06));
+    border:1px solid rgba(91,157,255,.4);
+    box-shadow:0 6px 18px rgba(0,0,0,.28);
+    transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
+  .to-elemental:hover{background:linear-gradient(135deg,rgba(91,157,255,.22),rgba(58,79,134,.12));
+    border-color:rgba(91,157,255,.75);transform:translateY(-1px);box-shadow:0 10px 26px rgba(91,157,255,.2)}
+  .to-elemental .te-icon{font-size:15px;color:#5b9dff;flex:none;line-height:1}
+  .to-elemental .te-text{color:#cdd9f5;font-size:11px;line-height:1.25;font-weight:600}
+  .to-elemental .te-text b{color:#fff;font-weight:800}
+  .to-elemental .te-go{color:#9bc2ff;font-weight:800;font-size:11px;white-space:nowrap}
+  @media (max-width:700px){ .to-elemental{right:10px;top:10px;padding:7px 11px} .to-elemental .te-text{display:none} }
   .mode-card.soon{opacity:.55;cursor:not-allowed}
   .mode-card.soon:hover{transform:none;border-color:var(--line);box-shadow:none}
   .soon-tag{color:var(--muted2)!important;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:12px}
@@ -448,19 +465,170 @@
   .level-soon{display:none;margin-top:16px;font-size:13px;color:var(--ton);background:var(--ton-soft);border:1px solid var(--ton);border-radius:10px;padding:10px}
   .level-soon.show{display:block}
 </style>
+<style id="modos-embed">
+#modosView{
+    --bg:#160f04; --panel:#1a1305; --panel2:#221908; --line:#3a2c10;
+    --ink:#fbf7ec; --muted:#d8caa6; --muted2:#a8966a; --paper:#fbf6e9;
+    --gold1:#d4af37; --gold2:#b8860b; --gold-soft:#e9c96a;
+    --ok:#22c98a; --okbg:rgba(34,201,138,.16);
+    --bad:#ff5c72; --badbg:rgba(255,92,114,.14);
+    --sol:#5b9dff; --solbg:rgba(91,157,255,.16);
+  }
+#modosView *{box-sizing:border-box}
+#modosView,#modosView{margin:0;padding:0}
+#modosView{
+    background:linear-gradient(180deg,#4d3a0b 0%,#2e2308 32%,#160f04 70%,#0a0702 100%);
+    background-attachment:fixed; color:var(--ink); min-height:100vh;
+    font-family:"Helvetica Neue",Arial,system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+#modosView .wrap{max-width:920px;margin:0 auto;padding:20px 24px 90px}
+#modosView header.top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#modosView .brand{text-decoration:none;color:inherit}
+#modosView .brand h1{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:0;line-height:1.1}
+#modosView .brand h1 .a{color:var(--ink);font-weight:900}
+#modosView .brand h1 .b{color:var(--gold1);font-weight:300}
+#modosView .brand h1 .home2{font-size:.5em;font-style:italic;font-family:Georgia,serif;color:var(--gold-soft);font-weight:500}
+#modosView .brand .sub{font-size:11.5px;color:var(--muted2);letter-spacing:.04em;margin-top:2px}
+#modosView .brand h1 .pro-mini{font-size:.42em;font-weight:900;letter-spacing:.1em;color:#1a1407;background:linear-gradient(135deg,var(--gold1),var(--gold2));padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:6px}
+#modosView .by{font-size:11px;color:var(--muted2)}
+#modosView .to-elemental{position:fixed;right:18px;top:54px;z-index:60;display:inline-flex;align-items:center;gap:9px;
+    text-decoration:none;padding:8px 14px;border-radius:10px;
+    background:linear-gradient(135deg,rgba(91,157,255,.12),rgba(58,79,134,.06));
+    border:1px solid rgba(91,157,255,.4);box-shadow:0 6px 18px rgba(0,0,0,.28);
+    transition:background .16s,border-color .16s,transform .16s}
+#modosView .to-elemental:hover{background:linear-gradient(135deg,rgba(91,157,255,.22),rgba(58,79,134,.12));border-color:rgba(91,157,255,.75);transform:translateY(-1px)}
+#modosView .to-elemental .te-icon{font-size:15px;color:#5b9dff}
+#modosView .to-elemental .te-text{color:#cdd9f5;font-size:11px;font-weight:600}
+#modosView .to-elemental .te-text b{color:#fff;font-weight:800}
+#modosView .to-elemental .te-go{color:#9bc2ff;font-weight:800;font-size:11px;white-space:nowrap}
+@media(max-width:700px){#modosView .to-elemental .te-text{display:none}}
+#modosView .hero{text-align:center;margin:30px 0 22px}
+#modosView .hero h2{font-size:44px;margin:0;font-weight:800;letter-spacing:-.5px}
+#modosView .hero h2 .hl{color:var(--ink);font-weight:900}
+#modosView .hero h2 .dim{color:var(--muted);font-weight:100;-webkit-font-smoothing:antialiased}
+#modosView .hero h2 .home2{font-size:.4em;font-style:italic;font-family:Georgia,serif;color:var(--gold-soft);font-weight:500}
+#modosView .hero h2 .pro-tag{font-size:.32em;font-weight:900;letter-spacing:.12em;color:#1a1407;background:linear-gradient(135deg,var(--gold1),var(--gold2));padding:3px 8px;border-radius:6px;vertical-align:middle;margin-left:8px}
+#modosView .hero p{color:var(--muted);font-size:15px;margin:10px 0 0}
+#modosView .progress{display:flex;gap:8px;justify-content:center;margin:18px 0 6px}
+#modosView .progress .dot{width:30px;height:5px;border-radius:3px;background:var(--line);transition:background .3s}
+#modosView .progress .dot.done{background:var(--gold1)}
+#modosView .progress .dot.cur{background:var(--gold-soft)}
+#modosView .progress .dot.ok{background:var(--ok)}
+#modosView .progress .dot.bad{background:var(--bad)}
+#modosView .card{background:linear-gradient(180deg,#241b0c,#181106);border:1px solid var(--line);border-radius:18px;
+    padding:22px 24px;margin-top:18px;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+#modosView .player{padding:18px 8px 6px}
+#modosView .play-bar{height:10px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;position:relative}
+#modosView .play-bar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1.5px;background:rgba(233,201,106,.55);transform:translateX(-50%);z-index:2}
+#modosView .play-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold-soft));border-radius:6px;transition:width .12s linear}
+#modosView .play-phrases{position:relative;height:13px;margin-top:7px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);font-weight:700}
+#modosView .play-phrases .pf1{position:absolute;left:0;top:0}
+#modosView .play-phrases .pf2{position:absolute;left:50%;top:0;transform:translateX(-50%)}
+#modosView .play-bar.pulse{box-shadow:0 0 0 0 rgba(212,175,55,.5)}
+#modosView .controls{display:flex;align-items:center;justify-content:center;gap:14px;margin:18px 0 6px}
+#modosView .btn{border:none;border-radius:11px;cursor:pointer;font-family:inherit;font-weight:800;letter-spacing:.02em;transition:filter .15s,background .15s,transform .1s}
+#modosView .btn:active{transform:scale(.97)}
+#modosView .btn-play{background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#1a1407;font-size:16px;padding:13px 30px;display:inline-flex;align-items:center;gap:10px}
+#modosView .btn-play:hover{filter:brightness(1.08)}
+#modosView .btn-play:disabled{opacity:.5;cursor:default}
+#modosView .btn-play.spent{background:linear-gradient(135deg,#3a2f12,#2a2210);color:var(--gold-soft);opacity:1;border:1px solid rgba(212,175,55,.35)}
+#modosView .listens{display:flex;gap:7px;align-items:center}
+#modosView .listens .dot{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--gold1);opacity:.9}
+#modosView .listens .dot.used{background:var(--gold1);opacity:.45;border-color:transparent}
+#modosView .listens .lst-free{font-size:11px;color:var(--muted);letter-spacing:.04em}
+#modosView .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--muted);font-size:13px;padding:11px 18px}
+#modosView .btn-ghost:hover{border-color:var(--muted2);color:var(--ink)}
+#modosView .play-ico{font-size:15px}
+#modosView .modes-q{margin-top:22px}
+#modosView .modes-q .q-label{text-align:center;color:var(--muted);font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+#modosView .modes-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+@media(max-width:760px){#modosView .modes-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:440px){#modosView .modes-grid{grid-template-columns:repeat(2,1fr)}}
+#modosView .mode-btn{position:relative;background:var(--panel2);border:1.5px solid var(--line);border-radius:13px;
+    padding:16px 8px;cursor:pointer;text-align:center;color:var(--ink);font-family:inherit;
+    transition:border-color .15s,background .15s,transform .1s;overflow:hidden}
+#modosView .mode-btn:hover:not(:disabled){border-color:var(--gold2);transform:translateY(-2px)}
+#modosView .mode-btn:disabled{cursor:default}
+#modosView .mode-btn .mb-name{font-size:14px;font-weight:800;letter-spacing:.02em}
+#modosView .mode-btn .mb-recipe{font-size:12px;color:var(--gold-soft);margin-top:6px;font-weight:800;letter-spacing:.03em}
+#modosView .ar{font-weight:900;font-size:1.5em;display:inline-block;transform:scaleX(1.15);line-height:0;vertical-align:-.12em;-webkit-text-stroke:.7px currentColor;text-stroke:.7px currentColor;margin:0 .02em}
+#modosView .mode-btn.ok .mb-recipe{color:#7fe0bb}
+#modosView .mode-btn.bad .mb-recipe{color:#ff9aa8}
+#modosView .mode-btn.sol .mb-recipe{color:#9bc2ff}
+#modosView .mode-btn.ok{background:var(--okbg);border-color:var(--ok);color:#bff3dd}
+#modosView .mode-btn.bad{background:var(--badbg);border-color:var(--bad);color:#ffc2cc}
+#modosView .mode-btn.sol{background:var(--solbg);border-color:var(--sol);color:#cfe2ff}
+#modosView .mode-btn.sol::after{content:"solución";position:absolute;top:5px;right:6px;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sol);font-weight:800;opacity:.8}
+#modosView .feedback{margin-top:20px;border-radius:15px;padding:18px 22px;border:1px solid var(--line);
+    background:var(--panel2);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;
+    display:none}
+#modosView .feedback.show{display:block;opacity:1;transform:translateY(0)}
+#modosView .feedback.ok{border-color:var(--ok);background:linear-gradient(180deg,rgba(34,201,138,.12),rgba(34,201,138,.04))}
+#modosView .feedback.bad{border-color:var(--sol);background:linear-gradient(180deg,rgba(91,157,255,.10),rgba(91,157,255,.03))}
+#modosView .fb-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#modosView .fb-verdict{font-size:18px;font-weight:900;letter-spacing:-.2px}
+#modosView .feedback.ok .fb-verdict{color:var(--ok)}
+#modosView .feedback.bad .fb-verdict{color:var(--sol)}
+#modosView .fb-recipe{font-size:13px;font-weight:800;letter-spacing:.04em;color:#1a1407;
+    background:linear-gradient(135deg,var(--gold1),var(--gold2));padding:4px 11px;border-radius:7px}
+#modosView .fb-body{margin-top:12px;font-size:15px;color:var(--muted);line-height:1.6}
+#modosView .fb-body .charword{font-weight:600;color:var(--muted);transition:color .12s,font-weight .12s}
+#modosView .fb-body .charword .sym{display:inline-block;font-weight:800;color:var(--gold-soft)}
+#modosView .feedback.ring .fb-body .charword{color:#fff;font-weight:900}
+#modosView .feedback.ring .fb-body .charword .sym{color:#fff}
+#modosView .fb-next{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+#modosView .fb-hint{font-size:12.5px;color:var(--muted2)}
+#modosView .fb-nextbtn{background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#1a1407;border:none;border-radius:10px;
+    font-family:inherit;font-weight:800;font-size:14px;padding:10px 20px;cursor:pointer;transition:filter .15s}
+#modosView .fb-nextbtn:hover{filter:brightness(1.08)}
+#modosView .next-flash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:80;opacity:0}
+#modosView .next-flash.show{animation:mdz_nextFlash 1.1s ease forwards}
+#modosView .next-flash .nf-inner{background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#1a1407;
+    font-size:22px;font-weight:900;letter-spacing:.02em;padding:16px 34px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+@keyframes mdz_nextFlash{0%{opacity:0;transform:scale(.8)}25%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
+#modosView .final{display:none;text-align:center;margin-top:40px}
+#modosView .final.show{display:block;animation:mdz_finalIn .5s ease}
+@keyframes mdz_finalIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+#modosView .final-score{font-size:64px;font-weight:900;color:var(--gold1);letter-spacing:-2px;line-height:1}
+#modosView .final-score .fs-sep{color:var(--muted2);margin:0 4px;font-weight:300}
+#modosView .final-lbl{color:var(--muted);font-size:15px;margin-top:4px;letter-spacing:.04em}
+#modosView .dado{margin-top:30px;display:inline-flex;flex-direction:column;align-items:center;gap:14px;
+    background:none;border:none;cursor:pointer;font-family:inherit}
+#modosView .dado-face{width:84px;height:84px;border-radius:18px;
+    background:linear-gradient(145deg,var(--gold-soft),var(--gold2));
+    box-shadow:0 14px 38px rgba(212,175,55,.35),inset 0 2px 4px rgba(255,245,210,.6),inset 0 -3px 6px rgba(120,80,5,.4);
+    display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+    padding:16px;transition:transform .2s}
+#modosView .dado:hover .dado-face{transform:rotate(-8deg) scale(1.05)}
+#modosView .dado-face .pip{width:13px;height:13px;border-radius:50%;background:#241a06;align-self:center;justify-self:center;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
+#modosView .dado-face .pip:nth-child(1){grid-area:1/1}
+#modosView .dado-face .pip:nth-child(2){grid-area:1/3}
+#modosView .dado-face .pip:nth-child(3){grid-area:2/2}
+#modosView .dado-face .pip:nth-child(4){grid-area:3/1}
+#modosView .dado-face .pip:nth-child(5){grid-area:3/3}
+#modosView .dado-text{font-size:15px;font-weight:800;letter-spacing:.04em;color:var(--gold-soft)}
+#modosView .dado:hover .dado-text{color:var(--gold1)}
+#modosView .foot{text-align:center;color:var(--muted2);font-size:12px;margin-top:40px}
+</style>
 </head>
 <body>
 <div class="wrap">
 
   <header class="top">
-    <a class="brand" id="brandHome" href="https://iagonaron.github.io/LMPROathome/" style="cursor:pointer;text-decoration:none;color:inherit">
+    <a class="brand" id="brandHome" href="#" onclick="brandNav();return false;" style="cursor:pointer;text-decoration:none;color:inherit">
       <h1><span class="a">LM</span><span class="eav-pro">PRO</span> <span class="home2">at home</span></h1>
       <span class="brand-inline">Nivel Pro · Grado Profesional</span>
     </a>
     <div class="tagline">by Iago González Alonso</div>
   </header>
 
-  <div class="pending-banner">⚠ Pendiente de implementar — de momento se muestran los ejercicios del Segundo ciclo como base</div>
+  
+
+  <a class="to-elemental" href="https://iagonaron.github.io/predictathome/">
+    <span class="te-icon">♪</span>
+    <span class="te-text">Trabaja lo fundamental en <b>PREDICT</b></span>
+    <span class="te-go">Elemental →</span>
+  </a>
 
   <!-- PORTADA: PreDict con los 3 tipos de ejercicio -->
   <div class="home-view" id="evaHome">
@@ -478,13 +646,8 @@
               <h2 class="card-title"><span class="hl">RÍT</span><span class="dim">MICO</span></h2>
               <p>Solo el ritmo. Escucha cada ejercicio y reconstrúyelo célula a célula.</p>
             </div>
-            <div class="go">Elegir nivel →</div>
+            <div class="go">Entrar →</div>
           </button>
-          <div class="mode-card flip-back">
-            <div class="lvl lvl-easy locked" data-lvl="easy"><span class="lvl-nm">PRIMER CICLO</span><span class="lvl-cur">1ºGE · 2ºGE</span></div>
-            <div class="lvl lvl-med" data-lvl="med"><span class="lvl-nm">SEGUNDO CICLO</span><span class="lvl-cur">3ºGE · 4ºGE</span></div>
-            <button class="lvl-back">← volver</button>
-          </div>
         </div>
       </div>
       <div class="flip-card" data-mode="melodica">
@@ -495,13 +658,8 @@
               <h2 class="card-title"><span class="hl">MEL</span><span class="dim">ÓDICO</span></h2>
               <p>Alturas de las notas. Escucha y coloca cada nota en el pentagrama.</p>
             </div>
-            <div class="go">Elegir nivel →</div>
+            <div class="go">Entrar →</div>
           </button>
-          <div class="mode-card flip-back">
-            <div class="lvl lvl-easy locked" data-lvl="easy"><span class="lvl-nm">PRIMER CICLO</span><span class="lvl-cur">1ºGE · 2ºGE</span></div>
-            <div class="lvl lvl-med" data-lvl="med"><span class="lvl-nm">SEGUNDO CICLO</span><span class="lvl-cur">3ºGE · 4ºGE</span></div>
-            <button class="lvl-back">← volver</button>
-          </div>
         </div>
       </div>
       <div class="flip-card" data-mode="toncom">
@@ -512,13 +670,44 @@
               <h2 class="card-title"><span class="hl">TON</span><span class="dim">COM</span></h2>
               <p>Saca la tonalidad, la armadura y el compás de cada dictado.</p>
             </div>
-            <div class="go">Elegir nivel →</div>
+            <div class="go">Entrar →</div>
           </button>
-          <div class="mode-card flip-back">
-            <div class="lvl lvl-easy locked" data-lvl="easy"><span class="lvl-nm">PRIMER CICLO</span><span class="lvl-cur">1ºGE · 2ºGE</span></div>
-            <div class="lvl lvl-med" data-lvl="med"><span class="lvl-nm">SEGUNDO CICLO</span><span class="lvl-cur">3ºGE · 4ºGE</span></div>
-            <button class="lvl-back">← volver</button>
-          </div>
+        </div>
+      </div>
+      <div class="flip-card" data-mode="armonica">
+        <div class="flip-inner">
+          <button class="mode-card m4 flip-front">
+            <div class="edge"></div>
+            <div>
+              <h2 class="card-title"><span class="hl">ARM</span><span class="dim">ÓNICA</span></h2>
+              <p>Próximamente.</p>
+            </div>
+            <div class="go">Entrar →</div>
+          </button>
+        </div>
+      </div>
+      <div class="flip-card" data-mode="modos">
+        <div class="flip-inner">
+          <button class="mode-card m5 flip-front">
+            <div class="edge"></div>
+            <div>
+              <h2 class="card-title"><span class="hl">MOD</span><span class="dim">OS</span></h2>
+              <p>Escucha el dictado y reconoce el modo griego: jónico, dórico, frigio…</p>
+            </div>
+            <div class="go">Entrar →</div>
+          </button>
+        </div>
+      </div>
+      <div class="flip-card" data-mode="cadencias">
+        <div class="flip-inner">
+          <button class="mode-card m6 flip-front">
+            <div class="edge"></div>
+            <div>
+              <h2 class="card-title"><span class="hl">CAD</span><span class="dim">ENCIAS</span></h2>
+              <p>Próximamente.</p>
+            </div>
+            <div class="go">Entrar →</div>
+          </button>
         </div>
       </div>
     </div>
@@ -562,6 +751,49 @@
     <h1 class="section-title ton"><span class="hl">TON</span><span class="dim">COM</span></h1>
     <div id="tonContainer"></div>
     <div class="global-score" id="globalScoreTon"></div>
+  </div>
+
+  <!-- ============ MODOS (embebido) ============ -->
+  <div class="ex-view" id="modosView">
+    <div class="wrap">
+<div class="hero">
+    <h2><span class="hl">MOD</span><span class="dim">OS</span> <span class="home2">at home</span> <span class="pro-tag">PRO</span></h2>
+    <p>Identifica el modo de cada melodía.</p>
+  </div>
+
+  <div class="progress" id="progress"></div>
+
+  <div class="card" id="card">
+    <div class="player">
+      <div class="play-bar"><div class="play-fill" id="playFill"></div></div>
+      <div class="play-phrases"><span class="pf1">Frase 1</span><span class="pf2">Frase 2</span></div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-play" id="playBtn"><span class="play-ico">▶</span> Escuchar</button>
+      <div class="listens" id="listensEl"></div>
+    </div>
+
+    <div class="modes-q">
+      <div class="q-label">¿Qué modo es?</div>
+      <div class="modes-grid" id="modesGrid"></div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="final" id="final">
+    <div class="final-score"><span id="finalScore">0</span><span class="fs-sep">/</span><span>5</span></div>
+    <div class="final-lbl">modos acertados</div>
+    <button class="dado" id="againBtn" aria-label="Nuevos ejercicios">
+      <span class="dado-face">
+        <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+        <span class="pip"></span><span class="pip"></span>
+      </span>
+      <span class="dado-text">Nuevos ejercicios</span>
+    </button>
+  </div>
+    </div>
+    <div class="next-flash" id="nextFlash"><div class="nf-inner">Va el siguiente ♪</div></div>
   </div>
 
   <!-- ============ EDICIÓN RÍTMICO ============ -->
@@ -3626,6 +3858,7 @@ function openMelodica(){
   loadPiano();
   document.getElementById('evaHome').classList.add('hidden');
   document.getElementById('melodicaView').classList.add('active');
+  setBrand('predict');
   startMelodica();
 }
 function startMelodica(){buildMelExos();renderMelExos();const g=document.getElementById('globalScoreMel');if(g){g.style.display='none';g.innerHTML='';}}
@@ -3634,6 +3867,7 @@ function goHomeMel(){
   stopMelAudio();
   document.getElementById('melodicaView').classList.remove('active');
   document.getElementById('evaHome').classList.remove('hidden');
+  setBrand('lm');
 }
 
 
@@ -4490,10 +4724,40 @@ function openToncom(){
   loadPiano();
   document.getElementById('evaHome').classList.add('hidden');
   document.getElementById('toncomView').classList.add('active');
+  setBrand('predict');
   startToncom();
 }
 function startToncom(){ stopTonAudio(); buildTonExos(); renderTonExos(); const g=document.getElementById('globalScoreTon'); if(g){g.style.display='none';g.innerHTML='';} }
-function goHomeTon(){ setMode(null); stopTonAudio(); document.getElementById('toncomView').classList.remove('active'); document.getElementById('evaHome').classList.remove('hidden'); }
+function goHomeTon(){ setMode(null); stopTonAudio(); document.getElementById('toncomView').classList.remove('active'); document.getElementById('evaHome').classList.remove('hidden'); setBrand('lm'); }
+function openModos(){
+  document.getElementById('evaHome').classList.add('hidden');
+  document.getElementById('modosView').classList.add('active');
+  setBrand('predict');
+  if(window.__modosOpen) window.__modosOpen();   // nuevo ejercicio al entrar
+}
+function goHomeModos(){ goPredictHome(); }
+// La marca arriba a la izquierda muestra SIEMPRE su destino:
+//  · dentro de una vista interna -> "PreDict at home PRO" (vuelve a la portada de PreDict)
+//  · en la portada -> "LMPRO at home" (va al portal principal)
+function setBrand(dest){
+  const h=document.querySelector('#brandHome h1'); if(!h) return;
+  if(dest==='predict') h.innerHTML='<span class="a">PRE</span><span class="eav-pro">DICT</span> <span class="home2">at home</span> <span class="pro-tag-mini">PRO</span>';
+  else h.innerHTML='<span class="a">LM</span><span class="eav-pro">PRO</span> <span class="home2">at home</span>';
+}
+function brandNav(){
+  const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView'];
+  const anyActive=views.some(v=>{ const el=document.getElementById(v); return el && el.classList.contains('active'); });
+  if(anyActive){ goPredictHome(); }
+  else { window.location.href='https://iagonaron.github.io/lmpro/'; }
+}
+// volver a la portada de PreDict desde cualquier vista (botón de marca arriba a la izquierda)
+function goPredictHome(){
+  if(window.__modosStop) window.__modosStop();    // corta el audio del modos si sonaba
+  try{ stopTonAudio(); }catch(e){}
+  ['ritmicaView','melodicaView','toncomView','ritEditView','modosView'].forEach(v=>{ const el=document.getElementById(v); if(el) el.classList.remove('active'); });
+  document.getElementById('evaHome').classList.remove('hidden');
+  setBrand('lm');
+}
 
 
 /* ====== NAV + TOAST ====== */
@@ -4505,6 +4769,7 @@ function openRitmica(){
   setMode('rit');
   document.getElementById('evaHome').classList.add('hidden');
   document.getElementById('ritmicaView').classList.add('active');
+  setBrand('predict');
   startRitmica();
 }
 function startRitmica(){buildExos();renderExos();const g=document.getElementById('globalScore');if(g){g.style.display='none';g.innerHTML='';}}
@@ -4512,6 +4777,7 @@ function goHome(){
   setMode(null);
   document.getElementById('ritmicaView').classList.remove('active');
   document.getElementById('evaHome').classList.remove('hidden');
+  setBrand('lm');
 }
 let toastT=null;
 function toast(msg){
@@ -4523,28 +4789,17 @@ function toast(msg){
 let pendingMode=null;
 document.querySelectorAll('.flip-card[data-mode]').forEach(card=>{
   const mode=card.dataset.mode;
-  // pulsar la cara frontal -> voltear
-  card.querySelector('.flip-front').addEventListener('click',(e)=>{ e.stopPropagation(); card.classList.add('flipped'); });
-  // volver
-  card.querySelector('.lvl-back').addEventListener('click',(e)=>{ e.stopPropagation(); card.classList.remove('flipped'); });
-  // niveles
-  card.querySelectorAll('.lvl').forEach(lvl=>{
-    lvl.addEventListener('click',(e)=>{
-      e.stopPropagation();
-      if(lvl.classList.contains('locked')){
-        const nm=lvl.querySelector('.lvl-nm').textContent;
-        const nmCap=nm.charAt(0)+nm.slice(1).toLowerCase();
-        toast(nmCap+' todavía no disponible');
-        return;
-      }
-      // nivel disponible (de momento solo Medio) -> entrar directo al apartado
-      pendingMode=mode;
-      if(mode==='ritmica')openRitmica();
-      else if(mode==='melodica')openMelodica();
-      else if(mode==='toncom')openToncom();
-      // resetear el flip para la próxima vez que se vuelva a la portada
-      setTimeout(()=>card.classList.remove('flipped'),300);
-    });
+  // En Pro NO se voltea para elegir ciclo: el ciclo ya es la versión Pro.
+  // Pulsar la tarjeta entra directo al apartado (o avisa si está "Próximamente").
+  const soon = ['armonica','cadencias'].includes(mode);
+  card.querySelector('.flip-front').addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(mode==='modos'){ openModos(); return; }
+    if(soon){ toast('Próximamente'); return; }
+    pendingMode=mode;
+    if(mode==='ritmica')openRitmica();
+    else if(mode==='melodica')openMelodica();
+    else if(mode==='toncom')openToncom();
   });
 });
 
@@ -4685,6 +4940,488 @@ window.addEventListener('resize',()=>{
   if(document.getElementById('ritmicaView').classList.contains('active'))exos.forEach((_,i)=>drawBoard(i));
   if(document.getElementById('melodicaView').classList.contains('active'))melExos.forEach((_,i)=>drawMelBoard(i));
 });
+</script>
+<script>
+/* === MODOS embebido en PreDict Pro (IIFE para aislar globales) === */
+(function(){
+
+/* ====================================================================
+   MODOS at home — motor de la app
+   Melodía libre por las notas del modo (sin esquema de acordes).
+   Tónica aleatoria (12 semitonos). Empieza y acaba en tónica.
+   Refuerzo de tónica + grado característico, con preferencia por
+   grados conjuntos y musicalidad. 5 ejercicios.
+   ==================================================================== */
+// (sin VexFlow: la app usa barra de reproducción, no partitura)
+
+// ---- definiciones de modos ----
+const MODE_STEPS = {
+  jonico:[0,2,4,5,7,9,11], dorico:[0,2,3,5,7,9,10], frigio:[0,1,3,5,7,8,10],
+  lidio:[0,2,4,6,7,9,11], mixolidio:[0,2,4,5,7,9,10], eolico:[0,2,3,5,7,8,10],
+  locrio:[0,1,3,5,6,8,10]
+};
+const ALL_MODES = ['jonico','dorico','frigio','lidio','mixolidio','eolico','locrio'];
+const MODE_LABEL = {jonico:'Jónico',dorico:'Dórico',frigio:'Frigio',lidio:'Lidio',mixolidio:'Mixolidio',eolico:'Eólico',locrio:'Locrio'};
+// grado característico (diatónico 1..7) de cada modo
+const MODE_CHAR_DEG = {jonico:7,dorico:6,frigio:2,lidio:4,mixolidio:7,eolico:6,locrio:5};
+const MODE_CHAR_DEG2 = {locrio:2}; // segundo grado característico (locrio: 2ª menor además de 5ª dism.)
+// "receta" abreviada respecto a Mayor (M) / menor (m)
+const MODE_RECIPE = {
+  jonico:'M', dorico:'m 6↑', frigio:'m 2↓', lidio:'M 4↑',
+  mixolidio:'M 7↓', eolico:'m', locrio:'m 2↓ 5↓'
+};
+// frase explicativa (referida a mayor/menor)
+const MODE_EXPLAIN = {
+  jonico:   ['Fíjate: suena igual que el ', 'modo mayor', '.'],
+  dorico:   ['Fíjate en la ', '6ª mayor', ': es un menor con la sexta alta.'],
+  frigio:   ['Fíjate en la ', '2ª menor', ': ese semitono inicial es su sello.'],
+  lidio:    ['Fíjate en la ', '4ª aumentada', ': un mayor con la cuarta alta.'],
+  mixolidio:['Fíjate en la ', '7ª menor', ': mayor con el séptimo grado rebajado.'],
+  eolico:   ['Fíjate: es el ', 'menor natural', ', sin alteraciones.'],
+  locrio:   ['Fíjate en la ', '5ª disminuida', ' (y la 2ª menor): el más inestable.']
+};
+// símbolo que se muestra/resalta al sonar la nota característica
+const MODE_CHAR_SYM = {jonico:'7↑',dorico:'6↑',frigio:'2↓',lidio:'4↑',mixolidio:'7↓',eolico:'6',locrio:'5↓'};
+// envuelve las flechas ↑↓ en un span para mostrarlas más gruesas y grandes
+function fatArrows(str){ return String(str).replace(/[↑↓]/g, m=>`<span class="ar">${m}</span>`); }
+
+const NOTE_FLATS  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const NOTE_SHARPS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+// ---- RNG ----
+let _seed = (Date.now()>>>0);
+function rnd(){ _seed=(_seed*1664525+1013904223)>>>0; return _seed/4294967296; }
+function pick(arr){ return arr[Math.floor(rnd()*arr.length)]; }
+
+// ===================================================================
+// GENERADOR de melodía libre modal
+// ===================================================================
+function buildScale(tonicMidi, mode, lo, hi){
+  const steps=MODE_STEPS[mode]; const out=[];
+  for(let oct=-2; oct<=2; oct++){
+    for(let i=0;i<7;i++){
+      const midi=tonicMidi+steps[i]+12*oct;
+      if(midi>=lo && midi<=hi) out.push({midi,deg:i+1});
+    }
+  }
+  out.sort((a,b)=>a.midi-b.midi);
+  return out;
+}
+// peso de preferencia por grado.
+// REGLA EXPLÍCITA PARA EL MOTOR:
+//  - La TÓNICA (1) ancla el modo.
+//  - El GRADO CARACTERÍSTICO da el "sabor" del modo.
+//  - El 3er GRADO (la 3ª, mayor o menor) ES OBLIGATORIO QUE TENGA PRESENCIA:
+//    es la nota que le dice al alumno si el modo suena a MAYOR o a MENOR.
+//    Sin oír la 3ª, distinguir M/m es adivinar. Por eso pesa fuerte y, además,
+//    se fuerza su aparición en cada frase (ver makePhrase / forceThird).
+function degWeight(mode, deg){
+  let w=1.0;
+  if(deg===1) w+=2.0;                         // tónica
+  if(deg===3) w+=1.5;                          // 3ª: pista M/m -> presencia garantizada
+  if(deg===5) w+=0.7;                          // 5ª: apoyo armónico
+  if(deg===MODE_CHAR_DEG[mode]) w+=1.8;        // grado característico del modo
+  if(MODE_CHAR_DEG2[mode]===deg) w+=1.2;       // 2º característico (locrio)
+  return w;
+}
+
+// ===================================================================
+// LEYES DE CONDUCCIÓN MELÓDICA (impuestas al motor):
+//  · Frase 1 abre por TÓNICA – SUPERTÓNICA – 3er GRADO (1‑2‑3).
+//  · A la nota CARACTERÍSTICA se llega SIEMPRE por grado conjunto (nunca de un salto).
+//  · Predominan los GRADOS CONJUNTOS; los saltos se penalizan fuerte.
+//  · Tras un SALTO, la nota siguiente RECUPERA por grado conjunto en dirección OPUESTA.
+//  · La 3ª (pista mayor/menor) tiene presencia garantizada en ambas frases.
+// En `scale` los índices contiguos distan un grado conjunto (2ª). |Δíndice|==1 = paso;
+// |Δíndice|>=2 = salto. Generamos por paseo sesgado y VALIDAMOS; reintentamos hasta cumplir.
+// ===================================================================
+
+// un paseo crudo (devuelve índices de `scale`), con sesgo a paso, recuperación y char por paso
+function rawPhraseIdx(scale, mode, tonicMidi, len, startIdx, forceOpen, endOnTonic, freer){
+  const charDeg = MODE_CHAR_DEG[mode];
+  const idxs=[startIdx];
+  // apertura 1‑2‑3 solo en la frase 1 (si la escala lo permite desde la tónica)
+  if(forceOpen && startIdx+2 < scale.length &&
+     scale[startIdx].deg===1 && scale[startIdx+1].deg===2 && scale[startIdx+2].deg===3){
+    idxs.push(startIdx+1, startIdx+2);
+  }
+  const target = endOnTonic ? len-1 : len;   // si cierra en tónica, reservamos el último hueco
+  while(idxs.length < target){
+    const cur=idxs[idxs.length-1];
+    const prev=idxs.length>=2 ? idxs[idxs.length-2] : null;
+    const lastMove = prev!=null ? (cur-prev) : 0;
+    const lastWasLeap = prev!=null && Math.abs(lastMove)>=2;
+    const isLastFree = endOnTonic && (idxs.length === len-2);   // próxima = última antes de la tónica final
+    const cands=[];
+    for(let d=-3; d<=3; d++){
+      if(d===0) continue;
+      const j=cur+d; if(j<0||j>=scale.length) continue;
+      const step=Math.abs(d), dir=Math.sign(d);
+      // freer (frase 2): más libertad para saltar; si no, exprimir grados conjuntos
+      let w = freer ? (step===1 ? 2.6 : step===2 ? 1.3 : 0.6)
+                    : (step===1 ? 5.0 : step===2 ? 0.7 : 0.18);
+      w *= degWeight(mode, scale[j].deg);
+      if(lastWasLeap){
+        if(freer){ if(step>=2) w*=0.5; }                 // evita encadenar saltos, pero no lo prohíbe
+        else if(step===1 && dir===-Math.sign(lastMove)) w*=6.0;
+        else if(step===1) w*=0.5;
+        else w*=0.04;
+      }
+      if(!freer && scale[j].deg===charDeg && step>1) w*=0.05;   // al característico solo por paso (frase 1)
+      if(freer && scale[j].deg===7) w*=1.6;                     // empuja la 7ª en la frase 2
+      if(isLastFree && (scale[j].deg===2 || scale[j].deg===7)) w*=3.0;  // cierre por paso
+      const dist=Math.abs(scale[j].midi-tonicMidi);
+      if(dist>10) w*=0.25;
+      cands.push({j,w});
+    }
+    const tot=cands.reduce((a,c)=>a+c.w,0);
+    let r=rnd()*tot, ch=cands[cands.length-1];
+    for(const c of cands){ r-=c.w; if(r<=0){ch=c;break;} }
+    idxs.push(ch.j);
+  }
+  if(endOnTonic){
+    const lastMidi=scale[idxs[idxs.length-1]].midi;
+    let bestT=idxs[0], bestD=1e9;
+    for(let i=0;i<scale.length;i++){ if(scale[i].deg===1){ const dd=Math.abs(scale[i].midi-lastMidi); if(dd<bestD){bestD=dd;bestT=i;} } }
+    idxs.push(bestT);
+  }
+  return idxs;
+}
+
+// nº de leyes incumplidas (0 = frase perfecta). opt: {forceOpen, requireChar, requireThird, require7th, requireEndTonic, charFrom, freer}
+function phraseViolations(idxs, scale, mode, opt){
+  const charDeg = MODE_CHAR_DEG[mode];
+  const dg = i => scale[idxs[i]].deg;
+  const charFrom = opt.charFrom!=null ? opt.charFrom : 1;
+  let v=0;
+  if(opt.forceOpen){ if(!(dg(0)===1 && dg(1)===2 && dg(2)===3)) v+=3; }   // apertura 1‑2‑3
+  else { if(dg(0)!==1) v+=2; }                                            // frase 2 empieza en tónica
+  if(opt.requireEndTonic && dg(idxs.length-1)!==1) v+=3;                  // acaba en tónica
+  if(opt.requireThird && !idxs.some(i=>scale[i].deg===3)) v+=2;           // 3ª presente
+  if(opt.require7th  && !idxs.some(i=>scale[i].deg===7)) v+=2;            // 7ª presente
+  if(!opt.freer){
+    // característico presente (desde charFrom) y SIEMPRE aproximado por grado conjunto (solo frase 1)
+    let charFound=false;
+    for(let i=1;i<idxs.length;i++){
+      if(scale[idxs[i]].deg===charDeg){
+        if(i>=charFrom) charFound=true;
+        if(Math.abs(idxs[i]-idxs[i-1])!==1) v+=2;
+      }
+    }
+    if(opt.requireChar && !charFound) v+=2;
+    // recuperación tras salto: paso opuesto dentro de las dos siguientes; sin saltos encadenados
+    for(let i=1;i<idxs.length-1;i++){
+      const a=idxs[i]-idxs[i-1];
+      if(Math.abs(a)>=2){
+        const b=idxs[i+1]-idxs[i];
+        if(Math.abs(b)>=2){ v+=1; continue; }
+        const recNow = (Math.abs(b)===1 && Math.sign(b)===-Math.sign(a));
+        let recNext=false;
+        if(i+2<idxs.length){ const c=idxs[i+2]-idxs[i+1]; recNext = (Math.abs(c)===1 && Math.sign(c)===-Math.sign(a)); }
+        if(!recNow && !recNext) v+=1;
+      }
+    }
+  } else {
+    // frase 2 (freer): solo evitamos encadenar DOS saltos grandes seguidos (4ª+), por musicalidad
+    for(let i=1;i<idxs.length-1;i++){
+      const a=Math.abs(idxs[i]-idxs[i-1]), b=Math.abs(idxs[i+1]-idxs[i]);
+      if(a>=3 && b>=3) v+=1;
+    }
+  }
+  return v;
+}
+
+// genera y valida: primera frase que cumple todas las leyes (o la menos mala tras N intentos)
+function makePhrase(scale, mode, tonicMidi, len, startIdx, opt){
+  let best=null, bestV=1e9;
+  for(let t=0;t<800;t++){
+    const idxs=rawPhraseIdx(scale, mode, tonicMidi, len, startIdx, opt.forceOpen, opt.requireEndTonic, opt.freer);
+    const v=phraseViolations(idxs, scale, mode, opt);
+    if(v===0) return idxs.map(i=>scale[i]);
+    if(v<bestV){ bestV=v; best=idxs; }
+  }
+  return best.map(i=>scale[i]);
+}
+
+function generateModal(mode){
+  const pc = Math.floor(rnd()*12);
+  const tonicMidi = 60 + pc;
+  const lo = tonicMidi-2, hi = tonicMidi+12;
+  const scale = buildScale(tonicMidi, mode, lo, hi);
+  let ti = scale.findIndex(s=>s.midi===tonicMidi);
+  if(ti<0) ti = scale.findIndex(s=>s.deg===1);
+  const charDeg = MODE_CHAR_DEG[mode];
+  const PHRASE = 7;
+  // Frase 1: abre 1‑2‑3; el característico aparece en las notas RESTANTES (>=índice 3); NO obliga a acabar en tónica.
+  const f1 = makePhrase(scale, mode, tonicMidi, PHRASE, ti,
+              {forceOpen:true, requireChar:true, requireThird:false, requireEndTonic:false, charFrom:3});
+  // Frase 2: empieza y acaba en tónica, con 3ª y 7ª presentes, y MÁS LIBERTAD (más saltos).
+  const f2 = makePhrase(scale, mode, tonicMidi, PHRASE, ti,
+              {forceOpen:false, requireChar:false, requireThird:true, require7th:true, requireEndTonic:true, freer:true});
+
+  const mk = s => ({midi:s.midi, deg:s.deg, isChar: s.deg===charDeg || MODE_CHAR_DEG2[mode]===s.deg, rest:false});
+  const REST = {rest:true};
+  // 7 notas + silencio + 7 notas + silencio
+  const notes = [...f1.map(mk), REST, ...f2.map(mk), REST];
+  return { mode, tonicMidi, pc, notes, phrase1Len: PHRASE+1 /*incluye el silencio*/ };
+}
+
+// ===================================================================
+// AUDIO (Soundfont piano)
+// ===================================================================
+let _ac=null, _piano=null, _loading=null, _useOsc=false;
+function ac(){ if(!_ac) _ac=new (window.AudioContext||window.webkitAudioContext)(); return _ac; }
+function loadPiano(){
+  if(_piano||_useOsc) return Promise.resolve(_piano);
+  if(_loading) return _loading;
+  if(typeof Soundfont==='undefined'){ _useOsc=true; return Promise.resolve(null); }
+  const attempt = Soundfont.instrument(ac(), 'acoustic_grand_piano')
+    .then(p=>{_piano=p; return p;})
+    .catch(err=>{ _useOsc=true; console.warn('Soundfont no disponible, uso oscilador', err); return null; });
+  // si tarda demasiado, caer a oscilador para no dejar el botón colgado
+  const timeout = new Promise(res=>setTimeout(()=>{ if(!_piano){ _useOsc=true; res(null); } }, 6000));
+  _loading = Promise.race([attempt, timeout]);
+  return _loading;
+}
+// reproduce una nota: piano si está; si no, oscilador suave
+function playMidi(midi, when, durSec, gain){
+  if(_piano){ _piano.play(midiToName(midi), when, {duration:durSec, gain:gain||2.2}); return; }
+  // fallback oscilador
+  const a=ac(); const o=a.createOscillator(); const g=a.createGain();
+  const freq=440*Math.pow(2,(midi-69)/12);
+  o.type='triangle'; o.frequency.value=freq;
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(0.18, when+0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, when+durSec);
+  o.connect(g).connect(a.destination); o.start(when); o.stop(when+durSec+0.05);
+  _oscNodes.push(o);
+}
+function midiToName(midi){ return NOTE_SHARPS[((midi%12)+12)%12] + (Math.floor(midi/12)-1); }
+
+let _playToken=0;          // para cancelar reproducciones
+let _isPlaying=false;
+let _oscNodes=[];          // osciladores agendados (para poder cortarlos)
+
+// Reproduce la secuencia. Soporta silencios (rest:true), rango [from,to) y progreso.
+// onNote(i,nt) al inicio de cada nota; onProgress(0..1); onEnd() al acabar.
+async function playSequence(notes, opts){
+  opts=opts||{};
+  const tempo = opts.tempo || 92;
+  const beat = 60/tempo;
+  const dur = beat*0.92;
+  const from = opts.from||0;
+  const to = (opts.to!=null)?opts.to:notes.length;
+  await loadPiano();
+  if(ac().state==='suspended') await ac().resume();
+  const token = ++_playToken;
+  _isPlaying=true;
+  _oscNodes=[];
+  const count = to-from;
+  const t0 = ac().currentTime + 0.15;
+  for(let k=0;k<count;k++){
+    const i=from+k; const nt=notes[i];
+    const when=t0+k*beat;
+    if(!nt.rest){ playMidi(nt.midi, when, dur, 2.2); }
+    const ms=(when-ac().currentTime)*1000;
+    setTimeout(()=>{
+      if(token!==_playToken) return;
+      if(opts.onNote) opts.onNote(i, nt);
+      if(opts.onProgress) opts.onProgress((k+1)/count);
+    }, Math.max(0,ms));
+  }
+  const totalMs=(count*beat+0.2)*1000;
+  return new Promise(res=>{
+    setTimeout(()=>{ if(token===_playToken){ _isPlaying=false; if(opts.onEnd)opts.onEnd(); } res(); }, totalMs);
+  });
+}
+function stopAudio(){
+  _playToken++; _isPlaying=false;
+  try{ if(_piano && _piano.stop) _piano.stop(); }catch(e){}     // corta notas soundfont ya agendadas
+  if(_oscNodes.length){ _oscNodes.forEach(o=>{ try{o.stop();}catch(e){} try{o.disconnect();}catch(e){} }); _oscNodes=[]; }
+}
+
+// ===================================================================
+// LÓGICA DE JUEGO
+// ===================================================================
+const TOTAL=5;
+const MAX_LISTENS = 2;   // máximo de escuchas de la secuencia ANTES de responder
+let state={ idx:0, results:[], current:null, answered:false, plays:0 };
+
+const gridEl=document.getElementById('modesGrid');
+const fbEl=document.getElementById('feedback');
+const playBtn=document.getElementById('playBtn');
+const progEl=document.getElementById('progress');
+const playFill=document.getElementById('playFill');
+const listensEl=document.getElementById('listensEl');
+function refreshListens(){
+  if(!listensEl) return;
+  listensEl.innerHTML = state.answered ? '<span class="lst-free">libre</span>'
+    : Array.from({length:MAX_LISTENS},(_,d)=>'<span class="dot '+(state.plays>d?'used':'')+'"></span>').join('');
+}
+
+function buildProgress(){
+  progEl.innerHTML='';
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement('div'); d.className='dot'+(i<state.idx?' done':i===state.idx?' cur':'');
+    if(state.results[i]==='ok') d.className='dot ok';
+    if(state.results[i]==='bad') d.className='dot bad';
+    progEl.appendChild(d);
+  }
+}
+function buildGrid(){
+  gridEl.innerHTML='';
+  ALL_MODES.forEach(mode=>{
+    const b=document.createElement('button');
+    b.className='mode-btn'; b.dataset.mode=mode;
+    b.innerHTML=`<div class="mb-name">${MODE_LABEL[mode].toUpperCase()}</div><div class="mb-recipe">${fatArrows(MODE_RECIPE[mode])}</div>`;
+    b.addEventListener('click',()=>answer(mode,b));
+    gridEl.appendChild(b);
+  });
+}
+let _audioUnlocked=false;
+function newExercise(){
+  state.answered=false;
+  state.plays=0;
+  state.current=generateModal(pick(ALL_MODES));
+  [...gridEl.children].forEach(b=>{ b.className='mode-btn'; b.disabled=false; });
+  fbEl.className='feedback'; fbEl.innerHTML='';
+  playFill.style.width='0';
+  playBtn.classList.remove('spent');
+  playBtn.disabled=false; playBtn.innerHTML='<span class="play-ico">▶</span> Escuchar';
+  refreshListens();
+  buildProgress();
+  // autoplay solo si el audio ya está desbloqueado (tras el primer clic del usuario)
+  if(_audioUnlocked) setTimeout(()=>doPlay(), 350);
+}
+
+async function doPlay(){
+  if(_isPlaying) stopAudio();
+  _audioUnlocked=true;
+  const D=state.current;
+  // LÍMITE DE ESCUCHAS: antes de responder, como máximo 2 reproducciones de la
+  // secuencia (más lo haría demasiado fácil). Tras corregir se puede repetir libremente.
+  if(!state.answered){
+    if(state.plays>=MAX_LISTENS) return;   // guardia: ya gastó sus escuchas
+    state.plays++; refreshListens();
+  }
+  const onlyFirst = state.answered;     // al corregir, solo la 1ª frase
+  const from=0, to= onlyFirst ? D.phrase1Len : D.notes.length;
+  playBtn.disabled=true; playBtn.innerHTML='<span class="play-ico">♪</span> Sonando…';
+  playFill.style.width='0';
+  try{
+    await playSequence(D.notes, {
+      tempo:92, from, to,
+      onProgress:(p)=>{ playFill.style.width=(p*100)+'%'; },
+      onNote:(i,nt)=>{
+        if(nt.isChar && fbEl.classList.contains('show')){
+          fbEl.classList.add('ring');
+          setTimeout(()=>fbEl.classList.remove('ring'), 380);
+        }
+      },
+      onEnd:()=>{
+        if(!state.answered && state.plays>=MAX_LISTENS){
+          playBtn.disabled=true; playBtn.classList.add('spent');
+          playBtn.innerHTML='<span class="play-ico">▶</span> Escuchar';
+        } else {
+          playBtn.classList.remove('spent');
+          playBtn.disabled=false;
+          playBtn.innerHTML='<span class="play-ico">▶</span> Escuchar';
+        }
+        refreshListens();
+        if(state.answered && state.results[state.idx]==='ok'){ advanceNext(); }
+      }
+    });
+  }catch(e){
+    _isPlaying=false;
+    if(!state.answered && state.plays>0) state.plays--;  // no contar una escucha fallida
+    playBtn.classList.remove('spent');
+    playBtn.disabled=false; playBtn.innerHTML='<span class="play-ico">▶</span> Reintentar';
+    refreshListens();
+    console.error('Audio MODOS:', e);
+  }
+}
+
+function recipeHTML(mode){ return fatArrows(MODE_RECIPE[mode]); }
+function explainHTML(mode){
+  const sym=fatArrows(MODE_CHAR_SYM[mode]);
+  return `Mira cómo suena la <span class="charword"><span class="sym">${sym}</span></span>`;
+}
+
+function answer(mode, btn){
+  if(state.answered) return;
+  state.answered=true;
+  const correct = state.current.mode;
+  const isOk = (mode===correct);
+  state.results[state.idx] = isOk?'ok':'bad';
+  // marcar botones
+  [...gridEl.children].forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.mode===mode) b.classList.add(isOk?'ok':'bad');
+    if(!isOk && b.dataset.mode===correct) b.classList.add('sol');
+  });
+  // cartel
+  fbEl.className='feedback show '+(isOk?'ok':'bad');
+  const verdict = isOk?'¡Correcto!':'Casi…';
+  fbEl.innerHTML = `
+    <div class="fb-head">
+      <span class="fb-verdict">${verdict}</span>
+      <span class="fb-recipe">${MODE_LABEL[correct]} = ${recipeHTML(correct)}</span>
+    </div>
+    <div class="fb-body">${explainHTML(correct)}</div>
+    <div class="fb-next">
+      <span class="fb-hint">${isOk?'Suena la 1ª frase… al terminar, va el siguiente.':'Suena la 1ª frase. Fíjate bien cómo es el modo.'}</span>
+      <button class="fb-nextbtn" id="manualNext">Siguiente →</button>
+    </div>`;
+  buildProgress();
+  refreshListens();
+  const mn=document.getElementById('manualNext');
+  if(mn) mn.addEventListener('click', advanceNext);
+  // si aún sonaban las dos frases, se cortan en seco y suena solo la comprobación
+  stopAudio();
+  setTimeout(()=>doPlay(), 250);
+}
+
+let _advancing=false;
+function advanceNext(){
+  if(_advancing) return; _advancing=true;
+  stopAudio();
+  const flash=document.getElementById('nextFlash');
+  state.idx++;
+  if(state.idx>=TOTAL){
+    _advancing=false;
+    return showFinal();
+  }
+  flash.classList.add('show');
+  setTimeout(()=>{ flash.classList.remove('show'); _advancing=false; newExercise(); }, 850);
+}
+
+function showFinal(){
+  document.getElementById('card').style.display='none';
+  fbEl.classList.remove('show');
+  const ok=state.results.filter(r=>r==='ok').length;
+  document.getElementById('finalScore').textContent=ok;
+  document.getElementById('final').classList.add('show');
+  buildProgress();
+}
+
+// ---- eventos ----
+playBtn.addEventListener('click', doPlay);
+document.getElementById('againBtn').addEventListener('click', ()=>{
+  state={idx:0,results:[],current:null,answered:false,plays:0};
+  document.getElementById('final').classList.remove('show');
+  document.getElementById('card').style.display='';
+  newExercise();
+});
+
+// ---- init ----
+buildGrid();
+buildProgress();
+newExercise();
+
+
+;window.__modosOpen=function(){try{newExercise();}catch(e){}};
+window.__modosStop=function(){try{stopAudio();}catch(e){}};
+})();
 </script>
 </body>
 </html>
