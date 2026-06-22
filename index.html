@@ -269,7 +269,7 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* panel de resultado global */
-  .global-score{display:none;margin:10px 0 30px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(135deg,#10224f,#0c1530);box-shadow:var(--shadow);overflow:hidden}
+  .global-score{display:none;margin:10px 0 30px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(135deg,#2b2009,#1a1305);box-shadow:var(--shadow);overflow:hidden}
   .gs-inner{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
   .gs-left,.gs-right{flex:1;min-width:200px;padding:22px 26px;display:flex;flex-direction:column;gap:4px}
   .gs-sep{width:1px;background:var(--line)}
@@ -610,6 +610,99 @@
 #modosView .dado:hover .dado-text{color:var(--gold1)}
 #modosView .foot{text-align:center;color:var(--muted2);font-size:12px;margin-top:40px}
 </style>
+<style id="arm-pro">
+  :root{ --arm:#d4af37; --arm-soft:rgba(212,175,55,.16); --arm2:#b8860b; }
+  .mode-card.m4 .edge{background:linear-gradient(var(--arm),var(--arm2))}
+  #armonicaView .now-tag{color:var(--arm);background:var(--arm-soft)}
+  #armonicaView .dice-btn:hover{border-color:var(--arm);background:var(--arm-soft)}
+  #armonicaView .section-title .dim{color:var(--muted)}
+  /* toggle de 7ª de dominante (a nivel de toda la página) */
+  .arm-seventh{display:flex;align-items:center;gap:13px;margin:2px 0 22px;padding:13px 18px;border:1px solid var(--line);
+    border-radius:14px;background:linear-gradient(180deg,var(--panel2),var(--panel));max-width:560px}
+  .arm-seventh .as-txt{flex:1}
+  .arm-seventh .as-txt b{font-weight:800;color:var(--ink);font-size:15px}
+  .arm-seventh .as-txt span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+  .arm-switch{position:relative;width:52px;height:30px;flex:0 0 52px;border-radius:999px;border:1px solid var(--line);
+    background:rgba(255,255,255,.05);cursor:pointer;transition:background .18s,border-color .18s}
+  .arm-switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+    background:var(--muted);transition:transform .18s,background .18s}
+  .arm-switch.on{background:var(--arm-soft);border-color:var(--arm)}
+  .arm-switch.on::after{transform:translateX(22px);background:var(--arm)}
+  /* selector de los dos ejercicios */
+  .arm-pick{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:10px}
+  .arm-pick-card{text-align:left;border:1px solid var(--line);border-radius:18px;padding:24px 22px;cursor:pointer;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));position:relative;overflow:hidden;
+    transition:transform .15s,border-color .15s,box-shadow .15s;color:inherit;font-family:inherit}
+  .arm-pick-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(var(--arm),var(--arm2))}
+  .arm-pick-card:hover{transform:translateY(-4px);border-color:var(--arm);box-shadow:0 22px 50px rgba(60,30,120,.4)}
+  .arm-pick-card .apc-k{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2)}
+  .arm-pick-card h3{font-size:26px;margin:12px 0 10px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+  .arm-pick-card p{font-size:14px;line-height:1.5;color:var(--muted);margin:0}
+  .arm-pick-card .apc-go{margin-top:20px;font-size:13px;font-weight:800;color:var(--arm);letter-spacing:.02em}
+  /* zona de ejercicio en marcha */
+  .arm-run-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .arm-run-head h2{font-size:20px;margin:0;font-weight:800;letter-spacing:-.2px}
+  .arm-subback{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--muted);background:rgba(233,237,255,.06);
+    border:1px solid var(--line);border-radius:8px;padding:7px 13px;cursor:pointer;font-family:inherit}
+  .arm-subback:hover{color:var(--ink);border-color:var(--arm)}
+  .arm-staff-wrap{background:var(--paper);border-radius:16px;padding:6px 4px;margin-bottom:18px;overflow-x:auto}
+  .arm-panels{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .arm-panel{border:1px solid var(--line);border-radius:14px;padding:13px 12px;background:linear-gradient(180deg,var(--panel2),var(--panel));
+    display:flex;flex-direction:column;gap:8px;transition:border-color .18s,box-shadow .18s}
+  .arm-panel.ok{border-color:var(--green);box-shadow:0 0 0 1px var(--green-soft)}
+  .arm-panel.bad{border-color:var(--red);box-shadow:0 0 0 1px var(--red-soft)}
+  .arm-panel .ap-num{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2)}
+  .arm-play{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:11px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:14px;padding:11px 10px;color:#1a1030;
+    background:linear-gradient(135deg,var(--arm),var(--arm2));transition:filter .15s,transform .1s}
+  .arm-play:hover{filter:brightness(1.08)} .arm-play:active{transform:scale(.97)}
+  .arm-play.playing{filter:brightness(.92)}
+  .arm-opts{display:flex;flex-direction:column;gap:7px}
+  .arm-opt{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);border-radius:9px;
+    padding:9px 11px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-align:left;
+    transition:background .14s,border-color .14s,color .14s}
+  .arm-opt:hover:not(:disabled){border-color:var(--arm);background:var(--arm-soft)}
+  .arm-opt:disabled{cursor:default}
+  .arm-opt.chosen-ok{border-color:var(--green);background:var(--green-soft);color:#bff3dd}
+  .arm-opt.chosen-bad{border-color:var(--red);background:var(--red-soft);color:#ffc8d0}
+  .arm-opt.reveal-ok{border-color:var(--green);color:#bff3dd}
+  .arm-verdict{font-size:12px;font-weight:800;min-height:1em}
+  .arm-verdict.ok{color:var(--green)} .arm-verdict.bad{color:var(--red)}
+  /* dos ejercicios apilados */
+  .arm-section{margin-bottom:30px}
+  .arm-sec-title{font-size:20px;font-weight:800;margin:0 0 14px;letter-spacing:-.2px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;color:var(--ink)}
+  .arm-sec-title .ast-k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--arm);background:var(--arm-soft);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-weight:800}
+  /* opciones tarjeta A en rejilla 2×2 + botón ancho de 7ª */
+  .arm-fams{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .arm-fam{display:flex;flex-direction:column;gap:5px}
+  .arm-grouplab{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);font-weight:800;margin:2px 0 1px}
+  .tipo-btn{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;border:1px solid var(--line);border-radius:8px;background:rgba(233,237,255,.03);color:var(--ink);font-family:inherit;font-size:11.5px;font-weight:600;line-height:1.12;padding:10px 9px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s,color .14s}
+  .tipo-btn .tn{flex:1}
+  .tipo-btn .ab{color:var(--muted2);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tipo-btn .ab.ab-circ{font-size:14px;line-height:1}
+  .tipo-btn:hover:not(:disabled){border-color:var(--arm);background:var(--arm-soft)}
+  .arm-opt.tipo-btn.chosen-ok .ab,.arm-opt.tipo-btn.reveal-ok .ab,.arm-opt.tipo-btn.chosen-bad .ab{color:inherit}
+  .arm-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .arm-opt.cell{text-align:center;padding:9px 6px;line-height:1.05}
+  .arm-opt .ao-ab{display:block;font-weight:900;font-size:15px}
+  .arm-opt .ao-full{display:block;font-size:9.5px;color:var(--muted);font-weight:600;margin-top:3px;letter-spacing:.01em}
+  .arm-opt.cell.chosen-ok .ao-full,.arm-opt.cell.reveal-ok .ao-full{color:#9be3c4}
+  .arm-opt.cell.chosen-bad .ao-full{color:#ffaeb8}
+  .arm-opt-wide{width:100%;text-align:center;margin-top:7px;font-weight:900}
+  .arm-play.spent{background:linear-gradient(135deg,#2a2440,#201b34);color:var(--arm);opacity:1;cursor:default}
+  /* play redondo + bolitas de escuchas (mismo patrón que rítmico/melódico) */
+  .arm-playrow{display:flex;align-items:center;gap:12px;justify-content:center;margin:0 0 2px;min-height:46px}
+  #armonicaView .play-btn{width:46px;height:46px}
+  #armonicaView .play-btn svg{width:22px;height:22px}
+  #armonicaView .play-btn:hover{background:var(--arm)}
+  #armonicaView .play-btn.playing{background:var(--arm);--pulse-color:rgba(212,175,55,.45)}
+  #armonicaView .listens .dot{border-color:var(--arm)}
+  #armonicaView .listens .dot.used{background:var(--arm);border-color:transparent}
+  @media (max-width:760px){
+    .arm-panels{grid-template-columns:repeat(2,1fr)}
+  }
+
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -679,8 +772,8 @@
           <button class="mode-card m4 flip-front">
             <div class="edge"></div>
             <div>
-              <h2 class="card-title"><span class="hl">ARM</span><span class="dim">ÓNICA</span></h2>
-              <p>Próximamente.</p>
+              <h2 class="card-title"><span class="hl">ARM</span><span class="dim">ÓNICO</span></h2>
+              <p>Tipos de acorde y disposición de sus notas. Dos ejercicios.</p>
             </div>
             <div class="go">Entrar →</div>
           </button>
@@ -794,6 +887,26 @@
   </div>
     </div>
     <div class="next-flash" id="nextFlash"><div class="nf-inner">Va el siguiente ♪</div></div>
+  </div>
+
+    <!-- ============ ARMÓNICO (Pro) ============ -->
+  <div class="ex-view" id="armonicaView">
+    <div class="backbar">
+      <div class="gen" style="margin-left:auto"><button class="dice-btn" id="regenBtnArm" title="Nuevos ejercicios"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/><circle cx="16" cy="8" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8" cy="16" r="1.6" fill="currentColor"/><circle cx="16" cy="16" r="1.6" fill="currentColor"/></svg></button><span class="dice-label">Nuevos ejercicios</span></div>
+    </div>
+    <h1 class="section-title"><span class="hl">ARM</span><span class="dim">ÓNICO</span></h1>
+    <div class="arm-section" id="armSecA">
+      <h2 class="arm-sec-title"><span class="ast-k">Ejercicio A</span> Tipo de acorde</h2>
+      <div class="arm-staff-wrap"><div id="armStaff_A"></div></div>
+      <div class="arm-panels" id="armPanels_A"></div>
+      <div class="global-score" id="armScore_A"></div>
+    </div>
+    <div class="arm-section" id="armSecB">
+      <h2 class="arm-sec-title"><span class="ast-k">Ejercicio B</span> Inversión: ¿qué nota está arriba?</h2>
+      <div class="arm-staff-wrap"><div id="armStaff_B"></div></div>
+      <div class="arm-panels" id="armPanels_B"></div>
+      <div class="global-score" id="armScore_B"></div>
+    </div>
   </div>
 
   <!-- ============ EDICIÓN RÍTMICO ============ -->
@@ -4745,7 +4858,7 @@ function setBrand(dest){
   else h.innerHTML='<span class="a">LM</span><span class="eav-pro">PRO</span> <span class="home2">at home</span>';
 }
 function brandNav(){
-  const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView'];
+  const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView'];
   const anyActive=views.some(v=>{ const el=document.getElementById(v); return el && el.classList.contains('active'); });
   if(anyActive){ goPredictHome(); }
   else { window.location.href='https://iagonaron.github.io/lmpro/'; }
@@ -4754,7 +4867,8 @@ function brandNav(){
 function goPredictHome(){
   if(window.__modosStop) window.__modosStop();    // corta el audio del modos si sonaba
   try{ stopTonAudio(); }catch(e){}
-  ['ritmicaView','melodicaView','toncomView','ritEditView','modosView'].forEach(v=>{ const el=document.getElementById(v); if(el) el.classList.remove('active'); });
+  try{armStopAudio();}catch(e){}
+  ['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView'].forEach(v=>{ const el=document.getElementById(v); if(el) el.classList.remove('active'); });
   document.getElementById('evaHome').classList.remove('hidden');
   setBrand('lm');
 }
@@ -4791,10 +4905,11 @@ document.querySelectorAll('.flip-card[data-mode]').forEach(card=>{
   const mode=card.dataset.mode;
   // En Pro NO se voltea para elegir ciclo: el ciclo ya es la versión Pro.
   // Pulsar la tarjeta entra directo al apartado (o avisa si está "Próximamente").
-  const soon = ['armonica','cadencias'].includes(mode);
+  const soon = ['cadencias'].includes(mode);
   card.querySelector('.flip-front').addEventListener('click',(e)=>{
     e.stopPropagation();
     if(mode==='modos'){ openModos(); return; }
+    if(mode==='armonica'){ openArmonica(); return; }
     if(soon){ toast('Próximamente'); return; }
     pendingMode=mode;
     if(mode==='ritmica')openRitmica();
@@ -5422,6 +5537,299 @@ newExercise();
 ;window.__modosOpen=function(){try{newExercise();}catch(e){}};
 window.__modosStop=function(){try{stopAudio();}catch(e){}};
 })();
+</script>
+<script>
+/* === ARMÓNICO Pro === */
+/* ===================================================================
+   ARMÓNICO (PreDict PRO) — tipo de acorde e inversión, de oído
+   Tríadas: Mayor, menor, disminuido, aumentado, cuarta suspendida
+   Cuatríadas: 7ª dominante, menor 7ª, Mayor 7ª, disminuido 7ª, semidisminuido
+   Sin selector de 7ª (salen todos). Cada ejercicio: 2 tríadas + 2 cuatríadas.
+   El ejercicio B (inversión) excluye la cuarta suspendida.
+   =================================================================== */
+const ARM = { A:{ex:[]}, B:{ex:[]}, _hl:null, _playTok:0, _timers:[] };
+const ARM_LETTERS=['C','D','E','F','G','A','B'];
+const ARM_LPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const ARM_QUAL={
+  mayor:{iv:[0,4,7],    label:'Mayor'},
+  menor:{iv:[0,3,7],    label:'menor'},
+  dis:  {iv:[0,3,6],    label:'disminuido'},
+  aum:  {iv:[0,4,8],    label:'aumentado'},
+  sus4: {iv:[0,5,7],    label:'cuarta suspendida', ls:[0,3,4]},
+  dom7: {iv:[0,4,7,10], label:'7ª de dominante'},
+  m7:   {iv:[0,3,7,10], label:'menor 7ª'},
+  maj7: {iv:[0,4,7,11], label:'Mayor 7ª'},
+  dim7: {iv:[0,3,6,9],  label:'disminuido 7ª'},
+  semidim:{iv:[0,3,6,10],label:'semidisminuido'},
+};
+// símbolo (grande) + nombre (pequeño) para los botones del ejercicio A
+const ARM_SYM={
+  mayor:{n:"Mayor",a:""},
+  menor:{n:"menor",a:"-"},
+  dis:{n:"Disminuido",a:"5̶"},
+  aum:{n:"Aumentado",a:"+"},
+  sus4:{n:"Cuarta susp.",a:"sus4"},
+  dom7:{n:"7ª dominante",a:"7D"},
+  m7:{n:"menor 7ª",a:"-7"},
+  maj7:{n:"Mayor 7ª",a:"△"},
+  dim7:{n:"Dism. 7ª",a:"7̶"},
+  semidim:{n:"Semidim.",a:"∅"},
+};
+const ARM_TRI=['mayor','menor','dis','aum','sus4'];
+const ARM_SEV=['dom7','m7','maj7','dim7','semidim'];
+// raíces con cifrado limpio (validadas: alteración simple) por cualidad
+const ARM_ROOTS={
+  mayor:[['C',0],['D',0],['E',0],['F',0],['G',0],['A',0],['B',-1],['E',-1]],
+  menor:[['A',0],['E',0],['D',0],['G',0],['C',0],['B',0],['F',0]],
+  dis:  [['B',0],['C',0],['D',0],['E',0],['A',0],['G',0],['F',1]],
+  aum:  [['C',0],['F',0],['G',0],['D',0],['E',-1],['A',-1],['A',0]],
+  sus4: [['C',0],['F',0],['G',0],['D',0],['E',0],['A',0]],
+  dom7: [['G',0],['C',0],['D',0],['A',0],['E',0],['F',0],['B',-1]],
+  m7:   [['A',0],['E',0],['D',0],['G',0],['C',0],['B',0],['F',0]],
+  maj7: [['C',0],['G',0],['F',0],['D',0],['A',0],['E',0],['B',-1]],
+  dim7: [['B',0],['D',0],['E',0],['G',0],['A',0],['C',1],['F',1]],
+  semidim:[['B',0],['C',0],['D',0],['E',0],['G',0],['A',0],['F',1]],
+};
+const ARM_MEMBER=['tonica','tercera','quinta','septima'];
+const ARM_MEMBER_LBL={tonica:'Tónica',tercera:'Tercera',quinta:'Quinta',septima:'Séptima'};
+const ARM_NOTE_INK='#1a1a1a', ARM_NOTE_HL='#c8941a';
+
+function armPick(a){return a[Math.floor(Math.random()*a.length)];}
+function armLS(q){ return (ARM_QUAL[q] && ARM_QUAL[q].ls) || [0,2,4,6]; }
+function armSpell(rootLetter, member, midi, ls){
+  ls=ls||[0,2,4,6];
+  const li=(ARM_LETTERS.indexOf(rootLetter)+ls[member])%7;
+  const letter=ARM_LETTERS[li];
+  const naturalPc=ARM_LPC[letter];
+  const targetPc=((midi%12)+12)%12;
+  let acc=targetPc-naturalPc; while(acc>6)acc-=12; while(acc<-6)acc+=12;
+  const octave=Math.round((midi-naturalPc)/12)-1;
+  return {letter,acc,octave,midi,member};
+}
+function armAccSym(a){return a===1?'#':a===-1?'b':a===2?'##':a===-2?'bb':'';}
+function armVexKey(n){return n.letter.toLowerCase()+armAccSym(n.acc)+'/'+n.octave;}
+function armFit(notes){
+  let shift=0,g=0;
+  const mn=()=>Math.min(...notes.map(n=>n.midi))+shift, mx=()=>Math.max(...notes.map(n=>n.midi))+shift;
+  while(mn()<58 && g++<6) shift+=12;
+  while(mx()>81 && g++<14) shift-=12;
+  return notes.map(n=>({...n,midi:n.midi+shift}));
+}
+function armReSpell(rl,notes,ls){ notes.forEach(n=>{const s=armSpell(rl,n.member,n.midi,ls);n.letter=s.letter;n.acc=s.acc;n.octave=s.octave;}); }
+function armNameES(n){ const L={C:'Do',D:'Re',E:'Mi',F:'Fa',G:'Sol',A:'La',B:'Si'}; return L[n.letter]+(n.acc===1?'♯':n.acc===-1?'♭':n.acc===2?'♯♯':n.acc===-2?'♭♭':''); }
+
+function armGenCualidad(q){
+  const [rl,ra]=armPick(ARM_ROOTS[q]); const rootMidi=60+ARM_LPC[rl]+ra; const iv=ARM_QUAL[q].iv; const ls=armLS(q);
+  let notes=iv.map((s,k)=>armSpell(rl,k,rootMidi+s,ls));
+  notes=armFit(notes); armReSpell(rl,notes,ls); notes.sort((a,b)=>a.midi-b.midi);
+  return {type:'A', quality:q, rootLetter:rl, notes};
+}
+function armGenInversion(q){
+  const iv=ARM_QUAL[q].iv; const nMem=iv.length; const ls=armLS(q);
+  const top=Math.floor(Math.random()*nMem);
+  const [rl,ra]=armPick(ARM_ROOTS[q]); const rootMidi=60+ARM_LPC[rl]+ra;
+  let notes=iv.map((s,k)=>{ let midi=rootMidi+s; if(k>top) midi-=12; return armSpell(rl,k,midi,ls); });
+  notes=armFit(notes); armReSpell(rl,notes,ls); notes.sort((a,b)=>a.midi-b.midi);
+  const topN=notes[notes.length-1];
+  return {type:'B', quality:q, rootLetter:rl, notes, topMember:ARM_MEMBER[topN.member]};
+}
+function armBuildSet(section){
+  const gen = section==='A' ? armGenCualidad : armGenInversion;
+  const triPool = section==='A' ? ARM_TRI : ARM_TRI.filter(q=>q!=='sus4');  // B excluye cuarta suspendida
+  const sevPool = ARM_SEV;
+  const pk=a=>a[Math.floor(Math.random()*a.length)];
+  let quals;
+  for(let t=0;t<60;t++){ quals=[pk(triPool),pk(triPool),pk(sevPool),pk(sevPool)]; if(quals[0]!==quals[1] && quals[2]!==quals[3]) break; }
+  for(let i=quals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[quals[i],quals[j]]=[quals[j],quals[i]];}  // mezclar orden
+  const set=quals.map(q=>gen(q));
+  set.forEach(c=>{c.answered=false;c.chosen=null;c.correct=false;c.plays=0;});
+  ARM[section].ex=set;
+}
+
+/* ---- audio (motor compartido con PreDict) ---- */
+let armDestNode=null;
+function armDest(){ const ctx=getCtx(); if(!armDestNode){armDestNode=ctx.createGain();armDestNode.gain.value=1;armDestNode.connect(ctx.destination);} return {ctx,dest:armDestNode}; }
+function armStopAudio(){
+  ARM._playTok++; (ARM._timers||[]).forEach(id=>clearTimeout(id)); ARM._timers=[];
+  try{ stopSampler(); }catch(e){}
+  document.querySelectorAll('#armonicaView .play-btn.playing').forEach(b=>b.classList.remove('playing'));
+  if(ARM._hl){ const s=ARM._hl.section; ARM._hl=null; armDraw(s); }
+}
+function armPlayMeasure(section, i){
+  const ch=ARM[section].ex[i]; if(!ch) return;
+  const btn=document.querySelector('#armPanels_'+section+' .play-btn[data-m="'+i+'"]');
+  if(!ch.answered){ if(ch.plays>=2) return; ch.plays++; armRefreshPlay(section,i); }
+  armStopAudio();
+  const {ctx,dest}=armDest();
+  if(ctx.state==='suspended'){ try{ctx.resume();}catch(e){} }
+  loadPiano();
+  const midis=ch.notes.map(n=>n.midi);
+  const t0=ctx.currentTime+0.09;
+  const blockDur=1.0, gap=0.16, step=0.42, arpDur=0.5;
+  midis.forEach(m=>pianoPlay(ctx,dest,t0,m,blockDur,0.85));
+  const arp=t0+blockDur+gap;
+  midis.forEach((m,k)=>pianoPlay(ctx,dest,arp+k*step,m,arpDur,0.9));
+  const tok=++ARM._playTok; ARM._timers=[];
+  const at=(when,fn)=>{ const ms=(when-getCtx().currentTime)*1000; ARM._timers.push(setTimeout(()=>{ if(ARM._playTok===tok) fn(); },Math.max(0,ms))); };
+  if(btn) btn.classList.add('playing');
+  if(ch.answered){
+    at(t0, ()=>armSetHL(section,i,{all:true}));
+    midis.forEach((m,k)=>at(arp+k*step, ()=>armSetHL(section,i,{idx:k})));
+    at(arp+midis.length*step, ()=>armSetHL(section,i,null));
+  }
+  at(arp+midis.length*step+0.12, ()=>{ if(btn)btn.classList.remove('playing'); armRefreshPlay(section,i); });
+}
+function armRefreshPlay(section,i){
+  const ch=ARM[section].ex[i];
+  const wrap=document.getElementById('armListens_'+section+'_'+i);
+  if(wrap) wrap.innerHTML = ch.answered ? ''
+    : Array.from({length:2},(_,d)=>'<span class="dot '+(ch.plays>d?'used':'')+'"></span>').join('');
+  const btn=document.querySelector('#armPanels_'+section+' .play-btn[data-m="'+i+'"]');
+  if(btn) btn.disabled = (ch.plays>=2 && !ch.answered);
+}
+function armSetHL(section,i,hl){ ARM._hl = hl?{section,m:i,hl}:null; armDraw(section); }
+
+/* ---- pentagrama (4 compases) ---- */
+function armDraw(section){
+  const host=document.getElementById('armStaff_'+section); if(!host) return;
+  const _sx=window.scrollX, _sy=window.scrollY;   // evita saltos de scroll al redibujar
+  const ex=ARM[section].ex;
+  host.innerHTML='';
+  const VF=Vex.Flow;
+  const W=Math.max(680, host.clientWidth-2), H=150, y=44;
+  const renderer=new VF.Renderer(host,VF.Renderer.Backends.SVG);
+  renderer.resize(W,H);
+  const ctx=renderer.getContext();
+  const x0=6, totalW=W-12, wm=totalW/4;
+  const svgAddText=(svg,cx,cy,txt,opts)=>{ if(!svg)return; const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx); t.setAttribute('y',cy); t.setAttribute('text-anchor','middle');
+    for(const k in (opts||{})) t.setAttribute(k,opts[k]); t.textContent=txt; svg.appendChild(t); };
+  for(let i=0;i<4;i++){
+    const x=x0+i*wm;
+    const stave=new VF.Stave(x,y,wm);
+    if(i===0) stave.addClef('treble');
+    if(i===3) stave.setEndBarType(VF.Barline.type.END);
+    stave.setContext(ctx).draw();
+    const ch=ex[i];
+    if(ch && ch.answered){
+      const keys=ch.notes.map(armVexKey);
+      const sn=new VF.StaveNote({keys, duration:'w'});
+      ch.notes.forEach((n,idx)=>{ if(n.acc!==0) sn.addModifier(new VF.Accidental(armAccSym(n.acc)), idx); });
+      const hlCol = ch.correct ? '#22c98a' : '#2f6df6';   // animación: verde si acertó, azul si falló
+      const hl = (ARM._hl && ARM._hl.section===section && ARM._hl.m===i) ? ARM._hl.hl : null;
+      if(hl && hl.all){ sn.setStyle({fillStyle:hlCol,strokeStyle:hlCol}); }
+      else {
+        sn.setStyle({fillStyle:ARM_NOTE_INK,strokeStyle:ARM_NOTE_INK});
+        if(hl && hl.idx!=null){ try{ sn.setKeyStyle(hl.idx,{fillStyle:hlCol,strokeStyle:hlCol}); }catch(e){} }
+      }
+      const voice=new VF.Voice({num_beats:4,beat_value:4}); voice.setStrict(false); voice.addTickables([sn]);
+      new VF.Formatter().joinVoices([voice]).format([voice], wm-(i===0?52:24));
+      voice.draw(ctx,stave);
+      const svg=host.querySelector('svg');
+      const cx=stave.getNoteStartX()+(x+wm-stave.getNoteStartX())/2-2;
+      const lab=armChordLabel(ch, section);
+      svgAddText(svg, cx, 15, lab.l1, {fill:'#7a5c0e','font-size':'12','font-weight':'700','font-family':'Helvetica,Arial,sans-serif'});
+      if(lab.l2) svgAddText(svg, cx, 30, lab.l2, {fill:'#9a7c2e','font-size':'11','font-family':'Helvetica,Arial,sans-serif'});
+    } else {
+      const svg=host.querySelector('svg');
+      const cx=stave.getNoteStartX()+(x+wm-stave.getNoteStartX())/2-2;
+      svgAddText(svg, cx, y+46, '?', {fill:'#9aa3c0','font-size':'30','font-family':'Georgia,serif','font-style':'italic'});
+    }
+  }
+  if(window.scrollX!==_sx||window.scrollY!==_sy) window.scrollTo(_sx,_sy);
+}
+function armChordLabel(ch, section){
+  const root=ch.notes.find(n=>n.member===0);
+  const rn = root ? armNameES(root) : '';
+  const ql = ARM_QUAL[ch.quality].label;
+  if(section==='A') return {l1: rn+' '+ql, l2:''};
+  const bassMember = ch.notes[0].member;
+  const inv = ['estado fundamental','1ª inversión','2ª inversión','3ª inversión'][bassMember] || '';
+  return {l1: rn+' '+ql, l2: inv};
+}
+
+function armRenderPanels(section){
+  const wrap=document.getElementById('armPanels_'+section); wrap.innerHTML='';
+  for(let i=0;i<4;i++){
+    let optsHTML;
+    if(section==='A'){
+      const btn=q=>{const a=ARM_SYM[q].a; return '<button class="arm-opt tipo-btn" data-sec="A" data-m="'+i+'" data-val="'+q+'"><span class="tn">'+ARM_SYM[q].n+'</span>'+(a?'<span class="ab'+(a==='\u2205'?' ab-circ':'')+'">'+a+'</span>':'')+'</button>';};
+      optsHTML='<div class="arm-fams">'+
+        '<div class="arm-fam"><div class="arm-grouplab">Tríadas</div>'+ARM_TRI.map(btn).join('')+'</div>'+
+        '<div class="arm-fam"><div class="arm-grouplab">Cuatríadas</div>'+ARM_SEV.map(btn).join('')+'</div>'+
+        '</div>';
+    } else {
+      const list=['septima','quinta','tercera','tonica'];
+      optsHTML='<div class="arm-opts">'+list.map(k=>'<button class="arm-opt" data-sec="B" data-m="'+i+'" data-val="'+k+'">'+ARM_MEMBER_LBL[k]+'</button>').join('')+'</div>';
+    }
+    const p=document.createElement('div'); p.className='arm-panel'; p.id='armPanel_'+section+'_'+i;
+    p.innerHTML='<div class="arm-playrow"><button class="play-btn" data-m="'+i+'" title="Escuchar"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><div class="listens" id="armListens_'+section+'_'+i+'"></div></div>'+
+      optsHTML+
+      '<div class="arm-verdict" id="armVerd_'+section+'_'+i+'"></div>';
+    wrap.appendChild(p);
+  }
+  wrap.querySelectorAll('.play-btn').forEach(b=>b.addEventListener('click',()=>armPlayMeasure(section, +b.dataset.m)));
+  wrap.querySelectorAll('.arm-opt').forEach(b=>b.addEventListener('click',()=>armAnswer(section, +b.dataset.m, b.dataset.val)));
+  for(let i=0;i<4;i++) armRefreshPlay(section,i);
+}
+function armAnswer(section, i, val){
+  const ch=ARM[section].ex[i]; if(!ch || ch.answered) return;
+  ch.answered=true; ch.chosen=val;
+  const correctVal = section==='A' ? ch.quality : ch.topMember;
+  ch.correct = (val===correctVal);
+  const panel=document.getElementById('armPanel_'+section+'_'+i);
+  panel.classList.add(ch.correct?'ok':'bad');
+  panel.querySelectorAll('.arm-opt').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.val===val) b.classList.add(ch.correct?'chosen-ok':'chosen-bad');
+    else if(!ch.correct && b.dataset.val===correctVal) b.classList.add('reveal-ok');
+  });
+  armRefreshPlay(section,i);
+  const v=document.getElementById('armVerd_'+section+'_'+i);
+  const solLbl = section==='A' ? ARM_QUAL[correctVal].label : ARM_MEMBER_LBL[correctVal].toLowerCase();
+  v.className='arm-verdict '+(ch.correct?'ok':'bad');
+  v.textContent = ch.correct ? '¡Bien!' : ('Era: '+solLbl);
+  armDraw(section);
+  armPlayMeasure(section,i);
+  armMaybeScore(section);
+}
+function armMaybeScore(section){
+  const ex=ARM[section].ex;
+  if(!ex.every(c=>c.answered)) return;
+  const ok=ex.filter(c=>c.correct).length;
+  const nota=(ok/4*10); const notaTxt=(Math.round(nota*10)/10).toString().replace('.',',');
+  const panel=document.getElementById('armScore_'+section);
+  const sub = section==='A' ? 'tipo de acorde' : 'nota superior (inversión)';
+  panel.innerHTML='<div class="gs-inner">'+
+    '<div class="gs-left"><span class="gs-kicker">Resultado</span><span class="gs-frac">'+ok+' <span class="gs-of">/ 4</span></span><span class="gs-sub">aciertos · '+sub+'</span></div>'+
+    '<div class="gs-sep"></div>'+
+    '<div class="gs-right"><span class="gs-kicker">Nota</span><span class="gs-nota">'+notaTxt+' <span class="gs-of">/ 10</span></span>'+
+    '<span class="gs-sub">'+ex.map((c,i)=>'C'+(i+1)+': '+(c.correct?'✓':'✗')).join(' · ')+'</span></div></div>';
+  panel.style.display='block';
+}
+function armStartAll(){
+  armStopAudio(); ARM._hl=null;
+  ['A','B'].forEach(s=>{
+    armBuildSet(s);
+    const g=document.getElementById('armScore_'+s); if(g){g.style.display='none'; g.innerHTML='';}
+    armRenderPanels(s); armDraw(s);
+  });
+}
+function openArmonica(){
+  loadPiano();
+  document.getElementById('evaHome').classList.add('hidden');
+  document.getElementById('armonicaView').classList.add('active');
+  setBrand('predict');
+  armStartAll();
+}
+function goHomeArm(){
+  armStopAudio();
+  document.getElementById('armonicaView').classList.remove('active');
+  document.getElementById('evaHome').classList.remove('hidden');
+  setBrand('lm');
+}
+document.getElementById('regenBtnArm').addEventListener('click', armStartAll);
+
 </script>
 </body>
 </html>
