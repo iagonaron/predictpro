@@ -145,8 +145,10 @@
   .edit-h{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:.02em;margin:26px 2px 14px;text-transform:uppercase}
   .edit-hint{font-weight:400;color:var(--muted2);text-transform:none;letter-spacing:0;font-size:12.5px}
   .cell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-  .cell-card{border:1px solid var(--line);border-radius:12px;background:rgba(233,237,255,.02);padding:10px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;display:flex;flex-direction:column;gap:8px}
+  .cell-card{border:1px solid var(--line);border-radius:12px;background:rgba(233,237,255,.02);padding:10px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;display:flex;flex-direction:column;gap:8px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   .cell-card.on{border-color:var(--rit);background:rgba(34,201,138,.08)}
+  /* clon flotante del arrastre táctil */
+  .cell-drag-ghost{position:fixed;z-index:9999;pointer-events:none;opacity:.92;border:1px solid var(--rit);border-radius:12px;background:var(--panel2);padding:10px;box-shadow:0 12px 32px rgba(0,0,0,.45);transform:scale(1.04);display:flex;flex-direction:column;gap:8px}
   .cell-card .cell-paper{background:var(--paper);border-radius:8px;height:74px;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .cell-card.wide{grid-column:span 2}
   .cell-card .cell-nm{font-size:11px;color:var(--muted);font-weight:600;line-height:1.25;text-align:center}
@@ -2919,6 +2921,50 @@ function endDrag(){
   document.querySelectorAll('.board').forEach(b=>b.classList.remove('drop-active'));
   document.querySelectorAll('.dropzone.over').forEach(d=>d.classList.remove('over'));
 }
+// Arrastre táctil inmediato (sin la espera del drag nativo de HTML5 en tablet).
+// Se activa con el primer desplazamiento (~5px), clona la célula y la sigue con el dedo.
+function attachTouchDrag(card, idx, cell){
+  let ghost=null, startX=0, startY=0, active=false, sx=0, sy=0;
+  const TH=5;  // umbral mínimo de movimiento para iniciar arrastre (px)
+  const dzUnder=(x,y)=>{
+    const els=document.elementsFromPoint(x,y);
+    return els.find(el=>el.classList&&el.classList.contains('dropzone')&&el.dataset.exo==idx)||null;
+  };
+  const onMove=e=>{
+    const t=e.touches?e.touches[0]:e; const x=t.clientX, y=t.clientY;
+    if(!active){
+      if(Math.abs(x-startX)<TH && Math.abs(y-startY)<TH) return;
+      active=true; startDrag(idx,cell);
+      ghost=card.cloneNode(true); ghost.className='cell-drag-ghost';
+      const r=card.getBoundingClientRect(); sx=startX-r.left; sy=startY-r.top;
+      ghost.style.width=r.width+'px'; ghost.style.height=r.height+'px';
+      document.body.appendChild(ghost);
+    }
+    e.preventDefault();
+    ghost.style.left=(x-sx)+'px'; ghost.style.top=(y-sy)+'px';
+    document.querySelectorAll('.dropzone.over').forEach(d=>d.classList.remove('over'));
+    const dz=dzUnder(x,y); if(dz) dz.classList.add('over');
+  };
+  const onUp=e=>{
+    document.removeEventListener('touchmove',onMove,{passive:false});
+    document.removeEventListener('touchend',onUp);
+    document.removeEventListener('touchcancel',onUp);
+    if(active){
+      const t=(e.changedTouches&&e.changedTouches[0])||e; const dz=dzUnder(t.clientX,t.clientY);
+      if(dz && dragCell && dragExo===idx) placeCell(idx, +dz.dataset.slot, dragCell);
+      if(ghost){ ghost.remove(); ghost=null; }
+      endDrag();
+    }
+    active=false;
+  };
+  card.addEventListener('touchstart',e=>{
+    if(exos[idx] && exos[idx].checked) return;
+    const t=e.touches[0]; startX=t.clientX; startY=t.clientY; active=false;
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('touchend',onUp);
+    document.addEventListener('touchcancel',onUp);
+  },{passive:true});
+}
 function startsWithRest(compases){
   // ¿la primera figura del primer compás es un silencio?
   if(!compases.length || !compases[0].length) return false;
@@ -3193,8 +3239,13 @@ function drawBoard(idx){
   // fuente de datos por slot: solución (si revelado) o las casillas del alumno
   const source = ex.revealed ? ex.flatSolution.slice() : ex.slots;
   let colorMap=null;
+  const COL_OK='#15a06a', COL_BAD='#d23145', COL_FIX='#2f6df6';   // verde acierto · rojo fallo · azul corregido
   if(ex.checked&&!ex.revealed){
-    colorMap=ex.slots.map((c,i)=>{ if(!c) return '#d23145'; return (ex.flatSolution[i]&&ex.flatSolution[i].id===c.id)?'#15a06a':'#d23145'; });
+    // vista "¿Qué tal fue?": se dibuja la respuesta del alumno -> verde lo acertado, rojo lo fallado
+    colorMap=ex.slots.map((c,i)=>{ if(!c) return COL_BAD; return (ex.flatSolution[i]&&ex.flatSolution[i].id===c.id)?COL_OK:COL_BAD; });
+  } else if(ex.revealed){
+    // vista "Solución": se dibuja la solución -> verde lo que el alumno ya tenía bien, azul lo corregido
+    colorMap=ex.flatSolution.map((c,i)=>{ const stu=ex.slots[i]; return (stu&&c&&stu.id===c.id)?COL_OK:COL_FIX; });
   }
   const slotBoxes=[]; // {slot, x, w, hasCell}
   dibujarPentagramaRitmico(ctx,ex.spec,source,8,16,W-16,66,colorMap,slotBoxes);
@@ -3428,6 +3479,7 @@ function renderExos(){
       card.addEventListener('click',()=>addCell(idx,cell));
       card.addEventListener('dragstart',e=>{ startDrag(idx,cell); try{e.dataTransfer.setData('text/plain','c');e.dataTransfer.effectAllowed='copy';}catch(_){} });
       card.addEventListener('dragend',()=>endDrag());
+      attachTouchDrag(card, idx, cell);   // arrastre táctil inmediato en tablet (sin espera)
       pal.appendChild(card);
     });
     block.querySelector('#play-'+idx).addEventListener('click',()=>playExo(idx));
@@ -5992,7 +6044,7 @@ function armGenInversion(q){
 }
 function armBuildSet(section){
   const gen = section==='A' ? armGenCualidad : armGenInversion;
-  const triPool = section==='A' ? ARM_TRI : ARM_TRI.filter(q=>q!=='sus4');  // B excluye cuarta suspendida
+  const triPool = section==='A' ? ARM_TRI : ARM_TRI.filter(q=>q!=='sus4' && q!=='aum');  // B excluye cuarta suspendida y aumentado (notas confusas en inversión)
   const sevPool = ARM_SEV;
   const pk=a=>a[Math.floor(Math.random()*a.length)];
   let quals;
@@ -6377,7 +6429,8 @@ document.getElementById('regenBtnArm').addEventListener('click', armStartAll);
     const bpm=ex.compas.bpm, pulseSec=60/bpm, ppc=ex.piece.ppc;
     // cuenta atrás rápida 3·2·1 antes del dictado (en vez de un compás de claqueta)
     const CIN=0.45;
-    ['3','2','1'].forEach((nstr,k)=>{ const off=t+k*CIN; tl.push({off, fn:cinShow(nstr)}); tl.push({off, fn:dclick(true)}); });
+    // 3·2·1 silencioso: solo se muestra el número, sin claqueta. La claqueta entra cuando suena el dictado.
+    ['3','2','1'].forEach((nstr,k)=>{ const off=t+k*CIN; tl.push({off, fn:cinShow(nstr)}); });
     t+=3*CIN; tl.push({off:t, fn:cinHide}); t+=0.2;
     const dStart=t;
     ex.piece.events.forEach(ev=>{ if(!ev.rest&&ev.midi!=null) note(ev.midi, Math.max(0.2,ev.dur*pulseSec*0.92), NOTE_GAIN); t+=ev.dur*pulseSec; });
