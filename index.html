@@ -49,7 +49,7 @@
     padding:46px 36px;cursor:pointer;text-align:left;transition:transform .12s,border-color .15s,box-shadow .15s;
     position:relative;overflow:hidden;min-height:340px;display:flex;flex-direction:column;justify-content:space-between;
   }
-  .mode-card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 24px 60px rgba(20,40,120,.42)}
+  .mode-card:hover{transform:translateY(-5px);border-color:var(--gold1);box-shadow:0 24px 60px rgba(212,175,55,.30)}
   .mode-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
   .mode-card .edge{position:absolute;left:0;top:0;bottom:0;width:6px}
   .mode-card.m1 .edge{background:linear-gradient(var(--gold1),var(--gold2))}
@@ -774,6 +774,76 @@
   .drill-restart{margin-top:20px;padding:12px 22px;border-radius:11px;border:1px solid var(--gold1,#d4af37);background:rgba(212,175,55,.18);color:var(--gold-soft,#e9c96a);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
   @media(max-width:720px){ .drill-secs{grid-template-columns:1fr;gap:14px} }
 </style>
+<style>
+  /* ===== PreDict · Cadencias (audición) ===== */
+  #cadenciasView .section-title{font-size:34px;font-weight:800;letter-spacing:.01em;margin:6px 0 18px}
+  #cadenciasView .section-title .hl{color:var(--gold-soft)} #cadenciasView .section-title .dim{color:var(--muted)}
+  .cadx-card{background:linear-gradient(160deg,var(--panel) 0%,var(--panel2) 100%);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .cadx-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .cadx-letter{display:flex;align-items:center;gap:10px}
+  .cadx-letter b{font-size:22px;color:var(--gold-soft)} .cadx-letter span{font-size:14px;color:var(--muted)}
+  .cadx-top-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .cadx-key{font-size:12px;font-weight:800;color:var(--gold-soft);background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.4);padding:5px 12px;border-radius:999px}
+  .cadx-stage{position:relative}
+  .cadx-repro{background:radial-gradient(120% 140% at 50% 0%,#241a07 0%,#0d0a04 100%);border:1px solid var(--gold2);border-radius:14px;padding:22px 18px 18px;min-height:236px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
+  .cadx-repro .cadx-vizwrap{width:100%;height:130px} canvas.cadx-viz{width:100%;height:130px;display:block}
+  .cadx-play{width:66px;height:66px;border-radius:50%;border:none;cursor:pointer;background:var(--gold1);color:#2a2000;font-size:24px;font-weight:800;box-shadow:0 6px 22px rgba(212,175,55,.4);transition:.15s;display:flex;align-items:center;justify-content:center}
+  .cadx-play:hover{transform:translateY(-2px)} .cadx-cap{color:var(--muted);font-size:13.5px;text-align:center;margin:0}
+  .cadx-fade{opacity:0}
+  #cadAudScoreWrap{display:none}
+  .cadx-reveal{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
+  .cadx-reveal.in{opacity:1;transform:none}
+  .cadx-score{background:var(--paper);border-radius:12px;border:1px solid var(--line);padding:10px 12px;overflow-x:auto;min-height:236px;display:flex;align-items:center;justify-content:center}
+  .cadx-score svg{max-width:100%;height:auto}
+  .cadx-sound{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .cadx-snd-label{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+  .cadx-snd-btn{font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer;border:1px solid var(--gold2);background:rgba(212,175,55,.06);color:var(--gold-soft);transition:.15s}
+  .cadx-snd-btn:hover{background:rgba(233,201,106,.14)} .cadx-snd-btn.on{border-color:var(--gold1);background:rgba(212,175,55,.22);color:#ffe8a8;font-weight:800}
+  .cadx-loading{font-size:12px;color:var(--muted);text-align:center;margin-top:6px;min-height:15px}
+  .cadx-answers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  @media(max-width:560px){.cadx-answers{grid-template-columns:1fr}}
+  .cadx-tipo{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;font-family:inherit;font-size:14px;font-weight:700;padding:11px 14px;border-radius:11px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink);transition:.15s}
+  .cadx-tipo:hover{border-color:var(--gold2);background:rgba(233,201,106,.08)}
+  .cadx-tipo .ab{font-size:13px;color:var(--muted2);font-weight:700}
+  .cadx-tipo.sel{border-color:var(--gold1);background:rgba(212,175,55,.18);color:var(--gold-soft);font-weight:800}
+  .cadx-tipo.sel .ab{color:var(--gold-soft)}
+  .cadx-tipo.sol-ok{border-color:#2f6df6;background:rgba(47,109,246,.14);color:#cfe0ff}
+  .cadx-tipo.sel-ok-green{border-color:var(--green);background:var(--green-soft);color:#bff3df}
+  .cadx-tipo.sel-bad{border-color:var(--red);background:var(--red-soft);color:#ffc6cf}
+  .cadx-answers.cadx-flash{border-radius:12px;animation:cadxflash .9s ease 1}
+  #cadAudCorregir{display:block;margin:16px auto 0;font-size:15px;font-weight:800;padding:12px 32px;border-radius:12px}
+  #cadAudCorregir:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.35)}
+  #cadAudCorregir.done{opacity:.5;cursor:default}
+  .cadx-result{min-height:22px;margin-top:14px;font-size:14px;font-weight:600;color:var(--muted);text-align:center}
+  .cadx-result.good{color:#bff3df} .cadx-result.bad{color:#ffc6cf} .cadx-result b{color:var(--gold-soft)}
+  @keyframes cadxblink{0%,100%{opacity:1}25%{opacity:.15}50%{opacity:1}75%{opacity:.15}}
+  .cadx-blink{animation:cadxblink .9s ease-in-out 1}
+  @keyframes cadxflash{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 3px rgba(212,175,55,.55)}}
+  .cadx-overlay{position:fixed;inset:0;background:rgba(8,5,1,.74);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+  .cadx-overlay.show{display:flex}
+  .cadx-overlay-box{background:linear-gradient(150deg,#2a2009 0%,#1a1305 60%,#120c03 100%);border:1px solid var(--gold2);border-radius:18px;padding:22px 24px;max-width:640px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+  .cadx-overlay-title{font-size:17px;font-weight:800;color:var(--gold-soft);margin-bottom:16px;text-align:center;line-height:1.3}
+  .cadx-overlay-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  #cadenciasView .cadx-head,.cadx-card{max-width:980px;margin-left:auto;margin-right:auto}
+  #cadenciasView .cadx-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 auto 14px}
+  #cadenciasView .section-title{margin:0}
+  .cadx-top{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;margin-bottom:14px}
+  .cadx-top .cadx-sound{margin-top:0;flex:1 1 220px;justify-content:center}
+  .cadx-msg{display:none;margin-top:14px;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:rgba(212,175,55,.10);border:1px solid var(--gold2);border-radius:12px;padding:12px 16px;text-align:center;font-size:14px;font-weight:800;color:var(--gold-soft);min-height:46px}
+  .cadx-msg.show{display:flex}
+  .cadx-msg.flash{animation:cadxflash .9s ease 1}
+  .cadx-tipo.cadx-pending{animation:cadxpulse .5s ease-in-out infinite}
+  .cadx-tipo:focus,.cadx-snd-btn:focus,.cadx-play:focus,#cadenciasView .iconbtn:focus,#cadAudNew:focus{outline:none}
+  .cadx-tipo:focus-visible,.cadx-snd-btn:focus-visible,.cadx-play:focus-visible,#cadenciasView .iconbtn:focus-visible,#cadAudNew:focus-visible{outline:2px solid var(--gold1);outline-offset:2px}
+  @keyframes cadxpulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,0);filter:brightness(1)}50%{box-shadow:0 0 0 4px rgba(212,175,55,.55);filter:brightness(1.5)}}
+  #cadenciasView .iconbtn{font-family:inherit;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer;border:1px solid var(--gold2);background:rgba(212,175,55,.06);color:var(--gold-soft);display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  #cadenciasView .iconbtn:hover{background:rgba(233,201,106,.14)}
+  #cadenciasView .iconbtn:disabled{opacity:.4;cursor:not-allowed}
+  #cadenciasView .iconbtn.btn-correct{border-color:var(--gold1);background:rgba(212,175,55,.16)}
+  .cadx-overlay .iconbtn{font-family:inherit;font-size:14px;font-weight:700;padding:10px 16px;border-radius:11px;cursor:pointer;border:1px solid var(--gold2);background:rgba(212,175,55,.06);color:var(--gold-soft)}
+  .cadx-overlay .iconbtn.btn-correct{border-color:var(--gold1);background:rgba(212,175,55,.2);color:#ffe8a8}
+
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -868,7 +938,7 @@
             <div class="edge"></div>
             <div>
               <h2 class="card-title"><span class="hl">CAD</span><span class="dim">ENCIAS</span></h2>
-              <p>Próximamente.</p>
+              <p>Escucha la cadencia e identif&iacute;cala de o&iacute;do.</p>
             </div>
             <div class="go">Entrar →</div>
           </button>
@@ -999,6 +1069,36 @@
     <div class="edit-save"><button class="btn-savecfg" onclick="saveRitEdit()">Guardar cambios</button></div>
   </div>
 
+</div>
+
+<!-- ===================== VISTA CADENCIAS (audición) ===================== -->
+<div class="ex-view" id="cadenciasView">
+  <div class="cadx-head">
+    <h1 class="section-title"><span class="hl">CAD</span><span class="dim">ENCIAS</span></h1>
+    <div class="gen"><button class="dice-btn" id="cadAudNew" title="Nuevo ejercicio"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/><circle cx="16" cy="8" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="8" cy="16" r="1.6" fill="currentColor"/><circle cx="16" cy="16" r="1.6" fill="currentColor"/></svg></button><span class="dice-label">Nuevos ejercicios</span></div>
+  </div>
+  <div class="cadx-card">
+    <div class="cadx-top">
+      <div class="cadx-letter"><b>?</b><span id="cadAudPrompt">&iquest;Qu&eacute; cadencia suena?</span></div>
+      <div class="cadx-sound" id="cadAudSound"><span class="cadx-snd-label">Sonido</span></div>
+      <div class="cadx-top-right">
+        <span class="cadx-key" id="cadAudKey"></span>
+        <button class="iconbtn" id="cadAudHint">&#128065; Pista visual</button>
+      </div>
+    </div>
+    <div class="cadx-stage">
+      <div class="cadx-repro" id="cadAudRepro">
+        <div class="cadx-vizwrap"><canvas class="cadx-viz" id="cadAudViz"></canvas></div>
+        <button class="cadx-play" id="cadAudPlay" aria-label="Escuchar">&#9654;</button>
+        <p class="cadx-cap">Escucha las veces que necesites y decide cu&aacute;l es.</p>
+      </div>
+      <div id="cadAudScoreWrap"><div class="cadx-reveal" id="cadAudScoreReveal"><div class="cadx-score" id="cadAudScore"></div></div></div>
+    </div>
+    <div class="cadx-loading" id="cadAudLoading"></div>
+    <div class="cadx-msg" id="cadAudMsg"></div>
+    <div class="cadx-answers" id="cadAudAnswers"></div>
+    <div class="cadx-result" id="cadAudResult"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -5062,6 +5162,12 @@ function openModos(){
   setBrand('predict');
   if(window.__modosOpen) window.__modosOpen();   // nuevo ejercicio al entrar
 }
+function openCadencias(){
+  document.getElementById('evaHome').classList.add('hidden');
+  document.getElementById('cadenciasView').classList.add('active');
+  setBrand('predict');
+  if(window.__cadAudOpen) window.__cadAudOpen();
+}
 function goHomeModos(){ goPredictHome(); }
 // La marca arriba a la izquierda muestra SIEMPRE su destino:
 //  · dentro de una vista interna -> "PreDict at home PRO" (vuelve a la portada de PreDict)
@@ -5072,7 +5178,7 @@ function setBrand(dest){
   else h.innerHTML='<span class="a">LM</span><span class="eav-pro">PRO</span> <span class="home2">at home</span>';
 }
 function brandNav(){
-  const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView'];
+  const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView','cadenciasView'];
   const anyActive=views.some(v=>{ const el=document.getElementById(v); return el && el.classList.contains('active'); });
   if(anyActive){ goPredictHome(); }
   else { window.location.href='https://iagonaron.github.io/lmpro/'; }
@@ -5083,7 +5189,8 @@ function goPredictHome(){
   try{ stopTonAudio(); }catch(e){}
   try{ stopTonDrill(); }catch(e){}
   try{armStopAudio();}catch(e){}
-  ['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView'].forEach(v=>{ const el=document.getElementById(v); if(el) el.classList.remove('active'); });
+  try{ if(window.__cadAudStop) window.__cadAudStop(); }catch(e){}
+  ['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView','cadenciasView'].forEach(v=>{ const el=document.getElementById(v); if(el) el.classList.remove('active'); });
   document.getElementById('evaHome').classList.remove('hidden');
   setBrand('lm');
 }
@@ -5120,11 +5227,12 @@ document.querySelectorAll('.flip-card[data-mode]').forEach(card=>{
   const mode=card.dataset.mode;
   // En Pro NO se voltea para elegir ciclo: el ciclo ya es la versión Pro.
   // Pulsar la tarjeta entra directo al apartado (o avisa si está "Próximamente").
-  const soon = ['cadencias'].includes(mode);
+  const soon = [].includes(mode);
   card.querySelector('.flip-front').addEventListener('click',(e)=>{
     e.stopPropagation();
     if(mode==='modos'){ openModos(); return; }
     if(mode==='armonica'){ openArmonica(); return; }
+    if(mode==='cadencias'){ openCadencias(); return; }
     if(soon){ toast('Próximamente'); return; }
     pendingMode=mode;
     if(mode==='ritmica')openRitmica();
@@ -6344,6 +6452,862 @@ document.getElementById('regenBtnArm').addEventListener('click', armStartAll);
     commit(init,false);
     return { get:()=>idx, set:i=>commit(i,false), val:()=>items[idx] };
   }
+})();
+
+</script>
+<script>
+
+/* Motor cadencial v2 (browser build) */
+window.CadenceEngine=(function(){
+/* =====================================================================
+   MOTOR CADENCIAL v2 — generativo, conducción de voces verificada
+   ---------------------------------------------------------------------
+   No transpone bases fijas: genera cada cadencia eligiendo plantilla
+   armónica + tonalidad + realización SATB por búsqueda (beam search)
+   sujeta a las reglas de la armonía tonal (estilo coral).
+   Salida: eventos {midi:[S,A,T,B], q, rn, spell:[...], cadence:bool}.
+   ===================================================================== */
+
+// ---------- utilidades de tonalidad y deletreo ----------
+const LETTER_PC = [0,2,4,5,7,9,11];          // C D E F G A B
+const LETTER_NAME = ['C','D','E','F','G','A','B'];
+
+// armaduras: sostenidos / bemoles por tonalidad (<=3 alteraciones)
+const KEYSIG = {
+  major:{
+    'C':{t:0,sh:[],fl:[]}, 'G':{t:4,sh:['F'],fl:[]}, 'D':{t:1,sh:['F','C'],fl:[]},
+    'A':{t:5,sh:['F','C','G'],fl:[]}, 'F':{t:3,sh:[],fl:['B']},
+    'Bb':{t:6,sh:[],fl:['B','E']}, 'Eb':{t:2,sh:[],fl:['B','E','A']}
+  },
+  minor:{
+    'A':{t:5,sh:[],fl:[]}, 'E':{t:2,sh:['F'],fl:[]}, 'B':{t:6,sh:['F','C'],fl:[]},
+    'F#':{t:3,sh:['F','C','G'],fl:[]}, 'D':{t:1,sh:[],fl:['B']},
+    'G':{t:4,sh:[],fl:['B','E']}, 'C':{t:0,sh:[],fl:['B','E','A']}
+  }
+};
+// nombre VexFlow de la armadura
+const VEXKEY = {
+  major:{'C':'C','G':'G','D':'D','A':'A','F':'F','Bb':'Bb','Eb':'Eb'},
+  minor:{'A':'Am','E':'Em','B':'Bm','F#':'F#m','D':'Dm','G':'Gm','C':'Cm'}
+};
+
+function buildKey(name, mode){
+  const k = KEYSIG[mode][name];
+  const accForLetter = {};
+  k.sh.forEach(L=>accForLetter[L]= 1);
+  k.fl.forEach(L=>accForLetter[L]=-1);
+  const tonicLetter = k.t;
+  const tonicPc = (LETTER_PC[tonicLetter] + (accForLetter[LETTER_NAME[tonicLetter]]||0) + 12)%12;
+  return {name, mode, tonicLetter, accForLetter, tonicPc,
+          ltPc:(tonicPc+11)%12, vexKey:VEXKEY[mode][name]};
+}
+
+// deletrea un miembro de acorde (offset = 0/2/4/6 grados desde la fundamental)
+function spellTone(key, rootDeg, offset, dominantFn){
+  const degIndex = (rootDeg + offset) % 7;
+  const letter = (key.tonicLetter + degIndex) % 7;
+  let acc = key.accForLetter[LETTER_NAME[letter]] || 0;
+  if(key.mode==='minor' && dominantFn && degIndex===6) acc += 1; // sensible alterada
+  const pc = (LETTER_PC[letter] + acc + 24)%12;
+  return {letter, acc, pc, degIndex};
+}
+
+// construye el acorde de una especificación de plantilla
+function buildChord(key, spec){
+  const dom = spec.dom!==undefined ? spec.dom : (spec.deg===4 || spec.deg===6);
+  const offsets = spec.seventh ? [0,2,4,6] : [0,2,4];
+  const tones = offsets.map(o=>{
+    const t = spellTone(key, spec.deg, o, dom);
+    t.role = (o===0?'R':o===2?'3':o===4?'5':'7');
+    return t;
+  });
+  const bassRole = spec.bass || 'R';
+  const bassTone = tones.find(t=>t.role===bassRole);
+  // inversión para el cifrado
+  const invByRole = {R:0,'3':1,'5':2,'7':3};
+  const inv = invByRole[bassRole];
+  return {
+    tones, bassPc: bassTone.pc, bassRole,
+    seventhPc: spec.seventh ? tones.find(t=>t.role==='7').pc : null,
+    isLTchord: dom,
+    isTonicTarget: (spec.deg===0),
+    roman: romanLabel(key.mode, spec.deg, spec.seventh, inv),
+    deg: spec.deg, inv, dbl: spec.dbl||null
+  };
+}
+
+function romanLabel(mode, deg, seventh, inv){
+  const MAJ = ['I','ii','iii','IV','V','vi','vii°'];
+  const MIN = ['i','ii°','III','iv','V','VI','vii°'];
+  let base = (mode==='major'?MAJ:MIN)[deg];
+  const supTri = ['', '\u2076', '\u2076\u2084'];           // '', 6, 6/4
+  const supSev = ['\u2077','\u2076\u2085','\u2074\u2083','\u2074\u2082']; // 7,6/5,4/3,4/2
+  return base + (seventh ? supSev[inv] : supTri[inv]);
+}
+
+// ---------- rangos vocales (midi) ----------
+const RANGE = { S:[60,79], A:[53,74], T:[48,67], B:[40,62] };
+
+// ---------- generación de candidatos de voicing para un acorde ----------
+function midisInRange(pc, lo, hi){
+  const out=[];
+  for(let m=lo; m<=hi; m++) if(((m%12)+12)%12===pc) out.push(m);
+  return out;
+}
+
+// multisets de 3 pcs (S,A,T) válidos según completitud + duplicación
+function upperPcSets(chord, key){
+  const triadPcs = chord.tones.filter(t=>t.role!=='7').map(t=>t.pc);
+  const allPcs   = chord.tones.map(t=>t.pc);
+  const bassPc   = chord.bassPc;
+  const ltPc = key.ltPc, sevPc = chord.seventhPc;
+  const seventh = chord.seventhPc!==null;
+  const noDouble = new Set();
+  if(chord.isLTchord) noDouble.add(ltPc);
+  if(seventh) noDouble.add(sevPc);
+
+  const sets = [];
+  const push = (arr)=>{ sets.push(arr.slice()); };
+
+  if(!seventh){
+    // tríada: las 3 notas presentes; una duplicada
+    for(const dpc of allPcs){
+      if(noDouble.has(dpc)) continue;
+      // multiset total de 4 voces = triada + duplicado
+      const four = triadPcs.concat([dpc]);
+      // quitar el bajo una vez
+      const idx = four.indexOf(bassPc);
+      if(idx<0) continue;
+      const upper = four.slice(); upper.splice(idx,1);
+      push(upper);
+    }
+  } else {
+    // séptima completa
+    {
+      const four = allPcs.slice();
+      const idx = four.indexOf(bassPc);
+      if(idx>=0){ const up=four.slice(); up.splice(idx,1); push(up); }
+    }
+    // séptima sin 5ª, fundamental duplicada
+    {
+      const fifthPc = chord.tones.find(t=>t.role==='5').pc;
+      const rootPc  = chord.tones.find(t=>t.role==='R').pc;
+      const four = allPcs.filter(p=>p!==fifthPc).concat([rootPc]);
+      const idx = four.indexOf(bassPc);
+      if(idx>=0){ const up=four.slice(); up.splice(idx,1); push(up); }
+    }
+  }
+  // dedupe
+  const seen=new Set(), out=[];
+  for(const s of sets){ const k=s.slice().sort((a,b)=>a-b).join(','); if(!seen.has(k)){seen.add(k); out.push(s);} }
+  return out;
+}
+
+// coloca un multiset de 3 pcs en S/A/T con todas las octavas válidas
+function placeUpper(pcset){
+  const cand=[];
+  const sList = pcset.map(pc=>midisInRange(pc,RANGE.S[0],RANGE.S[1]));
+  // probamos cada pc como soprano
+  for(let i=0;i<3;i++){
+    const restIdx=[0,1,2].filter(j=>j!==i);
+    for(const sM of midisInRange(pcset[i],RANGE.S[0],RANGE.S[1])){
+      for(const aM of midisInRange(pcset[restIdx[0]],RANGE.A[0],RANGE.A[1])){
+        for(const tM of midisInRange(pcset[restIdx[1]],RANGE.T[0],RANGE.T[1])){
+          if(sM>=aM && aM>=tM && (sM-aM)<=12 && (aM-tM)<=12){
+            cand.push([sM,aM,tM]);
+          }
+        }
+      }
+      // también la otra asignación A<->T del resto
+      for(const aM of midisInRange(pcset[restIdx[1]],RANGE.A[0],RANGE.A[1])){
+        for(const tM of midisInRange(pcset[restIdx[0]],RANGE.T[0],RANGE.T[1])){
+          if(sM>=aM && aM>=tM && (sM-aM)<=12 && (aM-tM)<=12){
+            cand.push([sM,aM,tM]);
+          }
+        }
+      }
+    }
+  }
+  // dedupe
+  const seen=new Set(), out=[];
+  for(const c of cand){ const k=c.join(','); if(!seen.has(k)){seen.add(k); out.push(c);} }
+  return out;
+}
+
+function chordCandidates(chord, key){
+  const out=[];
+  const bassMidis = midisInRange(chord.bassPc, RANGE.B[0], RANGE.B[1]);
+  const sets = upperPcSets(chord, key);
+  for(const bM of bassMidis){
+    for(const set of sets){
+      for(const [sM,aM,tM] of placeUpper(set)){
+        if(tM>=bM){ // tenor por encima del bajo
+          out.push({S:sM,A:aM,T:tM,B:bM});
+        }
+      }
+    }
+  }
+  return out;
+}
+
+// ---------- reglas de conducción entre dos acordes ----------
+const VN=['S','A','T','B'];
+function interval(a,b){ return Math.abs(a-b); }
+
+// ¿paralelas de 5ª/8ª por movimiento similar?
+function hasParallels(prev, cur){
+  const p=[prev.S,prev.A,prev.T,prev.B], c=[cur.S,cur.A,cur.T,cur.B];
+  for(let x=0;x<4;x++)for(let y=x+1;y<4;y++){
+    const i1=interval(p[x],p[y])%12, i2=interval(c[x],c[y])%12;
+    const moved=(p[x]!==c[x])||(p[y]!==c[y]);
+    const d1=Math.sign(c[x]-p[x]), d2=Math.sign(c[y]-p[y]);
+    if(moved && (i1===7||i1===0) && i1===i2 && d1!==0 && d2!==0 && d1===d2) return true;
+  }
+  return false;
+}
+// 5ª/8ª directas (ocultas) en voces extremas con salto en soprano
+function hasHiddenOuter(prev, cur){
+  const i2 = interval(cur.S,cur.B)%12;
+  if(i2!==7 && i2!==0) return false;
+  const dS=Math.sign(cur.S-prev.S), dB=Math.sign(cur.B-prev.B);
+  if(dS!==0 && dS===dB){ // movimiento similar hacia 5ª/8ª
+    if(Math.abs(cur.S-prev.S)>2) return true; // soprano por salto
+  }
+  return false;
+}
+
+// resolución de sensible y de séptima; saltos melódicos; 2ª aumentada
+function transitionPenalty(prevChord, prev, curChord, cur, key, opts){
+  let pen=0;
+  if(hasParallels(prev,cur)) return Infinity;
+  if(hasHiddenOuter(prev,cur)) pen += 6;       // penalización fuerte, no prohibición total
+
+  const pv=[prev.S,prev.A,prev.T,prev.B], cv=[cur.S,cur.A,cur.T,cur.B];
+
+  for(let v=0; v<4; v++){
+    const from=pv[v], to=cv[v], step=to-from, ad=Math.abs(step);
+    const fromPc=((from%12)+12)%12;
+
+    // sensible del acorde dominante anterior
+    if(prevChord.isLTchord && fromPc===key.ltPc){
+      const goesTonic = (((to%12)+12)%12) === key.tonicPc && (step===1||step===-1? true : ad===1);
+      if(curChord.isTonicTarget){
+        if(v===0){ // soprano: obligada a tónica por grado
+          if(!(((to%12)+12)%12===key.tonicPc && ad===1)) return Infinity;
+        } else {
+          // voz interna: a tónica (subir) o a la 5ª (bajar) para completar
+          const toPc=((to%12)+12)%12;
+          const okUp = toPc===key.tonicPc && ad===1;
+          const fifthPc=(key.tonicPc+7)%12;
+          const okDown = toPc===fifthPc && ad<=2;
+          if(!(okUp||okDown)) pen += 5;
+        }
+      }
+    }
+    // séptima del acorde anterior DEBE bajar por grado (regla dura)
+    if(prevChord.seventhPc!==null && fromPc===prevChord.seventhPc){
+      if(!(step===-1||step===-2)) return Infinity;
+    }
+    // 2ª aumentada melódica: sólo el salto b6<->#7 en menor (3 semitonos)
+    if(ad===3 && key.mode==='minor'){
+      const b6=(key.tonicPc+8)%12, lt=(key.tonicPc+11)%12, toPc=((to%12)+12)%12;
+      if((fromPc===b6&&toPc===lt)||(fromPc===lt&&toPc===b6)) pen += 8;
+    }
+    // saltos grandes en voces internas/agudas (el bajo puede saltar 8ª)
+    if(v!==3){
+      if(ad>8) return Infinity;
+      if(ad>5) pen += (ad-5)*1.2;
+    } else {
+      if(ad>12) return Infinity;
+      if(ad>7 && ad!==12) pen += (ad-7)*0.8;
+    }
+    // coste base de movimiento (interiores deben ser muy suaves)
+    const w = (v===1||v===2)?1.4:1.0;
+    pen += ad*w;
+  }
+  // bono por notas comunes mantenidas (suavidad)
+  return pen;
+}
+
+function firstChordPenalty(chord, v){
+  let pen=0;
+  // centrar tesitura
+  if(v.S>79||v.S<61) pen+=4;
+  if(v.S>76) pen+=(v.S-76)*0.6;
+  if(v.S<64) pen+=(64-v.S)*0.6;
+  // amplitud razonable entre extremos
+  const spread=v.S-v.B;
+  if(spread>34) pen+=(spread-34)*0.5;
+  if(spread<16) pen+=(16-spread)*0.4;
+  // preferimos doblar fundamental: pequeño bono si el pc del bajo aparece arriba
+  return pen;
+}
+
+// duplicación deseable (penalización por doblar 3ª; bono caso deceptiva)
+function doublingPenalty(chord, v, key){
+  const pcs=[v.S,v.A,v.T,v.B].map(m=>((m%12)+12)%12);
+  const count={}; pcs.forEach(p=>count[p]=(count[p]||0)+1);
+  let pen=0;
+  const rootPc = chord.tones.find(t=>t.role==='R').pc;
+  const thirdPc= chord.tones.find(t=>t.role==='3').pc;
+  for(const p in count){
+    if(count[p]>=2){
+      const pc=+p;
+      if(chord.dbl==='tonic'){
+        if(pc===key.tonicPc) pen-=3;           // deceptiva: doblar tónica (3ª de vi)
+        else if(pc===thirdPc) pen+=2;
+      } else {
+        if(pc===thirdPc) pen+=3;               // evitar doblar la 3ª
+        else if(pc===rootPc) pen-=1;           // preferir fundamental
+      }
+    }
+  }
+  return pen;
+}
+
+// ---------- beam search sobre toda la progresión ----------
+function realize(key, specs, finalConstraint, rng){
+  const chords = specs.map(s=>buildChord(key,s));
+  const BEAM = 16;
+  let states=[];
+  // acorde 0
+  const c0cands = chordCandidates(chords[0], key);
+  for(const v of c0cands){
+    const cost = firstChordPenalty(chords[0],v) + doublingPenalty(chords[0],v,key) + rng()*0.6;
+    states.push({voicings:[v], cost});
+  }
+  states.sort((a,b)=>a.cost-b.cost);
+  states=states.slice(0,BEAM);
+
+  for(let i=1;i<chords.length;i++){
+    const cands = chordCandidates(chords[i], key);
+    const isFinal = (i===chords.length-1);
+    const next=[];
+    for(const st of states){
+      const prevV = st.voicings[i-1];
+      for(const v of cands){
+        if(isFinal && finalConstraint && !finalConstraint(chords[i], v, key)) continue;
+        const tp = transitionPenalty(chords[i-1], prevV, chords[i], v, key);
+        if(!isFinite(tp)) continue;
+        const dp = doublingPenalty(chords[i], v, key);
+        const cost = st.cost + tp + dp + rng()*0.4;
+        next.push({voicings: st.voicings.concat([v]), cost});
+      }
+    }
+    if(next.length===0) return null;       // sin solución -> reintentar fuera
+    next.sort((a,b)=>a.cost-b.cost);
+    states = next.slice(0,BEAM);
+  }
+  const best = states[0];
+  return {chords, voicings: best.voicings, cost: best.cost};
+}
+
+// ---------- restricciones de soprano final por tipo ----------
+function sopIs(role){ return (chord,v,key)=>{
+  const t=chord.tones.find(x=>x.role===role); return t && ((v.S%12)+12)%12===t.pc;
+};}
+function sopNot(role){ const f=sopIs(role); return (c,v,k)=>!f(c,v,k); }
+function sopRoot(){ return sopIs('R'); }
+function sopTonic(){ return (chord,v,key)=> ((v.S%12)+12)%12===key.tonicPc; }
+function sopNotTonic(){ const f=sopTonic(); return (c,v,k)=>!f(c,v,k); }
+function sopRootOrFifth(){ return (chord,v,key)=>{
+  const r=chord.tones.find(x=>x.role==='R'), f=chord.tones.find(x=>x.role==='5');
+  const pc=((v.S%12)+12)%12; return pc===r.pc||pc===f.pc;
+};}
+function sopThirdOrFifth(){ return (chord,v,key)=>{
+  const th=chord.tones.find(x=>x.role==='3'), f=chord.tones.find(x=>x.role==='5');
+  const pc=((v.S%12)+12)%12; return pc===th.pc||pc===f.pc;
+};}
+
+// ---------- plantillas ----------
+// c(deg,{seventh,bass,dom,dbl})
+function c(deg,o={}){ return Object.assign({deg},o); }
+
+const TEMPLATES = {
+  autentica_perfecta: {
+    label:'Auténtica perfecta', modes:['major','minor'],
+    finalSoprano: sopTonic(),
+    seqs:[
+      [c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(4),c(4,{seventh:true}),c(0)],
+      [c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(0,{bass:'5'}),c(4),c(0)],
+      [c(0),c(5),c(3),c(1,{bass:'3'}),c(4),c(4,{seventh:true}),c(0)],
+      [c(0),c(4,{bass:'3'}),c(0,{bass:'3'}),c(3),c(4),c(4,{seventh:true}),c(0)],
+    ]
+  },
+  autentica_imperfecta: {
+    label:'Auténtica imperfecta', modes:['major','minor'],
+    finalSoprano: null,
+    seqs:[
+      // siempre con algún acorde en inversión (criterio claro perfecta/imperfecta)
+      {s:[c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(4),c(4,{seventh:true}),c(0,{bass:'3'})], fin:null}, // V7 -> I6
+      {s:[c(0),c(5),c(3),c(1,{bass:'3'}),c(4),c(4,{bass:'3'}),c(0)], fin:null},                            // V6 -> I
+      {s:[c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(0,{bass:'5'}),c(4,{seventh:true}),c(0,{bass:'3'})], fin:null}, // 6/4 -> V7 -> I6
+    ]
+  },
+  plagal_perfecta: {
+    label:'Plagal perfecta', modes:['major','minor'],
+    finalSoprano: sopTonic(),
+    seqs:[
+      [c(0),c(4,{bass:'3'}),c(0),c(4,{seventh:true}),c(0),c(3),c(0)],
+      [c(0),c(0,{bass:'3'}),c(4,{seventh:true}),c(0),c(5),c(3),c(0)],
+    ]
+  },
+  plagal_imperfecta: {
+    label:'Plagal imperfecta', modes:['major','minor'],
+    finalSoprano: null,
+    seqs:[
+      {s:[c(0),c(4,{bass:'3'}),c(0),c(4,{seventh:true}),c(0),c(3),c(0,{bass:'3'})], fin:null}, // IV -> I6
+      {s:[c(0),c(0,{bass:'3'}),c(4,{seventh:true}),c(0),c(5),c(3),c(0,{bass:'3'})], fin:null}, // IV -> I6
+    ]
+  },
+  semicadencia: {
+    label:'Semicadencia', modes:['major','minor'],
+    finalSoprano: sopRootOrFifth(),
+    seqs:[
+      [c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(0),c(3),c(4)],
+      [c(0),c(4,{bass:'3'}),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(3),c(4)],
+      [c(0),c(5),c(3),c(1,{bass:'3'}),c(0,{bass:'3'}),c(1,{bass:'3'}),c(4)],
+    ],
+    seqsMinor:[ // incluye semicadencia frigia (iv6 -> V)
+      [c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(0,{bass:'3'}),c(3,{bass:'3'}),c(4)],
+      [c(0),c(5),c(3),c(1,{bass:'3'}),c(0,{bass:'3'}),c(3,{bass:'3'}),c(4)],
+      [c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(0),c(3),c(4)],
+    ]
+  },
+  rota: {
+    label:'Rota', modes:['major','minor'],
+    finalSoprano: null,
+    seqs:[
+      {s:[c(0),c(0,{bass:'3'}),c(3),c(1,{bass:'3'}),c(0,{bass:'5'}),c(4,{seventh:true}),c(5,{dbl:'tonic'})], fin:null},
+      {s:[c(0),c(5),c(3),c(1,{bass:'3'}),c(4),c(4,{seventh:true}),c(5,{dbl:'tonic'})], fin:null},
+    ]
+  },
+};
+
+// ---------- ornamentación: notas de paso / bordaduras / retardos / apoyaturas ----------
+// Produce 4 flujos de voz (con negras y notas no acordales) a partir del esqueleto
+// de acordes ya realizado. Seguro por construcción: a lo sumo UN movimiento por beat,
+// y NUNCA toca los dos últimos acordes (cadencia clara).
+function octFor(letter, acc, midi){
+  const pcSpelled = LETTER_PC[letter] + acc;
+  return Math.round((midi - pcSpelled)/12) - 1;
+}
+function embellish(voicings, chords, key, rng){
+  const VOICES=['S','A','T','B'];
+  const slotQ=[2,2,2,2,2,2,4];
+  const N=voicings.length;
+  const scaleAcc = L => key.accForLetter[LETTER_NAME[L]]||0;
+  function spellMain(midi, chord){
+    const pc=((midi%12)+12)%12;
+    const t=chord.tones.find(x=>x.pc===pc);
+    const letter = t?t.letter:0, acc=t?t.acc:0;
+    return {midi, letter, acc, octave:octFor(letter,acc,midi), role:'main'};
+  }
+  // grupos: groups[v][slot] = [notas]
+  const groups={};
+  VOICES.forEach(v=>{ groups[v]=[]; for(let i=0;i<N;i++){ const n=spellMain(voicings[i][v],chords[i]); n.q=slotQ[i]; n.slot=i; groups[v].push([n]); } });
+
+  function midiBetween(letter,acc,a,b){ const pc=(LETTER_PC[letter]+acc+24)%12; const lo=Math.min(a,b),hi=Math.max(a,b);
+    for(let m=lo+1;m<hi;m++) if((((m%12)+12)%12)===pc) return m; return null; }
+  function stepNote(letter,acc,base,below){ const pc=(LETTER_PC[letter]+acc+24)%12;
+    if(below){ for(let m=base-1;m>=base-3;m--) if(((m%12)+12)%12===pc) return m; }
+    else { for(let m=base+1;m<=base+3;m++) if(((m%12)+12)%12===pc) return m; } return null; }
+
+  // recolectar candidatos
+  const cand=[];
+  VOICES.forEach(v=>{
+    const maxSlot = v==='B'?4:3;           // graves: hasta entrar en la dominante; agudas: cc 1-2
+    for(let i=0;i<=maxSlot;i++){
+      const a=groups[v][i][0], b=groups[v][i+1][0];
+      const ld=((b.letter-a.letter)%7+7)%7;
+      // nota de paso (3ª melódica)
+      if(ld===2||ld===5){
+        const dir=ld===2?1:-1, mid=((a.letter+dir)%7+7)%7, macc=scaleAcc(mid);
+        const pm=midiBetween(mid,macc,a.midi,b.midi);
+        if(pm!==null && Math.abs(pm-a.midi)<=2 && Math.abs(pm-b.midi)<=2 && Math.abs(pm-a.midi)>=1)
+          cand.push({type:'pt',v,slot:i,note:{midi:pm,letter:mid,acc:macc,octave:octFor(mid,macc,pm),q:1,slot:i,role:'pt'}});
+      }
+      // bordadura (nota común)
+      if(a.midi===b.midi && v!=='B'){
+        const nl=((a.letter-1)%7+7)%7, nacc=scaleAcc(nl), nm=stepNote(nl,nacc,a.midi,true);
+        if(nm!==null && Math.abs(nm-a.midi)<=2)
+          cand.push({type:'nbr',v,slot:i,note:{midi:nm,letter:nl,acc:nacc,octave:octFor(nl,nacc,nm),q:1,slot:i,role:'nbr'}});
+      }
+    }
+    // retardo (voces agudas), resuelve en slots 1..3
+    if(v!=='B') for(let j=1;j<=3;j++){
+      const a=groups[v][j-1][0], b=groups[v][j][0], step=a.midi-b.midi;
+      if((step===1||step===2)){
+        const pcA=((a.midi%12)+12)%12, isCT=chords[j].tones.some(x=>x.pc===pcA);
+        if(!isCT) cand.push({type:'sus',v,slotPrep:j-1,slotRes:j,
+          prep:{midi:a.midi,letter:a.letter,acc:a.acc}});
+      }
+    }
+    // apoyatura (voces agudas), slots 1..3, abordada por salto
+    if(v!=='B') for(let i=1;i<=3;i++){
+      const prev=groups[v][i-1][0], cur=groups[v][i][0];
+      const al=((cur.letter+1)%7), aacc=scaleAcc(al), am=stepNote(al,aacc,cur.midi,false);
+      if(am!==null && Math.abs(am-cur.midi)<=2 && Math.abs(prev.midi-am)>=3){
+        const pcApp=((am%12)+12)%12, isCT=chords[i].tones.some(x=>x.pc===pcApp);
+        // sin paralela de 5ª/8ª en beat A entre la apoyatura y las demás voces (vs acorde i-1)
+        let ok=!isCT;
+        if(ok){ const others=VOICES.filter(x=>x!==v);
+          for(const ov of others){ const p1=voicings[i-1][v],p2=voicings[i-1][ov],c1=am,c2=voicings[i][ov];
+            const i1=Math.abs(p1-p2)%12,i2=Math.abs(c1-c2)%12,d1=Math.sign(c1-p1),d2=Math.sign(c2-p2);
+            if((i1===7||i1===0)&&i1===i2&&d1!==0&&d2!==0&&d1===d2){ok=false;break;} } }
+        if(ok) cand.push({type:'app',v,slot:i,note:{midi:am,letter:al,acc:aacc,octave:octFor(al,aacc,am),q:1,slot:i,role:'app'}});
+      }
+    }
+  });
+
+  // rejilla base de 16 negras por voz (a partir del esqueleto)
+  const grid={}; VOICES.forEach(v=>{ grid[v]=[]; for(let i=0;i<N;i++){ for(let k=0;k<slotQ[i];k++) grid[v].push(voicings[i][v]); } });
+  function gridOK(changes){
+    const g={}; VOICES.forEach(v=>g[v]=grid[v]); // referencia; aplicamos en copia local sólo de los q tocados
+    const orig={};
+    changes.forEach(ch=>{ orig[ch.v+':'+ch.q]=grid[ch.v][ch.q]; grid[ch.v][ch.q]=ch.midi; });
+    let ok=true;
+    const qset=new Set(); changes.forEach(ch=>qset.add(ch.q));
+    // cruces en las negras modificadas
+    for(const q of qset){ const s=grid.S[q],a=grid.A[q],t=grid.T[q],b=grid.B[q]; if(!(s>=a&&a>=t&&t>=b)){ok=false;break;} }
+    // paralelas 5ª/8ª en las transiciones afectadas
+    if(ok){ const tr=new Set(); changes.forEach(ch=>{ if(ch.q>0)tr.add(ch.q); if(ch.q<15)tr.add(ch.q+1); });
+      for(const q of tr){ if(q<1||q>15) continue;
+        for(let x=0;x<4&&ok;x++)for(let y=x+1;y<4;y++){
+          const p1=grid[VOICES[x]][q-1],p2=grid[VOICES[y]][q-1],c1=grid[VOICES[x]][q],c2=grid[VOICES[y]][q];
+          const moved=(p1!==c1)&&(p2!==c2),i1=Math.abs(p1-p2)%12,i2=Math.abs(c1-c2)%12,d1=Math.sign(c1-p1),d2=Math.sign(c2-p2);
+          if(moved&&(i1===7||i1===0)&&i1===i2&&d1===d2){ok=false;break;}
+        }
+      }
+    }
+    // revertir (lo comiteamos fuera si ok)
+    changes.forEach(ch=>{ grid[ch.v][ch.q]=orig[ch.v+':'+ch.q]; });
+    return ok;
+  }
+  function commit(changes){ changes.forEach(ch=>{ grid[ch.v][ch.q]=ch.midi; }); }
+
+  // barajar y aplicar validando contra la rejilla
+  for(let k=cand.length-1;k>0;k--){ const j=Math.floor(rng()*(k+1)); [cand[k],cand[j]]=[cand[j],cand[k]]; }
+  const vslot={}; const used=(v,s)=>vslot[v+':'+s]; const mark=(v,s)=>{vslot[v+':'+s]=true;};
+  const target = 2 + Math.floor(rng()*3);   // 2..4 ornamentos
+  let applied=0;
+  for(const e of cand){
+    if(applied>=target) break;
+    if(e.type==='pt'||e.type==='nbr'){
+      const q=2*e.slot+1;
+      if(used(e.v,e.slot)) continue;
+      if(!gridOK([{v:e.v,q,midi:e.note.midi}])) continue;
+      commit([{v:e.v,q,midi:e.note.midi}]); mark(e.v,e.slot);
+      const main=groups[e.v][e.slot][0]; main.q=1; groups[e.v][e.slot]=[main,e.note]; applied++;
+    } else if(e.type==='sus'){
+      const q=2*e.slotRes;
+      if(used(e.v,e.slotRes)||used(e.v,e.slotPrep)) continue;
+      if(!gridOK([{v:e.v,q,midi:e.prep.midi}])) continue;
+      commit([{v:e.v,q,midi:e.prep.midi}]); mark(e.v,e.slotRes); mark(e.v,e.slotPrep);
+      groups[e.v][e.slotPrep][0].tieStart=true;
+      const resMain=groups[e.v][e.slotRes][0]; resMain.q=1;
+      const sus={midi:e.prep.midi,letter:e.prep.letter,acc:e.prep.acc,octave:octFor(e.prep.letter,e.prep.acc,e.prep.midi),q:1,slot:e.slotRes,role:'sus',tieEnd:true};
+      groups[e.v][e.slotRes]=[sus,resMain]; applied++;
+    } else if(e.type==='app'){
+      const q=2*e.slot;
+      if(used(e.v,e.slot)) continue;
+      if(!gridOK([{v:e.v,q,midi:e.note.midi}])) continue;
+      commit([{v:e.v,q,midi:e.note.midi}]); mark(e.v,e.slot);
+      const main=groups[e.v][e.slot][0]; main.q=1; groups[e.v][e.slot]=[e.note,main]; applied++;
+    }
+  }
+  // aplanar
+  const streams={};
+  VOICES.forEach(v=>{ streams[v]=[]; groups[v].forEach(g=>g.forEach(n=>streams[v].push(n))); });
+  return {streams};
+}
+
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+function generate(opts={}){
+  const seed = opts.seed!==undefined ? opts.seed : (Math.random()*1e9)|0;
+  const rng = mulberry32(seed);
+
+  const types = Object.keys(TEMPLATES);
+  const type = (opts.type && opts.type!=='random') ? opts.type : types[Math.floor(rng()*types.length)];
+  const T = TEMPLATES[type];
+
+  // modo
+  const mode = opts.mode || T.modes[Math.floor(rng()*T.modes.length)];
+  // tonalidad
+  const keyNames = Object.keys(KEYSIG[mode]);
+  const keyName = opts.key || keyNames[Math.floor(rng()*keyNames.length)];
+  const key = buildKey(keyName, mode);
+
+  // secuencia
+  let seqs = (mode==='minor' && T.seqsMinor) ? T.seqsMinor : T.seqs;
+  const pick = seqs[Math.floor(rng()*seqs.length)];
+  const specs = Array.isArray(pick) ? pick : pick.s;
+  const finalConstraint = Array.isArray(pick) ? T.finalSoprano : (pick.fin || T.finalSoprano);
+
+  // realización (varios intentos por aleatoriedad del beam)
+  let real=null;
+  for(let attempt=0; attempt<6 && !real; attempt++){
+    real = realize(key, specs, finalConstraint, mulberry32(seed+attempt*7919+1));
+  }
+  if(!real){ // último recurso: sin restricción de soprano final
+    real = realize(key, specs, null, mulberry32(seed+1));
+  }
+  if(!real) throw new Error('No se pudo realizar la cadencia '+type+' en '+keyName+' '+mode);
+
+  // duraciones: 6 blancas + redonda
+  const qs=[2,2,2,2,2,2,4];
+  const events = real.voicings.map((v,i)=>({
+    midi:[v.S,v.A,v.T,v.B],
+    q: qs[i],
+    rn: real.chords[i].roman,
+    cadence: (i>=qs.length-2),     // los dos últimos acordes (protagonistas)
+    spell: spellEvent(real.chords[i], v),
+    chordPcs: real.chords[i].tones.map(t=>t.pc),
+    bassPc: real.chords[i].bassPc,
+    deg: real.chords[i].deg,
+    inv: real.chords[i].inv
+  }));
+
+  // ornamentación a 4 voces (movimiento) + info de cifrado por slot
+  const emb = embellish(real.voicings, real.chords, key, rng);
+  const cadStart = qs.length-2;
+  const harm = real.chords.map((ch,i)=>({slot:i, rn:ch.roman, cadence:(i>=cadStart)}));
+
+  return {
+    type, label:T.label, mode, keyName, key,
+    vexKey:key.vexKey,
+    events, streams:emb.streams, harm, cadenceSlots:[cadStart, qs.length-1],
+    tempo:85, seed
+  };
+}
+
+// deletreo nota-a-nota para VexFlow (letra+acc correctos por función)
+function spellEvent(chord, v){
+  const byPc={};
+  chord.tones.forEach(t=>byPc[t.pc]=t);
+  return [v.S,v.A,v.T,v.B].map(m=>{
+    const pc=((m%12)+12)%12, oct=Math.floor(m/12)-1;
+    const t=byPc[pc];
+    if(t) return {letter:LETTER_NAME[t.letter], acc:t.acc, octave: octForLetter(t, oct, pc), midi:m};
+    // fallback (no debería ocurrir)
+    return {letter:'C', acc:0, octave:oct, midi:m};
+  });
+}
+// la octava VexFlow va por la letra; ajustamos si acc cruza de octava (Cb/B#)
+function octForLetter(tone, octFromPc, pc){
+  // octFromPc se calculó con pc; el nombre por letra normalmente coincide salvo Cb/B#
+  const letterNaturalPc = LETTER_PC[tone.letter];
+  // pc real = letterNaturalPc+acc ; si cruza el límite C, ajustar
+  let oct = octFromPc;
+  if(tone.acc===1 && letterNaturalPc===11) oct = octFromPc-1; // B# suena como C
+  if(tone.acc===-1 && letterNaturalPc===0) oct = octFromPc+1; // Cb suena como B
+  return oct;
+}
+
+
+return {generate, buildKey, buildChord, TEMPLATES, KEYSIG, romanLabel, RANGE};
+})();
+
+</script>
+<script>
+/* ===== PreDict · CADENCIAS (audición) ==============================
+   Vista interna de PreDict. Reutiliza window.CadenceEngine (motor v2).
+   Misma lógica que la versión de teoría, punto de vista inverso (oído).
+   Flujo: escucha (ondas) -> marca respuesta -> "Pista visual" revela la
+   partitura (fundido) -> mantener (corrige) / cambiar. "Corregir" directo
+   revela y colorea con parpadeo. Prompt "marca antes tu respuesta"
+   integrado en el título de la tarjeta (no tapa, no scroll).
+==================================================================== */
+(function(){
+  if(typeof Vex==='undefined' || !window.CadenceEngine){ return; }
+  const VF=Vex.Flow, ENG=window.CadenceEngine;
+  const $=id=>document.getElementById(id);
+
+  const TYPE_LABELS={autentica_perfecta:'Auténtica perfecta',autentica_imperfecta:'Auténtica imperfecta (con inversión)',plagal_perfecta:'Plagal perfecta',plagal_imperfecta:'Plagal imperfecta (con inversión)',semicadencia:'Semicadencia',rota:'Rota'};
+  const TYPE_AB={autentica_perfecta:'V \u2013 I',autentica_imperfecta:'V \u2013 I',plagal_perfecta:'IV \u2013 I',plagal_imperfecta:'IV \u2013 I',semicadencia:'\u2026 \u2013 V',rota:'V \u2013 VI'};
+  const TYPE_ORDER=['autentica_perfecta','autentica_imperfecta','plagal_perfecta','plagal_imperfecta','semicadencia','rota'];
+  const KEY_SOLFEGE={'C':'Do','G':'Sol','D':'Re','A':'La','F':'Fa','Bb':'Si\u266d','Eb':'Mi\u266d','E':'Mi','B':'Si','F#':'Fa\u266f'};
+  function keySolf(k,m){ return (KEY_SOLFEGE[k]||k)+' '+(m==='major'?'mayor':'menor'); }
+  const INSTRUMENTS=[
+    {id:'piano',label:'Piano',sf:'acoustic_grand_piano',syn:'piano'},
+    {id:'epiano',label:'Piano eléctrico',sf:'electric_piano_1',syn:'epiano'},
+    {id:'coro',label:'Coro',sf:'choir_aahs',syn:'coro'},
+    {id:'organo',label:'Órgano',sf:'church_organ',syn:'organo'},
+    {id:'cuerdas',label:'Cuerdas',sf:'string_ensemble_1',syn:'cuerdas'},
+  ];
+
+  /* ---------- render ---------- */
+  const _LN=['C','D','E','F','G','A','B'];
+  function accSym(a){ return a===1?'#':a===-1?'b':a===2?'##':a===-2?'bb':'n'; }
+  function vexKeyOf(n){ return _LN[n.letter].toLowerCase()+(n.acc===0?'':accSym(n.acc))+'/'+n.octave; }
+  function sigAcc(key,letter){ return key.accForLetter[_LN[letter]]||0; }
+  function byMeasure(stream){ const m=[[],[],[],[]]; stream.forEach(n=>{ const c=n.slot<=1?0:n.slot<=3?1:n.slot<=5?2:3; m[c].push(n); }); return m; }
+  function durOf(q){ return q===4?'w':q===2?'h':q===1?'q':'8'; }
+  function renderCad(host, gen, colorMode){
+    host.innerHTML=''; if(!gen) return;
+    const key=gen.key, cadSlots=gen.cadenceSlots;
+    const cw=host.clientWidth||1000; const W=Math.max(680,Math.min(cw-22,1180)), H=250;
+    const r=new VF.Renderer(host,VF.Renderer.Backends.SVG); r.resize(W,H);
+    const ctx=r.getContext(); ctx.setFont('Helvetica',10);
+    const mS=byMeasure(gen.streams.S),mA=byMeasure(gen.streams.A),mT=byMeasure(gen.streams.T),mB=byMeasure(gen.streams.B);
+    const maxNotes=[0,1,2,3].map(i=>Math.max(mS[i].length,mA[i].length,mT[i].length,mB[i].length));
+    const leftPad=26, firstExtra=92, usable=W-leftPad-10;
+    const weights=maxNotes.map(n=>1+0.42*(n-1)); const sumW=weights.reduce((a,b)=>a+b,0);
+    const avail=usable-firstExtra; const barW=weights.map(w=>(w/sumW)*avail); barW[0]+=firstExtra;
+    let x=leftPad; const trebles=[],basses=[];
+    for(let b=0;b<4;b++){
+      const top=new VF.Stave(x,14,barW[b]), bot=new VF.Stave(x,116,barW[b]);
+      if(b===0){ top.addClef('treble').addKeySignature(gen.vexKey).addTimeSignature('4/4'); bot.addClef('bass').addKeySignature(gen.vexKey).addTimeSignature('4/4'); }
+      if(b===3){ top.setEndBarType(VF.Barline.type.END); bot.setEndBarType(VF.Barline.type.END); }
+      top.setContext(ctx).draw(); bot.setContext(ctx).draw();
+      if(b===0){ new VF.StaveConnector(top,bot).setType(VF.StaveConnector.type.BRACE).setContext(ctx).draw(); new VF.StaveConnector(top,bot).setType(VF.StaveConnector.type.SINGLE_LEFT).setContext(ctx).draw(); }
+      trebles.push(top); basses.push(bot); x+=barW[b];
+    }
+    const HL = colorMode==='green'?{fillStyle:'#1e9e57',strokeStyle:'#1e9e57'}:colorMode==='red'?{fillStyle:'#d23b45',strokeStyle:'#d23b45'}:null;
+    function buildVN(measureArr, stemDir, clef){
+      return measureArr.map(notes=> notes.map(n=>{
+        const sn=new VF.StaveNote({clef, keys:[vexKeyOf(n)], duration:durOf(n.q), stem_direction:stemDir});
+        if(n.acc!==sigAcc(key,n.letter)) sn.addModifier(new VF.Accidental(accSym(n.acc)),0);
+        if(HL && cadSlots.indexOf(n.slot)>=0) sn.setStyle(HL);
+        return {sn,src:n};
+      }));
+    }
+    const vnS=buildVN(mS,1,'treble'),vnA=buildVN(mA,-1,'treble'),vnT=buildVN(mT,1,'bass'),vnB=buildVN(mB,-1,'bass');
+    if(colorMode){ gen.harm.forEach(h=>{ for(const mc of vnB){ for(const o of mc){ if(o.src.slot===h.slot && o.src.role==='main'){ o.sn.addModifier(new VF.Annotation(h.rn).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM).setFont('Helvetica',h.cadence?15:11,h.cadence?'bold':'normal'),0); return; } } } }); }
+    for(let b=0;b<4;b++){
+      const vs=new VF.Voice({num_beats:4,beat_value:4}).setMode(VF.Voice.Mode.SOFT);
+      const va=new VF.Voice({num_beats:4,beat_value:4}).setMode(VF.Voice.Mode.SOFT);
+      const vt=new VF.Voice({num_beats:4,beat_value:4}).setMode(VF.Voice.Mode.SOFT);
+      const vb=new VF.Voice({num_beats:4,beat_value:4}).setMode(VF.Voice.Mode.SOFT);
+      vs.addTickables(vnS[b].map(o=>o.sn)); va.addTickables(vnA[b].map(o=>o.sn)); vt.addTickables(vnT[b].map(o=>o.sn)); vb.addTickables(vnB[b].map(o=>o.sn));
+      const fmtW=barW[b]-(b===0?firstExtra:16);
+      new VF.Formatter().joinVoices([vs]).joinVoices([va]).joinVoices([vt]).joinVoices([vb]).format([vs,va,vt,vb],Math.max(60,fmtW));
+      vs.draw(ctx,trebles[b]); va.draw(ctx,trebles[b]); vt.draw(ctx,basses[b]); vb.draw(ctx,basses[b]);
+    }
+    [[vnS,1],[vnA,-1],[vnT,1],[vnB,-1]].forEach(function(pair){ const vn=pair[0],dir=pair[1]; const flat=[]; vn.forEach(mc=>mc.forEach(o=>flat.push(o)));
+      for(let i=0;i<flat.length-1;i++){ if(flat[i].src.tieStart && flat[i+1].src.tieEnd){ try{ const tie=new VF.StaveTie({first_note:flat[i].sn,last_note:flat[i+1].sn,first_indices:[0],last_indices:[0]}); if(tie.setDirection) tie.setDirection(-dir); tie.setContext(ctx).draw(); }catch(e){} } } });
+  }
+
+  /* ---------- audio (5 timbres + analizador) ---------- */
+  let actx=null,master=null,comp=null,analyser=null,sfCache={},activeNodes=[];
+  let currentInst='piano';
+  function midiFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+  function initAudio(){ if(actx) return;
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    comp=actx.createDynamicsCompressor(); comp.threshold.value=-16; comp.knee.value=22; comp.ratio.value=3; comp.attack.value=0.004; comp.release.value=0.22;
+    analyser=actx.createAnalyser(); analyser.fftSize=1024; analyser.smoothingTimeConstant=0.78;
+    master=actx.createGain(); master.gain.value=0.8; master.connect(analyser); analyser.connect(comp); comp.connect(actx.destination);
+  }
+  function getAnalyser(){ initAudio(); return analyser; }
+  async function loadSF(inst){ if(inst.id in sfCache) return sfCache[inst.id];
+    if(typeof Soundfont==='undefined'){ sfCache[inst.id]=null; return null; } initAudio();
+    try{ const loader=Soundfont.instrument(actx,inst.sf,{soundfont:'MusyngKite',format:'mp3',destination:master});
+      const to=new Promise((_,rej)=>setTimeout(()=>rej(new Error('to')),6500));
+      const instr=await Promise.race([loader,to]); sfCache[inst.id]=instr; return instr;
+    }catch(e){ sfCache[inst.id]=null; return null; } }
+  function preloadInst(id){ const it=INSTRUMENTS.find(i=>i.id===id); if(it){ initAudio(); if(actx.state==='suspended') actx.resume(); loadSF(it); } }
+  function env(g,t,dur,a,d,sLvl,r,peak){ const tiny=0.0006; g.gain.setValueAtTime(tiny,t); g.gain.linearRampToValueAtTime(peak,t+a); g.gain.exponentialRampToValueAtTime(Math.max(tiny,peak*sLvl),t+a+d); const rel=Math.max(t+a+d,t+dur-r); g.gain.setValueAtTime(Math.max(tiny,peak*sLvl),rel); g.gain.exponentialRampToValueAtTime(tiny,t+dur); }
+  function synthNote(type,freq,t,dur,amp){ const dest=master;
+    if(type==='piano'){ [[1,1.0,1.0],[2,0.42,0.55],[3,0.18,0.32],[4,0.08,0.22]].forEach(function(p){ const h=p[0],lvl=p[1],decF=p[2]; const o=actx.createOscillator(),g=actx.createGain(); o.type='sine'; o.frequency.value=freq*h*(1+(h-1)*0.0008); const peak=amp*lvl*0.5; g.gain.setValueAtTime(0.0006,t); g.gain.linearRampToValueAtTime(peak,t+0.006); g.gain.exponentialRampToValueAtTime(0.0006,t+Math.min(dur,0.5+1.6*decF)); o.connect(g); g.connect(dest); o.start(t); o.stop(t+dur+0.05); });
+      const nb=actx.createBufferSource(), buf=actx.createBuffer(1,Math.floor(actx.sampleRate*0.03),actx.sampleRate); const d0=buf.getChannelData(0); for(let i=0;i<d0.length;i++) d0[i]=(Math.random()*2-1)*Math.pow(1-i/d0.length,3); nb.buffer=buf; const ng=actx.createGain(); ng.gain.value=amp*0.12; const nf=actx.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=1500; nb.connect(nf); nf.connect(ng); ng.connect(dest); nb.start(t); return; }
+    if(type==='epiano'){ const car=actx.createOscillator(),cg=actx.createGain(); car.type='sine'; car.frequency.value=freq; const mod=actx.createOscillator(),mg=actx.createGain(); mod.type='sine'; mod.frequency.value=freq; mg.gain.setValueAtTime(freq*2.2,t); mg.gain.exponentialRampToValueAtTime(freq*0.15,t+Math.min(dur,0.8)); mod.connect(mg); mg.connect(car.frequency); env(cg,t,dur,0.005,0.5,0.18,0.18,amp*0.6); const lfo=actx.createOscillator(),lg=actx.createGain(); lfo.frequency.value=5.2; lg.gain.value=amp*0.06; const trem=actx.createGain(); trem.gain.value=1; lfo.connect(lg); lg.connect(trem.gain); car.connect(cg); cg.connect(trem); trem.connect(dest); car.start(t); mod.start(t); lfo.start(t); car.stop(t+dur+0.05); mod.stop(t+dur+0.05); lfo.stop(t+dur+0.05); return; }
+    if(type==='organo'){ const sum=actx.createGain(); env(sum,t,dur,0.02,0.02,0.95,0.06,amp*0.5); sum.connect(dest); [[1,1.0],[2,0.6],[3,0.4],[4,0.25],[6,0.12]].forEach(function(p){ const h=p[0],lvl=p[1]; const o=actx.createOscillator(),g=actx.createGain(); o.type='sine'; o.frequency.value=freq*h*(h>1?1.001:1); g.gain.value=lvl; o.connect(g); g.connect(sum); o.start(t); o.stop(t+dur+0.05); }); return; }
+    if(type==='coro'){ const sum=actx.createGain(); env(sum,t,dur,0.12,0.10,0.9,0.18,amp*0.5); sum.connect(dest); const src=actx.createGain(); [-7,7].forEach(function(c){ const o=actx.createOscillator(); o.type='sawtooth'; o.frequency.value=freq*Math.pow(2,c/1200); const vib=actx.createOscillator(),vg=actx.createGain(); vib.frequency.value=5; vg.gain.value=freq*0.006; vib.connect(vg); vg.connect(o.frequency); vib.start(t); vib.stop(t+dur+0.05); o.connect(src); o.start(t); o.stop(t+dur+0.05); }); [[700,1.0],[1220,0.6],[2600,0.35]].forEach(function(p){ const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=p[0]; bp.Q.value=8; const gg=actx.createGain(); gg.gain.value=p[1]; src.connect(bp); bp.connect(gg); gg.connect(sum); }); return; }
+    { const sum=actx.createGain(); env(sum,t,dur,0.09,0.08,0.92,0.16,amp*0.45); const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3200; lp.Q.value=0.5; sum.connect(lp); lp.connect(dest); [-8,0,8].forEach(function(c){ const o=actx.createOscillator(); o.type='sawtooth'; o.frequency.value=freq*Math.pow(2,c/1200); const vib=actx.createOscillator(),vg=actx.createGain(); vib.frequency.value=4.5; vg.gain.value=freq*0.004; vib.connect(vg); vg.connect(o.frequency); vib.start(t); vib.stop(t+dur+0.05); const g=actx.createGain(); g.gain.value=0.5; o.connect(g); g.connect(sum); o.start(t); o.stop(t+dur+0.05); }); return; }
+  }
+  function buildAudioNotes(gen){ const spb=60/gen.tempo, out=[]; ['S','A','T','B'].forEach(v=>{ const arr=gen.streams[v]; let t=0; for(let i=0;i<arr.length;i++){ const n=arr[i]; let dur=n.q, adv=n.q; if(n.tieStart && arr[i+1] && arr[i+1].tieEnd){ dur+=arr[i+1].q; adv+=arr[i+1].q; i++; } out.push({midi:n.midi,start:t*spb,dur:dur*spb}); t+=adv; } }); return out; }
+  function stopAudio(){ playSession++; activeNodes.forEach(n=>{try{ n&&n.stop&&n.stop(); }catch(e){}}); activeNodes=[]; }
+  async function play(gen){ initAudio(); if(actx.state==='suspended') actx.resume(); stopAudio();
+    const inst=INSTRUMENTS.find(i=>i.id===currentInst)||INSTRUMENTS[0];
+    const ld=$('cadAudLoading'); if(ld) ld.textContent='Cargando sonido…';
+    const instr=await loadSF(inst); if(ld) ld.textContent = instr? '' : 'Sonido sintetizado (sin conexión al banco de muestras).';
+    const t0=actx.currentTime+0.1;
+    buildAudioNotes(gen).forEach(n=>{ const amp=0.85; if(instr){ const node=instr.play(n.midi,t0+n.start,{duration:n.dur*0.96,gain:amp}); activeNodes.push(node); } else synthNote(inst.syn,midiFreq(n.midi),t0+n.start,n.dur,amp); });
+    const total=gen.events.reduce((s,e)=>s+e.q,0)*(60/gen.tempo);
+    return {total};
+  }
+
+  /* ---------- visualizador ---------- */
+  function makeVisualizer(canvas){
+    const g=canvas.getContext('2d'); let an=null,freq=null,raf=null,running=false,phase=0;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function resize(){ const r=canvas.getBoundingClientRect(); const dpr=window.devicePixelRatio||1; canvas.width=Math.max(1,r.width*dpr); canvas.height=Math.max(1,r.height*dpr); g.setTransform(dpr,0,0,dpr,0,0); }
+    function draw(){ const w=canvas.clientWidth||300,h=canvas.clientHeight||120; g.clearRect(0,0,w,h);
+      if(running&&an) an.getByteFrequencyData(freq);
+      const bars=46,bw=w/bars;
+      for(let i=0;i<bars;i++){ let v; if(running&&an){ v=freq[Math.floor(i/bars*freq.length*0.62)]/255; } else { v=0.05+0.035*(reduce?0.5:Math.abs(Math.sin(phase+i*0.4))); }
+        const bh=Math.max(2,v*h*0.84); const grad=g.createLinearGradient(0,h,0,h-bh); grad.addColorStop(0,'rgba(122,94,27,0.45)'); grad.addColorStop(1,'rgba(233,201,106,0.96)'); g.fillStyle=grad; const x=i*bw+bw*0.18; g.fillRect(x,h-bh,bw*0.64,bh); }
+      g.beginPath();
+      if(running&&an){ const td=new Uint8Array(an.fftSize); an.getByteTimeDomainData(td); for(let i=0;i<td.length;i++){ const x=i/td.length*w; const y=h/2+((td[i]-128)/128)*h*0.34; i?g.lineTo(x,y):g.moveTo(x,y); } g.strokeStyle='rgba(243,234,210,0.92)'; g.lineWidth=1.6; }
+      else { g.moveTo(0,h/2); for(let x=0;x<=w;x+=6){ const y=h/2+(reduce?0:Math.sin(phase+x*0.03)*3); g.lineTo(x,y); } g.strokeStyle='rgba(243,234,210,0.45)'; g.lineWidth=1.4; }
+      g.stroke(); phase+=0.045; raf=requestAnimationFrame(draw);
+    }
+    return { mount(){ resize(); window.addEventListener('resize',resize); if(!raf) draw(); }, start(a){ an=a; freq=new Uint8Array(a.frequencyBinCount); running=true; }, stop(){ running=false; } };
+  }
+
+  /* ---------- estado / flujo ---------- */
+  let current=null, provisional=null, revealed=false, corrected=false, answerOK=false;
+  let viz=null, inited=false, isPlaying=false, playSession=0, awaitingReveal=false;
+  function buildSound(){ const host=$('cadAudSound'); if(!host || host.querySelector('.cadx-snd-btn')) return;
+    INSTRUMENTS.forEach(it=>{ const b=document.createElement('button'); b.className='cadx-snd-btn'; b.dataset.id=it.id; b.textContent=it.label; if(it.id===currentInst) b.classList.add('on');
+      b.addEventListener('click',()=>{ currentInst=it.id; host.querySelectorAll('.cadx-snd-btn').forEach(x=>x.classList.toggle('on',x===b)); preloadInst(it.id); }); host.appendChild(b); }); }
+  function buildAnswers(){ const host=$('cadAudAnswers'); host.innerHTML='';
+    TYPE_ORDER.forEach(t=>{ const b=document.createElement('button'); b.className='cadx-tipo'; b.dataset.t=t; b.innerHTML='<span>'+TYPE_LABELS[t]+'</span><span class="ab">'+TYPE_AB[t]+'</span>';
+      b.addEventListener('click',()=>{ if(corrected) return; setProvisional(t); }); host.appendChild(b); }); }
+  function setKey(txt){ const k=$('cadAudKey'); k.textContent=txt||''; k.style.visibility=txt?'visible':'hidden'; }
+  function highlight(){ document.querySelectorAll('#cadAudAnswers .cadx-tipo').forEach(b=>b.classList.toggle('sel',b.dataset.t===provisional)); }
+  function setMsg(txt,flash){ const m=$('cadAudMsg'); if(!txt){ m.classList.remove('show'); m.innerHTML=''; return; } m.innerHTML=''; const s=document.createElement('span'); s.textContent=txt; m.appendChild(s); m.classList.add('show'); if(flash){ m.classList.remove('flash'); void m.offsetWidth; m.classList.add('flash'); } }
+  function keepMsg(){ const m=$('cadAudMsg'); m.innerHTML='';
+    const s=document.createElement('span'); s.textContent='Partitura revelada \u00b7 \u00bfmantienes tu respuesta?';
+    const keep=document.createElement('button'); keep.className='iconbtn btn-correct'; keep.textContent='Mantener';
+    const chg=document.createElement('button'); chg.className='iconbtn'; chg.textContent='Cambiar';
+    keep.addEventListener('click',()=>{ corregir(); });
+    chg.addEventListener('click',()=>{ provisional=null; highlight(); setMsg(''); });
+    m.appendChild(s); m.appendChild(keep); m.appendChild(chg); m.classList.add('show');
+  }
+  function setProvisional(t){ if(corrected) return; provisional=t; highlight();
+    if(awaitingReveal){ awaitingReveal=false; reveal(); } else { corregir(); } }
+  function nuevo(){ stopAudio(); if(viz) viz.stop();
+    current=ENG.generate({}); provisional=null; revealed=false; corrected=false; answerOK=false; isPlaying=false; awaitingReveal=false;
+    buildAnswers(); setMsg('');
+    const rep=$('cadAudRepro'), sw=$('cadAudScoreWrap');
+    rep.style.display='flex'; rep.classList.remove('cadx-fade'); sw.style.display='none'; $('cadAudScoreReveal').classList.remove('in'); $('cadAudScore').innerHTML='';
+    $('cadAudHint').style.display='inline-flex'; $('cadAudHint').disabled=false;
+    const r=$('cadAudResult'); r.className='cadx-result'; r.innerHTML=''; setKey(''); }
+  function toggleListen(){ if(corrected) return; if(isPlaying){ stopListen(); return; }
+    isPlaying=true; const an=getAnalyser(); if(viz) viz.start(an); const session=++playSession;
+    play(current).then(info=>{ setTimeout(()=>{ if(session!==playSession) return; isPlaying=false; if(viz) viz.stop(); }, (info.total+0.3)*1000); }); }
+  function stopListen(){ playSession++; stopAudio(); isPlaying=false; if(viz) viz.stop(); }
+  function showScore(colorMode){ renderCad($('cadAudScore'), current, colorMode);
+    const rep=$('cadAudRepro'), sw=$('cadAudScoreWrap');
+    if(!revealed){ rep.classList.add('cadx-fade'); setTimeout(()=>{ rep.style.display='none'; sw.style.display='block'; void sw.offsetWidth; $('cadAudScoreReveal').classList.add('in'); },420); revealed=true; } }
+  function hintVisual(){ if(corrected) return; if(!provisional){ awaitingReveal=true; setMsg('Antes de ver la partitura, marca tu respuesta provisional', true); return; } reveal(); }
+  function reveal(){ if(corrected) return; stopListen(); showScore(null); $('cadAudHint').style.display='none'; keepMsg(); }
+  function corregir(){ if(corrected || !provisional) return;
+    corrected=true; playSession++; stopAudio(); isPlaying=false; if(viz) viz.stop(); setMsg('');
+    showScore(null);                                  // revela con fundido (si no estaba), aún sin color
+    let chosen=null;
+    document.querySelectorAll('#cadAudAnswers .cadx-tipo').forEach(b=>{ b.disabled=true; b.classList.remove('sel'); if(b.dataset.t===provisional){ chosen=b; b.classList.add('cadx-pending'); } });
+    $('cadAudHint').style.display='none';
+    const correct=current.type; answerOK=(provisional===correct);
+    setTimeout(()=>{                                   // parpadeo de expectación y LUEGO color definitivo
+      if(chosen) chosen.classList.remove('cadx-pending');
+      document.querySelectorAll('#cadAudAnswers .cadx-tipo').forEach(b=>{ if(b.dataset.t===correct) b.classList.add(provisional===correct?'sel-ok-green':'sol-ok'); else if(b.dataset.t===provisional) b.classList.add('sel-bad'); });
+      renderCad($('cadAudScore'), current, answerOK?'green':'red');
+      setKey(keySolf(current.keyName,current.mode));
+      const ev=current.events, formula=ev[ev.length-2].rn+' \u2192 '+ev[ev.length-1].rn;
+      const r=$('cadAudResult');
+      if(answerOK){ r.className='cadx-result good'; r.innerHTML='\u2713 Correcto \u00b7 <b>'+TYPE_LABELS[correct]+'</b> \u00b7 '+formula; }
+      else { r.className='cadx-result bad'; r.innerHTML='\u2717 Era <b>'+TYPE_LABELS[correct]+'</b> \u00b7 '+formula+' &nbsp;\u00b7&nbsp; tu respuesta: '+TYPE_LABELS[provisional]; }
+    }, 1400);
+  }
+  function wire(){ $('cadAudNew').addEventListener('click', nuevo); $('cadAudPlay').addEventListener('click', toggleListen); $('cadAudHint').addEventListener('click', hintVisual); buildSound(); }
+  window.__cadAudOpen=function(){ if(typeof Vex==='undefined'){ const h=$('cadAudScore'); if(h) h.innerHTML='<p style="color:#c00;padding:14px">No se cargó VexFlow.</p>'; return; }
+    if(!inited){ inited=true; viz=makeVisualizer($('cadAudViz')); viz.mount(); wire(); nuevo(); } else { nuevo(); } };
+  window.__cadAudStop=function(){ stopListen(); };
+  window.CAD_AUD={get gen(){return current;}, ENG};
 })();
 
 </script>
