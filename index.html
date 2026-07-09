@@ -292,6 +292,13 @@
   .mel-nums{position:absolute;left:0;right:0;bottom:8px;height:18px;z-index:2;pointer-events:none}
   .mel-nums span{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;color:#9aa3c4}
   .mel-empty-x{position:absolute;top:50%;transform:translate(-50%,-60%);color:var(--red);font-size:32px;font-weight:800;line-height:1;pointer-events:none;z-index:3;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  /* GN-UNIF 8-jul-2026 */
+  .gn-delx{position:absolute;z-index:7;width:28px;height:28px;padding:6px;box-sizing:border-box;background:transparent;cursor:pointer;touch-action:manipulation}
+  .gn-delx span{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:rgba(20,16,4,.88);border:1px solid var(--gold-soft);color:var(--gold-soft);font-size:11px;font-weight:800;line-height:1;pointer-events:none}
+  .gn-delx:hover span{background:var(--red-soft);border-color:var(--red);color:#ffd3d3}
+  .gn-undo{background:transparent;border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;touch-action:manipulation;transition:border-color .15s,color .15s,background .15s}
+  .gn-undo:hover:not(:disabled){border-color:var(--mel);color:var(--mel);background:var(--mel-soft)}
+  .gn-undo:disabled{opacity:.4;cursor:not-allowed}
 
   /* ---- TonCom ---- */
   .ton-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -3829,6 +3836,7 @@ function buildMelExos(){
   slotAcc[0]=(melSpell(mel.midis[0]).acc==='#')?1:0;       // su alteración (si la tiene)
   melExos=[{ key:{atonal:true, vfsig:'C', sig:0, name:'sin referencias tonales'}, clef,
     sol:mel.notes, midis:mel.midis, allowed, sigPCs:new Set(), slots, slotAcc, _selSlot:null,
+    _gnUndo:[], /* GN-UNIF 8-jul-2026 */
     listens:0, checked:false, scored:false, revealed:false, melSpeed:1 }];
 }
 
@@ -4078,16 +4086,28 @@ function drawMelBoard(idx){
   if(!ex.revealed){
     const layer=document.createElement('div'); layer.className='mel-ilayer'; layer.id='mellayer-'+idx;
     cont.appendChild(layer);
-    layer.addEventListener('mousemove',e=>onMelHover(idx,e));
+    layer.addEventListener('mousemove',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelHover(idx,e); });
     layer.addEventListener('mouseleave',()=>clearGhost(idx));
-    layer.addEventListener('click',e=>onMelClick(idx,e));
+    layer.addEventListener('click',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelClick(idx,e); });
     layer.addEventListener('contextmenu',e=>{ e.preventDefault(); onMelDelete(idx,e); });
+    /* GN-UNIF 8-jul-2026 · táctil: pulsar (fantasma) → arrastrar (sigue al dedo) → soltar (coloca) */
+    layer._touchHandled=false;
+    layer.addEventListener('touchstart',ev=>{ if(ev.touches&&ev.touches[0]) onMelHover(idx,ev.touches[0]); },{passive:true});
+    layer.addEventListener('touchmove',ev=>{ if(ev.touches&&ev.touches[0]){ onMelHover(idx,ev.touches[0]); ev.preventDefault(); } },{passive:false});
+    layer.addEventListener('touchend',ev=>{
+      layer._touchHandled=true; melTouchGuard[idx]=true;                 // guarda anti click/mousemove sintéticos
+      onMelClick(idx,ev); clearGhost(idx);
+      setTimeout(()=>{ melTouchGuard[idx]=false; },450);
+      ev.preventDefault();
+    },{passive:false});
   }
   // contenedor de la nota fantasma
   const gh=document.createElement('div'); gh.className='mel-ghost'; gh.id='melghost-'+idx; gh.style.display='none';
   cont.appendChild(gh);
   // menú ♭ ♯ × sobre la nota seleccionada
   if(!ex.revealed && ex._selSlot!=null && ex._selSlot>=1 && ex.slots[ex._selSlot]!=null) melShowAccPopup(idx);
+  gnMelPersistDelX(idx); /* GN-UNIF 8-jul-2026 · × fija de borrado tras cada redibujado */
+  gnMelRefreshUndo(idx); /* GN-UNIF 8-jul-2026 · estado del botón deshacer */
 }
 function melShowAccPopup(idx){
   const ex=melExos[idx]; const slot=ex._selSlot;
@@ -4109,7 +4129,8 @@ function melShowAccPopup(idx){
 function melSetAcc(idx,slot,a){
   const ex=melExos[idx]; if(ex.revealed) return;
   const sl=document.getElementById('melscore-'+idx);
-  if(a==='x'){ ex.slots[slot]=null; ex.slotAcc[slot]=0; ex._selSlot=null; ex.scored=false; if(sl) sl.innerHTML=''; clearGhost(idx); drawMelBoard(idx); refreshMelControls(idx); return; }
+  if(a==='x'){ gnMelDeleteSlot(idx,slot); return; } /* GN-UNIF 8-jul-2026 · borrado unificado (apila deshacer) */
+  gnMelPush(ex,slot);                      /* GN-UNIF 8-jul-2026 · cambiar la alteración también se puede deshacer */
   const na=parseInt(a,10); const cur=ex.slotAcc[slot]||0; const white=ex.slots[slot]-cur;
   const newAcc=(cur===na)?0:na;            // toggle: volver a pulsar la activa -> natural
   ex.slotAcc[slot]=newAcc; ex.slots[slot]=white+newAcc;
@@ -4160,6 +4181,7 @@ function nearestMidiByY(idx,mouseY){
   return best;
 }
 let melGhostMidi={}; // idx->midi actual de la fantasma
+let melTouchGuard={}; // idx->true mientras se ignoran los eventos sintéticos tras un toque /* GN-UNIF 8-jul-2026 */
 function svgOffsetMel(idx){
   const cont=document.getElementById('melboard-'+idx);
   const svg=cont? cont.querySelector('svg'):null;
@@ -4236,6 +4258,7 @@ function onMelClick(idx,e){
   if(!g) return;
   const ex=melExos[idx];
   if(ex.revealed) return;
+  gnMelPush(ex,g.slot);            /* GN-UNIF 8-jul-2026 · apila el valor previo (colocar/reescribir) */
   ex.slots[g.slot]=g.midi;         // g.midi es una nota natural (blanca)
   ex.slotAcc[g.slot]=0;
   ex._selSlot=g.slot;              // aparece el menú ♭ ♯ × sobre la nota
@@ -4257,13 +4280,71 @@ function onMelDelete(idx,e){
   const ex=melExos[idx];
   if(ex.revealed) return;
   const slot=slotUnderCursor(idx,e);
-  if(slot>=1 && ex.slots[slot]!==null){
-    ex.slots[slot]=null; ex.slotAcc[slot]=0;
-    if(ex._selSlot===slot) ex._selSlot=null;
-    ex.scored=false;
-    const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
-    clearGhost(idx);
-    drawMelBoard(idx); refreshMelControls(idx);
+  if(slot>=1 && ex.slots[slot]!==null) gnMelDeleteSlot(idx,slot); /* GN-UNIF 8-jul-2026 · vía única de borrado */
+}
+/* GN-UNIF 8-jul-2026 · pila de deshacer por ejercicio: guarda el valor previo del slot */
+function gnMelPush(ex,slot){
+  if(!ex._gnUndo) ex._gnUndo=[];
+  ex._gnUndo.push({slot, midi:ex.slots[slot], acc:(ex.slotAcc&&ex.slotAcc[slot])||0});
+}
+/* GN-UNIF 8-jul-2026 · borra un slot del alumno (×, menú o click derecho) apilando en deshacer */
+function gnMelDeleteSlot(idx,slot){
+  const ex=melExos[idx];
+  if(ex.revealed || slot<1 || ex.slots[slot]===null || ex.slots[slot]===undefined) return;
+  gnMelPush(ex,slot);
+  ex.slots[slot]=null; ex.slotAcc[slot]=0;
+  if(ex._selSlot===slot) ex._selSlot=null;
+  ex.scored=false;
+  const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
+  clearGhost(idx);
+  drawMelBoard(idx); refreshMelControls(idx);
+}
+/* GN-UNIF 8-jul-2026 · deshace la última acción (colocar, reescribir, alterar o borrar) */
+function gnMelUndo(idx){
+  const ex=melExos[idx];
+  if(ex.revealed || !ex._gnUndo || !ex._gnUndo.length) return;
+  const u=ex._gnUndo.pop();
+  ex.slots[u.slot]=u.midi; ex.slotAcc[u.slot]=u.acc;
+  ex._selSlot=null; ex.scored=false;
+  const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
+  clearGhost(idx);
+  drawMelBoard(idx); refreshMelControls(idx);
+}
+/* GN-UNIF 8-jul-2026 · habilita/deshabilita el botón deshacer según la pila */
+function gnMelRefreshUndo(idx){
+  const ex=melExos[idx];
+  const b=document.getElementById('melundo-'+idx); if(!b||!ex) return;
+  b.disabled = ex.revealed || !(ex._gnUndo && ex._gnUndo.length);
+}
+/* GN-UNIF 8-jul-2026 · × FIJA a la derecha de cada nota colocada por el alumno (nunca la dada ni tras revelar) */
+function gnMelPersistDelX(idx){
+  const ex=melExos[idx];
+  const cont=document.getElementById('melboard-'+idx); if(!cont||!ex) return;
+  cont.querySelectorAll('.gn-delx').forEach(n=>n.remove());
+  if(ex.revealed) return;
+  const off=svgOffsetMel(idx);
+  for(let i=1;i<10;i++){
+    if(ex.slots[i]===null || ex.slots[i]===undefined) continue;
+    const x=ex._noteX?ex._noteX[i]:null;
+    const white=ex.slots[i]-((ex.slotAcc&&ex.slotAcc[i])||0);   // la Y se calcula sobre la nota natural (línea/espacio)
+    const y=melYForMidi(idx,white);
+    if(x==null||y==null) continue;
+    const d=document.createElement('div');
+    d.className='gn-delx'; d.title='Borrar esta nota';
+    d.innerHTML='<span>×</span>';
+    // a la DERECHA de la cabeza (a la izquierda van las alteraciones); wrapper 28px = zona táctil generosa
+    d.style.left=Math.round(x+off.dx+10-6)+'px';
+    d.style.top=Math.round(y+off.dy-8-6)+'px';
+    d.addEventListener('pointerdown',ev=>ev.stopPropagation());
+    d.addEventListener('touchstart',ev=>ev.stopPropagation(),{passive:true});
+    d.addEventListener('contextmenu',ev=>{ ev.preventDefault(); ev.stopPropagation(); });
+    d.addEventListener('click',ev=>{ ev.stopPropagation(); if(melTouchGuard[idx]) return; gnMelDeleteSlot(idx,i); });
+    d.addEventListener('touchend',ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      melTouchGuard[idx]=true; setTimeout(()=>{ melTouchGuard[idx]=false; },450);
+      gnMelDeleteSlot(idx,i);
+    },{passive:false});
+    cont.appendChild(d);
   }
 }
 
@@ -4297,14 +4378,16 @@ function renderMelExos(){
             '<div class="score-line" id="melscore-'+idx+'"></div>'+
           '</div>'+
           '<div class="check-bar">'+
+            '<button class="gn-undo" id="melundo-'+idx+'" disabled>↶ Deshacer</button>'+ /* GN-UNIF 8-jul-2026 */
             '<button class="check-link" id="melcheck-'+idx+'">¿Qué tal fue?</button>'+
             '<button class="btn-sol" id="melsol-'+idx+'">Solución</button>'+
           '</div>'+
         '</div>'+
       '</div>'+
-      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio (sale natural) y, al ponerla, aparece encima un menú para añadirle <b>♭</b>, <b>♯</b> o borrarla (<b>×</b>). Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real. Da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>';
+      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). La nota sale natural y, al ponerla, aparece encima un menú para añadirle <b>♭</b> o <b>♯</b>. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. Tocar encima de una nota la reescribe; para borrarla, pulsa la <b>×</b> que lleva al lado (o click derecho encima), y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */
     cont.appendChild(block);
     block.querySelector('#melplay-'+idx).addEventListener('click',()=>playMel(idx));
+    block.querySelector('#melundo-'+idx).addEventListener('click',()=>gnMelUndo(idx)); /* GN-UNIF 8-jul-2026 */
     block.querySelector('#melcheck-'+idx).addEventListener('click',()=>onMelCheck(idx));
     block.querySelector('#melsol-'+idx).addEventListener('click',()=>onMelReveal(idx));
     block.querySelectorAll('.melspeed-btn').forEach(b=>{
@@ -4330,6 +4413,7 @@ function refreshMelControls(idx){
   const solBtn=document.getElementById('melsol-'+idx);
   if(checkBtn){ checkBtn.textContent=ex.scored?'Corregido':'¿Qué tal fue?'; checkBtn.disabled=false; }
   if(solBtn){ solBtn.disabled=ex.revealed; solBtn.textContent=ex.revealed?'Solución mostrada':'Solución'; }
+  gnMelRefreshUndo(idx); /* GN-UNIF 8-jul-2026 */
 }
 function melScoreOf(ex){
   let ok=0; for(let i=0;i<10;i++){ if(ex.slots[i]!==null && ex.slots[i]===ex.midis[i]) ok++; } return ok;
