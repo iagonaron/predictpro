@@ -291,6 +291,14 @@
   .mel-ghost{position:absolute;z-index:6;pointer-events:none}
   .mel-nums{position:absolute;left:0;right:0;bottom:8px;height:18px;z-index:2;pointer-events:none}
   .mel-nums span{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;color:#9aa3c4}
+  /* R3 10-jul-2026 · círculos selectores de paso (solo en tablet). En ratón siguen los numeritos de arriba. */
+  .mel-nums.tablet{bottom:2px;height:30px;pointer-events:none;z-index:8} /* por encima de .mel-ilayer (z5) para que el toque llegue al círculo */
+  .mel-nums.tablet span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box;
+    border:1.5px solid var(--line);background:rgba(20,16,4,.5);color:var(--muted);font-size:12px;font-weight:800;
+    transform:translateX(-50%);top:0;pointer-events:auto;cursor:pointer;touch-action:manipulation}
+  .mel-nums.tablet span.done{border-color:var(--gold2);color:var(--gold-soft);background:rgba(212,175,55,.14)}
+  .mel-nums.tablet span.active{border-color:var(--gold1);color:#1b1405;background:var(--gold1);box-shadow:0 0 0 3px rgba(212,175,55,.28)}
+  .mel-nums.tablet span.given{opacity:.4;pointer-events:none;cursor:default}
   .mel-empty-x{position:absolute;top:50%;transform:translate(-50%,-60%);color:var(--red);font-size:32px;font-weight:800;line-height:1;pointer-events:none;z-index:3;text-shadow:0 1px 2px rgba(0,0,0,.25)}
   /* GN-UNIF 8-jul-2026 */
   .gn-delx{position:absolute;z-index:7;width:28px;height:28px;padding:6px;box-sizing:border-box;background:transparent;cursor:pointer;touch-action:manipulation}
@@ -3836,6 +3844,7 @@ function buildMelExos(){
   slotAcc[0]=(melSpell(mel.midis[0]).acc==='#')?1:0;       // su alteración (si la tiene)
   melExos=[{ key:{atonal:true, vfsig:'C', sig:0, name:'sin referencias tonales'}, clef,
     sol:mel.notes, midis:mel.midis, allowed, sigPCs:new Set(), slots, slotAcc, _selSlot:null,
+    _activeSlot:1, /* R3 10-jul-2026 · en tablet: paso donde se colocará la próxima nota (el 1er hueco tras la tónica) */
     _gnUndo:[], /* GN-UNIF 8-jul-2026 */
     listens:0, checked:false, scored:false, revealed:false, melSpeed:1 }];
 }
@@ -4041,8 +4050,8 @@ function drawMelBoard(idx){
       const sign=melAccSign(accState, sp);                        // alteración visible (con arrastre)
       const sn=new VF.StaveNote({keys:[sp.letter.toLowerCase()+'/'+sp.oct],duration:'w',clef:ex.clef||'treble'});  // línea = letra natural
       if(sign) sn.addModifier(new VF.Accidental(sign),0);
-      if(i===0) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); // 1ª nota dada (oro)
-      else if(i===ex._selSlot) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); /* SEL-UNICA 10-jul-2026 */ // la nota SELECCIONADA (editable) en oro del apartado; las demás del alumno en negro
+      if(i===0) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); // 1ª nota dada (oro), intacta
+      else if(i===ex._selSlot) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); /* SEL-UNICA 10-jul-2026 */ /* R3 10-jul-2026 · CAMBIO A: la SELECCIONADA en oro #d4af37; las NO seleccionadas NO se pintan (VexFlow = NEGRO por defecto). No se fuerza gris alguno. */
       notes.push(sn);
     } else {
       const _emptyKey=(ex.clef==='bass')?'d/3':'b/4';   // nota central de la clave: sin líneas adicionales fantasma
@@ -4093,9 +4102,18 @@ function drawMelBoard(idx){
     layer.addEventListener('contextmenu',e=>{ e.preventDefault(); onMelDelete(idx,e); });
     /* GN-UNIF 8-jul-2026 · táctil: pulsar (fantasma) → arrastrar (sigue al dedo) → soltar (coloca) */
     layer._touchHandled=false;
-    layer.addEventListener('touchstart',ev=>{ if(ev.touches&&ev.touches[0]) onMelHover(idx,ev.touches[0]); },{passive:true});
-    layer.addEventListener('touchmove',ev=>{ if(ev.touches&&ev.touches[0]){ onMelHover(idx,ev.touches[0]); ev.preventDefault(); } },{passive:false});
+    cont._gnMulti=false; /* R4 10-jul-2026 · flag: gesto multitouch (pinch) en curso → sin ghost */
+    layer.addEventListener('touchstart',ev=>{
+      if(ev.touches && ev.touches.length>=2){ cont._gnMulti=true; clearGhost(idx); return; } /* R4 10-jul-2026 · 2+ dedos: sin ghost, deja pasar el pinch */
+      cont._gnMulti=false;
+      if(ev.touches&&ev.touches[0]) onMelHover(idx,ev.touches[0]);
+    },{passive:true});
+    layer.addEventListener('touchmove',ev=>{
+      if((ev.touches && ev.touches.length>=2) || cont._gnMulti){ cont._gnMulti=true; clearGhost(idx); return; } /* R4 10-jul-2026 · NO preventDefault → el navegador hace el zoom */
+      if(ev.touches&&ev.touches[0]){ onMelHover(idx,ev.touches[0]); ev.preventDefault(); }
+    },{passive:false});
     layer.addEventListener('touchend',ev=>{
+      if(cont._gnMulti){ if(!ev.touches || ev.touches.length===0) cont._gnMulti=false; clearGhost(idx); return; } /* R4 10-jul-2026 · fue pinch: NO colocar; resetea al soltar todos los dedos */
       layer._touchHandled=true; melTouchGuard[idx]=true;                 // guarda anti click/mousemove sintéticos
       onMelClick(idx,ev); clearGhost(idx);
       setTimeout(()=>{ melTouchGuard[idx]=false; },450);
@@ -4144,12 +4162,35 @@ function drawMelNumbers(idx){
   const old=cont.querySelector('.mel-nums'); if(old) old.remove();
   const off=svgOffsetMel(idx);
   const wrap=document.createElement('div'); wrap.className='mel-nums';
+  /* R3 10-jul-2026 · en TABLET los números pasan a ser CÍRCULOS selectores de paso.
+     El activo (ex._activeSlot) va resaltado en oro; los ya rellenos marcan "hecho";
+     el slot 0 (tónica dada) se muestra tenue y no es seleccionable. En ratón: numeritos. */
+  const tablet = ES_TACTIL && !ex.revealed;   /* R3 10-jul-2026 · alineado con la app elemental: los círculos siguen operativos tras corregir (mientras no se revele la solución), para poder reeditar */
+  if(tablet) wrap.classList.add('tablet');
   for(let i=0;i<10;i++){
     const x=ex._noteX[i]; if(x==null) continue;
     const s=document.createElement('span'); s.textContent=(i+1); s.style.left=(x+off.dx)+'px';
+    if(tablet){
+      if(i===0){ s.classList.add('given'); }              /* R3 10-jul-2026 · la tónica dada: no seleccionable */
+      else{
+        if(ex.slots[i]!=null && ex.slots[i]!==undefined) s.classList.add('done'); // paso ya escrito
+        if(i===ex._activeSlot) s.classList.add('active');                          // paso activo (oro)
+        s.addEventListener('click',ev=>{ ev.stopPropagation(); melSetActiveSlot(idx,i); });      /* R3 10-jul-2026 */
+        s.addEventListener('touchend',ev=>{ ev.preventDefault(); ev.stopPropagation(); melSetActiveSlot(idx,i); },{passive:false}); /* R3 10-jul-2026 */
+      }
+    }
     wrap.appendChild(s);
   }
   cont.appendChild(wrap);
+}
+/* R3 10-jul-2026 · tocar un círculo fija el paso activo y re-renderiza (recoloca la fantasma si la hubiera) */
+function melSetActiveSlot(idx,slot){
+  const ex=melExos[idx];
+  if(!ex || ex.revealed || ex.scored) return;
+  if(slot<1 || slot>MEL_LAST) return;                    // el slot 0 (tónica) no es seleccionable
+  ex._activeSlot=slot;
+  clearGhost(idx);
+  drawMelBoard(idx); refreshMelControls(idx);
 }
 // y-coordenada de una altura: cálculo geométrico desde la línea inferior del pentagrama.
 // VexFlow: línea superior (E5, midi 76) en stave.getYForLine(0); cada línea = spacing.
@@ -4183,6 +4224,15 @@ function nearestMidiByY(idx,mouseY){
 }
 let melGhostMidi={}; // idx->midi actual de la fantasma
 let melTouchGuard={}; // idx->true mientras se ignoran los eventos sintéticos tras un toque /* GN-UNIF 8-jul-2026 */
+/* R3 10-jul-2026 · detección de dispositivo táctil/tablet (no había una global en PRO).
+   En tablet la colocación va por CÍRCULOS de paso (ex._activeSlot), no por cercanía en X. */
+const ES_TACTIL = (typeof window!=='undefined') && (
+  ('ontouchstart' in window) ||
+  (navigator && navigator.maxTouchPoints>0) ||
+  (window.matchMedia && window.matchMedia('(pointer:coarse)').matches)
+);
+/* R3 10-jul-2026 · último slot editable del ejercicio melódico (slot 0 = tónica dada; 1..MEL_LAST rellenables) */
+const MEL_LAST = 9;
 function svgOffsetMel(idx){
   const cont=document.getElementById('melboard-'+idx);
   const svg=cont? cont.querySelector('svg'):null;
@@ -4198,9 +4248,18 @@ function onMelHover(idx,e){
   // coordenadas en el sistema del SVG (donde viven getAbsoluteX/getYs)
   const my=e.clientY-rect.top-off.dy;
   const mx=e.clientX-rect.left-off.dx;
-  let slot=-1,bx=1e9;
-  for(let i=1;i<10;i++){ const x=ex._noteX[i]; if(x==null)continue; const d=Math.abs(x-mx); if(d<bx){bx=d;slot=i;} }
-  if(slot<0){ clearGhost(idx); return; }
+  let slot=-1;
+  if(ES_TACTIL){
+    /* R3 10-jul-2026 · en TABLET el slot NO se elige por X: siempre el paso activo.
+       Solo la ALTURA (Y→midi) cambia con el arrastre; aunque el dedo tape la nota o
+       se desvíe en X, se coloca en ex._activeSlot. Así el avance es de una en una. */
+    slot=ex._activeSlot;
+    if(slot==null || slot<1 || slot>MEL_LAST){ clearGhost(idx); return; }
+  } else {
+    let bx=1e9;
+    for(let i=1;i<10;i++){ const x=ex._noteX[i]; if(x==null)continue; const d=Math.abs(x-mx); if(d<bx){bx=d;slot=i;} }
+    if(slot<0){ clearGhost(idx); return; }
+  }
   const midi=nearestMidiByY(idx,my);
   if(midi==null){ clearGhost(idx); return; }
   melGhostMidi[idx]={slot,midi};
@@ -4278,6 +4337,9 @@ function onMelClick(idx,e){
   ex.slots[g.slot]=g.midi;         // g.midi es una nota natural (blanca)
   ex.slotAcc[g.slot]=0;
   ex._selSlot=g.slot;              /* SEL-UNICA 10-jul-2026 · colocar/reescribir auto-selecciona; aparece el menú ♭ ♯ × */
+  /* R3 10-jul-2026 · en TABLET, tras colocar en el paso activo, el activo avanza SOLO al siguiente
+     (nunca salta 2+; el _selSlot sigue a la recién puesta para su popup ♭♯×, el _activeSlot va uno más). */
+  if(ES_TACTIL) ex._activeSlot=Math.min(g.slot+1, MEL_LAST);
   ex.scored=false;                 // al editar, se retira el coloreado hasta re-comprobar
   const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
   drawMelBoard(idx); refreshMelControls(idx);
@@ -4310,6 +4372,7 @@ function gnMelDeleteSlot(idx,slot){
   gnMelPush(ex,slot);
   ex.slots[slot]=null; ex.slotAcc[slot]=0;
   if(ex._selSlot===slot) ex._selSlot=null;
+  if(ES_TACTIL && slot>=1 && slot<=MEL_LAST) ex._activeSlot=slot; /* R3 10-jul-2026 · al borrar, el paso activo pasa a ese hueco para reescribirlo */
   ex.scored=false;
   const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
   clearGhost(idx);
@@ -4405,7 +4468,7 @@ function renderMelExos(){
           '</div>'+
         '</div>'+
       '</div>'+
-      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). La nota que colocas queda <b>seleccionada</b> (en oro) y aparece encima su menú para añadirle <b>♭</b> o <b>♯</b> o borrarla con la <b>×</b>. Solo hay <b>una nota seleccionada a la vez</b>: para editar o borrar otra, <b>tócala primero</b> para seleccionarla y saldrá su menú. Apuntar a otra altura sobre una nota ya puesta la reescribe. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. También puedes borrar con click derecho encima, y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */ /* SEL-UNICA 10-jul-2026 */
+      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). <b>En tablet</b>, bajo el pentagrama aparecen los <b>círculos de paso</b> (1, 2, 3…): el círculo <b>dorado</b> es el paso donde escribirás la próxima nota. Al arrastrar con el dedo solo cambias la <b>altura</b> (el paso no salta aunque te desvíes a los lados) y, al soltar, avanza <b>un solo paso</b>. Para corregir una nota concreta, <b>toca su círculo</b> y volverás a ese paso. La nota que colocas queda <b>seleccionada</b> (en oro) y aparece encima su menú para añadirle <b>♭</b> o <b>♯</b> o borrarla con la <b>×</b>. Solo hay <b>una nota seleccionada a la vez</b>: para editar o borrar otra, <b>tócala primero</b> (o toca su círculo) para seleccionarla y saldrá su menú. Apuntar a otra altura sobre una nota ya puesta la reescribe. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. También puedes borrar con click derecho encima, y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */ /* SEL-UNICA 10-jul-2026 */ /* R3 10-jul-2026 · hint menciona los círculos de paso en tablet */
     cont.appendChild(block);
     block.querySelector('#melplay-'+idx).addEventListener('click',()=>playMel(idx));
     block.querySelector('#melundo-'+idx).addEventListener('click',()=>gnMelUndo(idx)); /* GN-UNIF 8-jul-2026 */
