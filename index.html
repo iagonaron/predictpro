@@ -4042,6 +4042,7 @@ function drawMelBoard(idx){
       const sn=new VF.StaveNote({keys:[sp.letter.toLowerCase()+'/'+sp.oct],duration:'w',clef:ex.clef||'treble'});  // línea = letra natural
       if(sign) sn.addModifier(new VF.Accidental(sign),0);
       if(i===0) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); // 1ª nota dada (oro)
+      else if(i===ex._selSlot) sn.setStyle({fillStyle:'#d4af37',strokeStyle:'#d4af37'}); /* SEL-UNICA 10-jul-2026 */ // la nota SELECCIONADA (editable) en oro del apartado; las demás del alumno en negro
       notes.push(sn);
     } else {
       const _emptyKey=(ex.clef==='bass')?'d/3':'b/4';   // nota central de la clave: sin líneas adicionales fantasma
@@ -4255,13 +4256,28 @@ function ghostSvg(vf, ledgers){
 function clearGhost(idx){const gh=document.getElementById('melghost-'+idx);if(gh)gh.style.display='none';melGhostMidi[idx]=null;}
 function onMelClick(idx,e){
   const g=melGhostMidi[idx];
-  if(!g) return;
   const ex=melExos[idx];
-  if(ex.revealed) return;
+  if(!ex || ex.revealed) return;
+  /* SEL-UNICA 10-jul-2026 · sin fantasma activa (clic fuera de slot) → deseleccionar */
+  if(!g){ if(ex._selSlot!=null){ ex._selSlot=null; drawMelBoard(idx); refreshMelControls(idx); } return; }
+  /* SEL-UNICA 10-jul-2026 · SELECCIONAR vs REESCRIBIR:
+     g.midi es la nota NATURAL (blanca) sobre la que apunta el cursor. Comparamos
+     con la nota natural ya colocada en ese slot (slots[slot]-slotAcc[slot]). Si el
+     alumno apunta a la MISMA altura de línea/espacio → solo SELECCIONAMOS (no
+     machacamos su alteración). Si apunta a otra altura → REESCRIBIMOS (nota
+     natural) y auto-seleccionamos. */
+  const cur=ex.slots[g.slot];
+  if(cur!==null && cur!==undefined){
+    const whiteCur=cur-((ex.slotAcc&&ex.slotAcc[g.slot])||0);
+    if(whiteCur===g.midi){
+      if(ex._selSlot!==g.slot){ ex._selSlot=g.slot; drawMelBoard(idx); refreshMelControls(idx); }
+      return;
+    }
+  }
   gnMelPush(ex,g.slot);            /* GN-UNIF 8-jul-2026 · apila el valor previo (colocar/reescribir) */
   ex.slots[g.slot]=g.midi;         // g.midi es una nota natural (blanca)
   ex.slotAcc[g.slot]=0;
-  ex._selSlot=g.slot;              // aparece el menú ♭ ♯ × sobre la nota
+  ex._selSlot=g.slot;              /* SEL-UNICA 10-jul-2026 · colocar/reescribir auto-selecciona; aparece el menú ♭ ♯ × */
   ex.scored=false;                 // al editar, se retira el coloreado hasta re-comprobar
   const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
   drawMelBoard(idx); refreshMelControls(idx);
@@ -4305,7 +4321,7 @@ function gnMelUndo(idx){
   if(ex.revealed || !ex._gnUndo || !ex._gnUndo.length) return;
   const u=ex._gnUndo.pop();
   ex.slots[u.slot]=u.midi; ex.slotAcc[u.slot]=u.acc;
-  ex._selSlot=null; ex.scored=false;
+  ex._selSlot=null; ex.scored=false; /* SEL-UNICA 10-jul-2026 · tras deshacer no queda selección (queda más limpio, sin popup emergente) */
   const sl=document.getElementById('melscore-'+idx); if(sl) sl.innerHTML='';
   clearGhost(idx);
   drawMelBoard(idx); refreshMelControls(idx);
@@ -4316,19 +4332,24 @@ function gnMelRefreshUndo(idx){
   const b=document.getElementById('melundo-'+idx); if(!b||!ex) return;
   b.disabled = ex.revealed || !(ex._gnUndo && ex._gnUndo.length);
 }
-/* GN-UNIF 8-jul-2026 · × FIJA a la derecha de cada nota colocada por el alumno (nunca la dada ni tras revelar) */
+/* GN-UNIF 8-jul-2026 */ /* SEL-UNICA 10-jul-2026 · × FIJA SOLO en la nota SELECCIONADA (nunca la dada ni tras revelar/corregir) */
 function gnMelPersistDelX(idx){
   const ex=melExos[idx];
   const cont=document.getElementById('melboard-'+idx); if(!cont||!ex) return;
   cont.querySelectorAll('.gn-delx').forEach(n=>n.remove());
-  if(ex.revealed) return;
+  if(ex.revealed || ex.scored) return;                          /* SEL-UNICA 10-jul-2026 · sin × tras corregir/revelar */
   const off=svgOffsetMel(idx);
-  for(let i=1;i<10;i++){
-    if(ex.slots[i]===null || ex.slots[i]===undefined) continue;
+  const i=ex._selSlot;                                          /* SEL-UNICA 10-jul-2026 · única selección */
+  if(i==null || i<1) return;                                    // sin selección válida → ninguna ×
+  if(ex.slots[i]===null || ex.slots[i]===undefined) return;     // el slot seleccionado debe tener nota
+  // La nota seleccionada ya muestra su menú ♭ ♯ × encima; para evitar DOS equis, si el
+  // popup está en pantalla no dibujamos la × fija (el popup aporta el borrado).
+  if(cont.querySelector('.mel-accpop')) return;                 /* SEL-UNICA 10-jul-2026 */
+  {
     const x=ex._noteX?ex._noteX[i]:null;
     const white=ex.slots[i]-((ex.slotAcc&&ex.slotAcc[i])||0);   // la Y se calcula sobre la nota natural (línea/espacio)
     const y=melYForMidi(idx,white);
-    if(x==null||y==null) continue;
+    if(x==null||y==null) return;
     const d=document.createElement('div');
     d.className='gn-delx'; d.title='Borrar esta nota';
     d.innerHTML='<span>×</span>';
@@ -4384,7 +4405,7 @@ function renderMelExos(){
           '</div>'+
         '</div>'+
       '</div>'+
-      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). La nota sale natural y, al ponerla, aparece encima un menú para añadirle <b>♭</b> o <b>♯</b>. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. Tocar encima de una nota la reescribe; para borrarla, pulsa la <b>×</b> que lleva al lado (o click derecho encima), y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */
+      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). La nota que colocas queda <b>seleccionada</b> (en oro) y aparece encima su menú para añadirle <b>♭</b> o <b>♯</b> o borrarla con la <b>×</b>. Solo hay <b>una nota seleccionada a la vez</b>: para editar o borrar otra, <b>tócala primero</b> para seleccionarla y saldrá su menú. Apuntar a otra altura sobre una nota ya puesta la reescribe. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. También puedes borrar con click derecho encima, y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */ /* SEL-UNICA 10-jul-2026 */
     cont.appendChild(block);
     block.querySelector('#melplay-'+idx).addEventListener('click',()=>playMel(idx));
     block.querySelector('#melundo-'+idx).addEventListener('click',()=>gnMelUndo(idx)); /* GN-UNIF 8-jul-2026 */
