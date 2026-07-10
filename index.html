@@ -292,7 +292,10 @@
   .mel-nums{position:absolute;left:0;right:0;bottom:8px;height:18px;z-index:2;pointer-events:none}
   .mel-nums span{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;color:#9aa3c4}
   /* R3 10-jul-2026 · círculos selectores de paso (solo en tablet). En ratón siguen los numeritos de arriba. */
-  .mel-nums.tablet{bottom:2px;height:30px;pointer-events:none;z-index:8} /* por encima de .mel-ilayer (z5) para que el toque llegue al círculo */
+  /* R5 10-jul-2026 · CAMBIO C: círculos SUBIDOS junto al pentagrama. La posición vertical
+     la fija drawMelNumbers por 'top' (línea inferior del pentagrama + hueco); aquí solo
+     valores por defecto. height auto para no recortar el círculo (26px) por el borde. */
+  .mel-nums.tablet{bottom:auto;height:auto;min-height:30px;overflow:visible;pointer-events:none;z-index:8} /* R5 10-jul-2026 · por encima de .mel-ilayer (z5) para que el toque llegue al círculo */
   .mel-nums.tablet span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box;
     border:1.5px solid var(--line);background:rgba(20,16,4,.5);color:var(--muted);font-size:12px;font-weight:800;
     transform:translateX(-50%);top:0;pointer-events:auto;cursor:pointer;touch-action:manipulation}
@@ -4077,14 +4080,14 @@ function drawMelBoard(idx){
       if(m!==null && m!==undefined){
         const ys=notes[i].getYs ? notes[i].getYs() : null;
         const wm = ex.revealed ? (m-(melSpell(m).acc==='#'?1:0)) : (m-((ex.slotAcc&&ex.slotAcc[i])||0));
-        if(ys && ys.length){ ex._anchor={midi:wm, y:ys[0], step:diatonicStep(wm)}; ex._half=lineSpacing/2; break; }
+        if(ys && ys.length){ ex._anchor={midi:wm, y:ys[0], step:diatonicStepSpelled(idx,wm)}; ex._half=lineSpacing/2; break; } /* R5 10-jul-2026 · anchor coherente con melYForMidi/nearestMidiByY */
       }
     }
     if(!ex._anchor){ // sin notas: anclar en la línea central (B4 en sol, D3 en fa)
       const _am=(ex.clef==='bass')?50:71;
-      ex._anchor={midi:_am, y:stave.getYForLine(2), step:diatonicStep(_am)}; ex._half=lineSpacing/2;
+      ex._anchor={midi:_am, y:stave.getYForLine(2), step:diatonicStepSpelled(idx,_am)}; ex._half=lineSpacing/2; /* R5 10-jul-2026 */
     }
-  }catch(e){ ex._anchor={midi:71, y:80, step:diatonicStep(71)}; ex._half=5; }
+  }catch(e){ ex._anchor={midi:71, y:80, step:diatonicStepSpelled(idx,71)}; ex._half=5; } /* R5 10-jul-2026 */
   // números 1..10 bajo el pentagrama
   ex._noteX=notes.map(n=>{try{return n.getAbsoluteX();}catch(e){return null;}});
   drawMelNumbers(idx);
@@ -4096,7 +4099,7 @@ function drawMelBoard(idx){
   if(!ex.revealed){
     const layer=document.createElement('div'); layer.className='mel-ilayer'; layer.id='mellayer-'+idx;
     cont.appendChild(layer);
-    layer.addEventListener('mousemove',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelHover(idx,e); });
+    layer.addEventListener('mousemove',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelHover(idx,e,true); /* R5 10-jul-2026 · arrastre con histéresis */ });
     layer.addEventListener('mouseleave',()=>clearGhost(idx));
     layer.addEventListener('click',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelClick(idx,e); });
     layer.addEventListener('contextmenu',e=>{ e.preventDefault(); onMelDelete(idx,e); });
@@ -4106,11 +4109,11 @@ function drawMelBoard(idx){
     layer.addEventListener('touchstart',ev=>{
       if(ev.touches && ev.touches.length>=2){ cont._gnMulti=true; clearGhost(idx); return; } /* R4 10-jul-2026 · 2+ dedos: sin ghost, deja pasar el pinch */
       cont._gnMulti=false;
-      if(ev.touches&&ev.touches[0]) onMelHover(idx,ev.touches[0]);
+      if(ev.touches&&ev.touches[0]) onMelHover(idx,ev.touches[0],false); /* R5 10-jul-2026 · primer toque: SIN histéresis (precisión del tap) */
     },{passive:true});
     layer.addEventListener('touchmove',ev=>{
       if((ev.touches && ev.touches.length>=2) || cont._gnMulti){ cont._gnMulti=true; clearGhost(idx); return; } /* R4 10-jul-2026 · NO preventDefault → el navegador hace el zoom */
-      if(ev.touches&&ev.touches[0]){ onMelHover(idx,ev.touches[0]); ev.preventDefault(); }
+      if(ev.touches&&ev.touches[0]){ onMelHover(idx,ev.touches[0],true); ev.preventDefault(); } /* R5 10-jul-2026 · arrastre con histéresis */
     },{passive:false});
     layer.addEventListener('touchend',ev=>{
       if(cont._gnMulti){ if(!ev.touches || ev.touches.length===0) cont._gnMulti=false; clearGhost(idx); return; } /* R4 10-jul-2026 · fue pinch: NO colocar; resetea al soltar todos los dedos */
@@ -4167,6 +4170,21 @@ function drawMelNumbers(idx){
      el slot 0 (tónica dada) se muestra tenue y no es seleccionable. En ratón: numeritos. */
   const tablet = ES_TACTIL && !ex.revealed;   /* R3 10-jul-2026 · alineado con la app elemental: los círculos siguen operativos tras corregir (mientras no se revele la solución), para poder reeditar */
   if(tablet) wrap.classList.add('tablet');
+  /* R5 10-jul-2026 · CAMBIO C: subir los círculos JUSTO bajo el pentagrama y que no se
+     corten. En vez de anclarlos al fondo del board (bottom, que los dejaba ~90px por
+     debajo del pentagrama y medio cortados por el borde), los posicionamos por 'top'
+     tomando la línea INFERIOR real del pentagrama (stave.getYForLine(4)) + un hueco.
+     El contenedor .board tiene alto de sobra (SVG 200px) para mostrarlos enteros. */
+  if(tablet){
+    try{
+      const stave=ex._geom && ex._geom.stave;
+      if(stave){
+        const yBottom = stave.getYForLine(4) + off.dy;   // línea inferior en coords del board
+        wrap.style.top = Math.round(yBottom + 10) + 'px'; // 10px de hueco bajo la última línea
+        wrap.style.bottom = 'auto';
+      }
+    }catch(e){}
+  }
   for(let i=0;i<10;i++){
     const x=ex._noteX[i]; if(x==null) continue;
     const s=document.createElement('span'); s.textContent=(i+1); s.style.left=(x+off.dx)+'px';
@@ -4204,14 +4222,43 @@ function diatonicStep(midi){
   const baseStep=pcToStep[pc];
   return oct*7+baseStep;
 }
+/* R5 10-jul-2026 · BUG del "salto del Si": diatonicStep(midi) adivinaba la LETRA por
+   pitch-class (pc 10 -> La), así que en tonalidad con bemoles el Si♭ caía en la fila
+   del La y la línea del Si se quedaba "sin parada". VÍA 1 del SPEC: deletrear la nota
+   con la ARMADURA real del ejercicio vía midiToVF(midi, ex.key) y calcular el paso
+   diatónico con la LETRA REAL: paso = octava*7 + índiceLetra(c=0..b=6). Se usa la
+   octava del NOMBRE deletreado (la que midiToVF pone en 'letra+acc+/oct'), lo que
+   respeta los saltos de octava de Do♭ (b/… una octava abajo) y Si♯ (…arriba). */
+const LETRA_A_INDICE = {c:0,d:1,e:2,f:3,g:4,a:5,b:6};   /* R5 10-jul-2026 */
+function diatonicStepSpelled(idx,midi){                 /* R5 10-jul-2026 */
+  const ex=melExos[idx];
+  // sin key utilizable → caer al comportamiento antiguo (naturales siempre correctos)
+  if(!ex || !ex.key) return diatonicStep(midi);
+  let vf;
+  try{ vf=midiToVF(midi, ex.key); }catch(e){ vf=null; }
+  if(!vf || !vf.key) return diatonicStep(midi);
+  // vf.key = "letra[acc]/oct"  (p.ej. "bb/2", "a/2", "c/3")
+  const parts=String(vf.key).split('/');
+  const letra=parts[0][0].toLowerCase();
+  const oct=parseInt(parts[1],10);
+  const li=LETRA_A_INDICE[letra];
+  if(li==null || isNaN(oct)) return diatonicStep(midi);
+  return oct*7+li;
+}
 function melYForMidi(idx,midi){
   const ex=melExos[idx];
   if(!ex._anchor||ex._half==null) return null;
-  const steps = diatonicStep(midi)-ex._anchor.step;  // >0 = más agudo
+  const steps = diatonicStepSpelled(idx,midi)-ex._anchor.step;  // >0 = más agudo /* R5 10-jul-2026 */
   return ex._anchor.y - steps*ex._half;              // agudo = más arriba (menor Y)
 }
+/* R5 10-jul-2026 · HISTÉRESIS del arrastre (CAMBIO B). FACTOR 0.75: la ghost conserva
+   su nota actual hasta que el dedo se acerca a la vecina más de half*(2*FACTOR-1)=half*0.5
+   respecto de la nota actual. Es decir, hay que mover ~medio espacio EXTRA para saltar
+   de nota (antes bastaba cruzar el punto medio, ~0.5 implícito). Solo se aplica en
+   ARRASTRE con ghost activa (dragging=true); el tap directo mantiene la precisión. */
+const MEL_HIST_FACTOR = 0.75; /* R5 10-jul-2026 · sensibilidad del arrastre vertical */
 // dado un Y de ratón, elegir el midi permitido cuya línea esté más cerca
-function nearestMidiByY(idx,mouseY){
+function nearestMidiByY(idx,mouseY,dragging){
   const ex=melExos[idx];
   let best=null,bd=1e9;
   ex.allowed.forEach(m=>{
@@ -4220,6 +4267,22 @@ function nearestMidiByY(idx,mouseY){
     const d=Math.abs(y-mouseY);
     if(d<bd){bd=d;best=m;}
   });
+  /* R5 10-jul-2026 · histéresis: en arrastre, si ya hay una nota en la ghost y el
+     candidato más cercano NO es esa nota, conservamos la actual mientras la ventaja
+     de distancia del candidato no supere la zona muerta half*(2*FACTOR-1). */
+  if(dragging){
+    const g=melGhostMidi[idx];
+    const cur=(g&&g.midi!=null)?g.midi:null;
+    if(cur!=null && best!=null && best!==cur && ex.allowed.indexOf(cur)>=0){
+      const yCur=melYForMidi(idx,cur);
+      if(yCur!=null){
+        const dCur=Math.abs(yCur-mouseY);
+        const half=ex._half||5;
+        const zonaMuerta=half*(2*MEL_HIST_FACTOR-1);   // = half*0.5 con FACTOR 0.75
+        if(dCur-bd < zonaMuerta) return cur;           // dentro de la zona muerta → no cambies
+      }
+    }
+  }
   return best;
 }
 let melGhostMidi={}; // idx->midi actual de la fantasma
@@ -4240,7 +4303,9 @@ function svgOffsetMel(idx){
   const cr=cont.getBoundingClientRect(), sr=svg.getBoundingClientRect();
   return {dx:sr.left-cr.left, dy:sr.top-cr.top};
 }
-function onMelHover(idx,e){
+/* R5 10-jul-2026 · dragging=true en arrastre (mousemove/touchmove con ghost ya activa)
+   para activar la histéresis de nearestMidiByY; en el primer touchstart/tap va false. */
+function onMelHover(idx,e,dragging){
   const ex=melExos[idx];
   const cont=document.getElementById('melboard-'+idx);
   const rect=cont.getBoundingClientRect();
@@ -4260,7 +4325,10 @@ function onMelHover(idx,e){
     for(let i=1;i<10;i++){ const x=ex._noteX[i]; if(x==null)continue; const d=Math.abs(x-mx); if(d<bx){bx=d;slot=i;} }
     if(slot<0){ clearGhost(idx); return; }
   }
-  const midi=nearestMidiByY(idx,my);
+  /* R5 10-jul-2026 · histéresis solo si ya hay ghost activa en ESTE slot (arrastre real) */
+  const g=melGhostMidi[idx];
+  const drag = !!dragging && !!(g && g.midi!=null && g.slot===slot);
+  const midi=nearestMidiByY(idx,my,drag);
   if(midi==null){ clearGhost(idx); return; }
   melGhostMidi[idx]={slot,midi};
   showGhost(idx,slot,midi);
@@ -4276,10 +4344,10 @@ function showGhost(idx,slot,midi){
   const vf={key:_sp.letter.toLowerCase()+'/'+_sp.oct, accidental:null};
   // líneas adicionales: comparar el step de la nota con las líneas del pentagrama
   // líneas del pentagrama (clave sol): Mi4=64 (inferior) ... Fa5=77 (superior)
-  const stepNote=diatonicStep(midi);
+  const stepNote=diatonicStepSpelled(idx,midi); /* R5 10-jul-2026 · ledger lines coherentes con el paso deletreado */
   // límites del pentagrama según la clave: sol = Mi4(64)/Fa5(77) · fa = Sol2(43)/La3(57)
   const _bassClef=(ex.clef==='bass');
-  const stepBottom=diatonicStep(_bassClef?43:64), stepTop=diatonicStep(_bassClef?57:77);
+  const stepBottom=diatonicStepSpelled(idx,_bassClef?43:64), stepTop=diatonicStepSpelled(idx,_bassClef?57:77); /* R5 10-jul-2026 */
   const half=ex._half||5;
   // ledger lines por debajo: en Do4(step de 60), La3, ... cada 2 steps bajo Mi4
   // ledger lines por encima: La5, Do6,... cada 2 steps sobre Fa5
