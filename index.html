@@ -4170,20 +4170,25 @@ function drawMelNumbers(idx){
      el slot 0 (tónica dada) se muestra tenue y no es seleccionable. En ratón: numeritos. */
   const tablet = ES_TACTIL && !ex.revealed;   /* R3 10-jul-2026 · alineado con la app elemental: los círculos siguen operativos tras corregir (mientras no se revele la solución), para poder reeditar */
   if(tablet) wrap.classList.add('tablet');
-  /* R5 10-jul-2026 · CAMBIO C: subir los círculos JUSTO bajo el pentagrama y que no se
-     corten. En vez de anclarlos al fondo del board (bottom, que los dejaba ~90px por
-     debajo del pentagrama y medio cortados por el borde), los posicionamos por 'top'
-     tomando la línea INFERIOR real del pentagrama (stave.getYForLine(4)) + un hueco.
-     El contenedor .board tiene alto de sobra (SVG 200px) para mostrarlos enteros. */
+  /* R5 10-jul-2026 · CAMBIO C: subir los círculos bajo el pentagrama y que no se corten.
+     R6 10-jul-2026 · AJUSTE: en vez de anclarlos a la línea inferior del pentagrama
+     (que los dejaba pegados y podían molestar a las notas graves con líneas
+     adicionales), los colocamos por debajo de la NOTA MÁS GRAVE POSIBLE del ejercicio,
+     a una distancia INTERMEDIA (ni tan pegado como R5 ni tan bajo como R4). Así nunca
+     estorban al pulsar la nota más grave. */
   if(tablet){
+    let topPx=null;
     try{
-      const stave=ex._geom && ex._geom.stave;
-      if(stave){
-        const yBottom = stave.getYForLine(4) + off.dy;   // línea inferior en coords del board
-        wrap.style.top = Math.round(yBottom + 10) + 'px'; // 10px de hueco bajo la última línea
-        wrap.style.bottom = 'auto';
-      }
+      let yGrave=null;
+      const graves=(ex.allowed||[]).slice().sort((a,b)=>a-b);
+      if(graves.length){ const yg=melYForMidi(idx,graves[0]); if(yg!=null) yGrave=yg+off.dy; }
+      if(yGrave==null){ const stave=ex._geom && ex._geom.stave; if(stave) yGrave=stave.getYForLine(4)+off.dy; }
+      if(yGrave!=null) topPx=yGrave+26;               // 26px de hueco bajo la nota más grave (intermedio; la cabeza mide ~10px)
     }catch(e){}
+    if(topPx==null) topPx=205;                        // fallback intermedio
+    const maxTop=(cont? cont.clientHeight : 294) - 36;
+    if(topPx>maxTop) topPx=maxTop;
+    wrap.style.top=Math.round(topPx)+'px'; wrap.style.bottom='auto';
   }
   for(let i=0;i<10;i++){
     const x=ex._noteX[i]; if(x==null) continue;
