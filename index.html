@@ -870,7 +870,7 @@
 
   <header class="top">
     <a class="brand" id="brandHome" href="#" onclick="brandNav();return false;" style="cursor:pointer;text-decoration:none;color:inherit">
-      <h1><span class="a">LM</span><span class="eav-pro">GP</span> <span class="home2">at home</span></h1>
+      <h1><span style="display:inline-flex;flex-direction:column;vertical-align:middle"><span style="white-space:nowrap"><span class="a">LM</span> <span class="home2">at home</span></span><span aria-hidden="true" style="display:flex;justify-content:space-between;margin-top:1px;font-size:8px;font-weight:800;line-height:1;letter-spacing:0;color:#d4af37;font-style:normal"><b>G</b><b>R</b><b>A</b><b>D</b><b>O</b><i style="width:.6em"></i><b>P</b><b>R</b><b>O</b><b>F</b><b>E</b><b>S</b><b>I</b><b>O</b><b>N</b><b>A</b><b>L</b></span></span></h1>
       <span class="brand-inline">Nivel Pro · Grado Profesional</span>
     </a>
     <div class="tagline">by Iago González Alonso</div>
@@ -5498,11 +5498,11 @@ function openCadencias(){
 function goHomeModos(){ goPredictHome(); }
 // La marca arriba a la izquierda muestra SIEMPRE su destino:
 //  · dentro de una vista interna -> "PreDict at home" (vuelve a la portada de PreDict)
-//  · en la portada -> "LMGP at home" (va al portal principal)
+//  · en la portada -> "LM at home" (va al portal principal)
 function setBrand(dest){
   const h=document.querySelector('#brandHome h1'); if(!h) return;
   if(dest==='predict') h.innerHTML='<span class="a">PRE</span><span class="eav-pro">DICT</span> <span class="home2">at home</span>';
-  else h.innerHTML='<span class="a">LM</span><span class="eav-pro">GP</span> <span class="home2">at home</span>';
+  else h.innerHTML='<span style="display:inline-flex;flex-direction:column;vertical-align:middle"><span style="white-space:nowrap"><span class="a">LM</span> <span class="home2">at home</span></span><span aria-hidden="true" style="display:flex;justify-content:space-between;margin-top:1px;font-size:8px;font-weight:800;line-height:1;letter-spacing:0;color:#d4af37;font-style:normal"><b>G</b><b>R</b><b>A</b><b>D</b><b>O</b><i style="width:.6em"></i><b>P</b><b>R</b><b>O</b><b>F</b><b>E</b><b>S</b><b>I</b><b>O</b><b>N</b><b>A</b><b>L</b></span></span>';
 }
 function brandNav(){
   const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView','cadenciasView'];
