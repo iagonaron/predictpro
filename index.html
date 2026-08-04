@@ -870,7 +870,7 @@
 
   <header class="top">
     <a class="brand" id="brandHome" href="#" onclick="brandNav();return false;" style="cursor:pointer;text-decoration:none;color:inherit">
-      <h1><span class="a">LM</span><span class="eav-pro">PRO</span> <span class="home2">at home</span></h1>
+      <h1><span class="a">LM</span><span class="eav-pro">GP</span> <span class="home2">at home</span></h1>
       <span class="brand-inline">Nivel Pro · Grado Profesional</span>
     </a>
     <div class="tagline">by Iago González Alonso</div>
@@ -888,7 +888,7 @@
   <div class="home-view" id="evaHome">
     <div class="opt-banner opt-top">Versión optimizada para ordenador y tablet</div>
     <div class="eva-hero">
-      <h1 class="eva-big" onclick="backToEva()" style="cursor:pointer"><span class="pre">PRE</span><span class="dict">DICT</span> <span class="home2">at home</span> <span class="pro-tag-big">PRO</span></h1>
+      <h1 class="eva-big" onclick="backToEva()" style="cursor:pointer"><span class="pre">PRE</span><span class="dict">DICT</span> <span class="home2">at home</span></h1>
       <p class="eva-tag">Ejercicios específicos que entrenan tu oído y mejoran tus dictados</p>
     </div>
     <div class="home-grid">
@@ -1011,7 +1011,7 @@
   <div class="ex-view" id="modosView">
     <div class="wrap">
 <div class="hero">
-    <h2><span class="hl">MOD</span><span class="dim">OS</span> <span class="home2">at home</span> <span class="pro-tag">PRO</span></h2>
+    <h2><span class="hl">MOD</span><span class="dim">OS</span> <span class="home2">at home</span></h2>
     <p>Identifica el modo de cada melodía.</p>
   </div>
 
@@ -5497,12 +5497,12 @@ function openCadencias(){
 }
 function goHomeModos(){ goPredictHome(); }
 // La marca arriba a la izquierda muestra SIEMPRE su destino:
-//  · dentro de una vista interna -> "PreDict at home PRO" (vuelve a la portada de PreDict)
-//  · en la portada -> "LMPRO at home" (va al portal principal)
+//  · dentro de una vista interna -> "PreDict at home" (vuelve a la portada de PreDict)
+//  · en la portada -> "LMGP at home" (va al portal principal)
 function setBrand(dest){
   const h=document.querySelector('#brandHome h1'); if(!h) return;
-  if(dest==='predict') h.innerHTML='<span class="a">PRE</span><span class="eav-pro">DICT</span> <span class="home2">at home</span> <span class="pro-tag-mini">PRO</span>';
-  else h.innerHTML='<span class="a">LM</span><span class="eav-pro">PRO</span> <span class="home2">at home</span>';
+  if(dest==='predict') h.innerHTML='<span class="a">PRE</span><span class="eav-pro">DICT</span> <span class="home2">at home</span>';
+  else h.innerHTML='<span class="a">LM</span><span class="eav-pro">GP</span> <span class="home2">at home</span>';
 }
 function brandNav(){
   const views=['ritmicaView','melodicaView','toncomView','ritEditView','modosView','armonicaView','cadenciasView'];
