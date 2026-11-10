@@ -7700,5 +7700,16 @@ return {generate, buildKey, buildChord, TEMPLATES, KEYSIG, romanLabel, RANGE};
   }catch(e){}
 })();
 </script>
+<!-- (10-nov-2026, Iago: «si un alumno ha hecho predict, quiero que me aparezca el detalle de qué apartado del predict ha trabajado»)
+     el latido (ge.lmathome.es/piel/latido.js) apunta cada minuto lo que pone aquí (data-lm-ejercicio): el apartado que se ve
+     (ritmica, melodica, toncom, armonica, modos, cadencias); en la portada, nada. La campana del Diario lo cuenta y el «Me gusta»
+     lo dice. Para quitarlo: borrar este bloque. -->
+<script>(function(){try{
+  var V=[['ritmicaView','ritmica'],['melodicaView','melodica'],['toncomView','toncom'],['armonicaView','armonica'],['modosView','modos'],['cadenciasView','cadencias']];
+  var m=document.createElement('i'); m.id='lm-que'; m.hidden=true; m.setAttribute('data-lm-ejercicio',''); document.body.appendChild(m);
+  function que(){ for(var i=0;i<V.length;i++){ var e=document.getElementById(V[i][0]); if(e && e.classList.contains('active') && e.offsetParent!==null) return V[i][1]; } return ''; }
+  function pon(){ var k=''; try{ k=que(); }catch(e){} if(m.getAttribute('data-lm-ejercicio')!==k) m.setAttribute('data-lm-ejercicio',k); }
+  pon(); setInterval(pon,2000);
+}catch(e){}})();</script>
 </body>
 </html>
