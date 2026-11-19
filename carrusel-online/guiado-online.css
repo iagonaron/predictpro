@@ -761,8 +761,8 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 .pcg-mod .mb.on{opacity:1;fill:#7c3aed;transition:none}
 .pcg-mod .mb.brilla{fill:#ff4fa3;opacity:.95;filter:drop-shadow(0 0 10px rgba(255,79,163,.85))}
 .pcg-mod .mb.brilla.on{fill:#e11d74}
-.pcg-mod .mod-pauta{width:100%;height:220px}
-.pcg-mod .mod-pauta svg{width:100%!important;height:100%!important}
+.pcg-mod .mod-pauta{width:100%}
+.pcg-mod .mod-pauta svg{width:100%!important;height:auto!important;display:block}
 .pcg-mod .mod-lab{font-size:24px;color:#2a2517;font-weight:600}
 .pcg-mod .mod-lab b{color:#c0267a;font-weight:900}
 .pcg-mod .mod-ops{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 12px;width:100%;max-width:1220px;padding:0 14px;flex:none}

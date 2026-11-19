@@ -2722,15 +2722,14 @@ function dibujaModos(host,gen){
     solucion(){ host.querySelector('.mod-ops .op[data-id="'+gen.mode+'"]').classList.add('ok'); host.querySelectorAll('.mod-ops .op:not(.ok)').forEach(o=>o.classList.add('no'));
       /* la melodía escrita, con la nota (o notas) característica en rosa */
       try{ const VF=Vex.Flow, D=modDeletrea(gen), box=el('div','mod-pauta'); part.innerHTML=''; part.appendChild(box);
-        const r=new VF.Renderer(box,VF.Renderer.Backends.SVG), PW=1320, PH=200; r.resize(PW,PH); const ctx=r.getContext();
-        const st=new VF.Stave(8,30,PW-16); st.addClef('treble').addKeySignature(D.clave); st.setContext(ctx).draw();
+        const r=new VF.Renderer(box,VF.Renderer.Backends.SVG), PW=1000, PH=150; r.resize(PW,PH); const ctx=r.getContext();
+        const st=new VF.Stave(8,18,PW-16); st.addClef('treble').addKeySignature(D.clave); st.setContext(ctx).draw();
         const tick=gen.notes.map(n=>{ if(n.rest) return new VF.StaveNote({keys:['b/4'],duration:'qr'});
           const s=D.sp(n.midi,n.deg), sn=new VF.StaveNote({keys:[s.letter.toLowerCase()+'/'+s.oct],duration:'q',auto_stem:true});
           if(n.car) sn.setStyle({fillStyle:'#e11d74',strokeStyle:'#e11d74'}); return sn; });
         const v=new VF.Voice({num_beats:tick.length,beat_value:4}).setMode(VF.Voice.Mode.SOFT); v.addTickables(tick);
-        new VF.Formatter().joinVoices([v]).format([v],PW-150); v.draw(ctx,st);
+        new VF.Formatter().joinVoices([v]).format([v],PW-130); v.draw(ctx,st);
         const svg2=box.querySelector('svg'); ajustaSVG(svg2,PW,PH);
-        const lab=el('div','mod-lab','<b>'+D.tonica+' '+MODE_LABEL[gen.mode].toLowerCase()+'</b> · '+MODE_EXPL[gen.mode]); part.appendChild(lab);
       }catch(e){ console.error('[online] modos pauta',e); } }
   };
   return R;
