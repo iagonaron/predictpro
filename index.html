@@ -152,6 +152,24 @@ if(window.Sentry && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)){
 
   .exo-main{display:grid;grid-template-columns:1fr 230px;gap:16px;align-items:stretch}
   .board{background:var(--paper);border-radius:12px;box-shadow:var(--shadow);padding:8px 14px;overflow-x:auto;display:flex;align-items:center;min-height:120px}
+  /* (19-nov-2026, Iago: «las ghost note de melódico de profesional son imprecisas») el pentagrama, a su tamaño real y sin encogerse
+     (antes se dibujaba más ancho que el hueco y el navegador lo encogía: la fantasma quedaba entre línea y espacio). Como en elemental. */
+  .board>svg{flex:none}
+  /* (19-nov-2026) botón único «Corregir» → «Ver solución · mantén pulsado» (como en elemental) */
+  .btn-corr{margin-left:auto;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.1;min-width:132px;
+    user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+  .btn-corr small{font-size:10px;font-weight:600;letter-spacing:.02em;opacity:.6;text-transform:none}
+  #ritmicaView .btn-corr.peek{background:var(--rit);border-color:var(--rit);color:#fff}
+  #melodicaView .btn-corr.peek{background:var(--mel);border-color:var(--mel);color:#1b1405}
+  #toncomView .btn-corr.peek{background:var(--ton);border-color:var(--ton);color:#fff}
+  #toncomView .ton-sol{display:none;color:#2f6df6!important;font-weight:700}
+  #toncomView .exo.peek .ton-sol{display:block}
+  #toncomView .exo.peek .ton-correct .ton-sol{display:inline}
+  #toncomView .exo.peek .ton-nosol{display:none}
+  #toncomView .exo.peek .compas-opt.ton-sol-ok{border-color:#2f6df6;background:rgba(47,109,246,.12);color:#2f6df6}
+  /* (19-nov-2026, Iago) el play del melódico, en naranja */
+  #melodicaView .play-btn{background:#ea580c;box-shadow:0 6px 20px rgba(234,88,12,.35)}
+  #melodicaView .play-btn:hover{background:#f97316}
 
   /* ===== Portal de edición ===== */
   .edit-bar{display:flex;justify-content:center;margin-top:26px}
@@ -3111,11 +3129,16 @@ function woodSound(ctx,dest,when){
 /* (19-nov-2026, Iago: el sonido grave que marca la duración de cada figura, como en PreDict de elemental y en los quiz)
    Seno en La2 (110 Hz) que entra con el golpe y dura lo que la figura (menos 50 ms); el golpe de madera no cambia. */
 function graveSound(ctx,dest,when,durSec){
-  const sustain=Math.max(0.05,durSec-0.05), pk=0.24;
-  const o=ctx.createOscillator(),g=ctx.createGain(); o.type='sine'; o.frequency.value=110;
+  const sustain=Math.max(0.05,durSec-0.05), pk=0.30;
+  /* (19-nov-2026, Iago: «no oigo el grave») una senoidal pura de 110 Hz no suena en altavoces de portátil/iPad:
+     triangular filtrada (sus armónicos 330/550 Hz sí se oyen) + refuerzo de 220 Hz */
+  const o=ctx.createOscillator(),o2=ctx.createOscillator(),lp=ctx.createBiquadFilter(),g=ctx.createGain(),g2=ctx.createGain();
+  o.type='triangle'; o.frequency.value=110; o2.type='sine'; o2.frequency.value=220; g2.gain.value=0.45;
+  lp.type='lowpass'; lp.frequency.value=900; lp.Q.value=0.5;
   g.gain.setValueAtTime(0.0001,when); g.gain.exponentialRampToValueAtTime(pk,when+0.01);
   g.gain.setValueAtTime(pk,when+Math.max(0.03,sustain*0.6)); g.gain.exponentialRampToValueAtTime(0.0001,when+sustain);
-  o.connect(g); g.connect(dest); o.start(when); o.stop(when+sustain+0.03);
+  o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(dest);
+  o.start(when); o2.start(when); o.stop(when+sustain+0.03); o2.stop(when+sustain+0.03);
 }
 /* --- cuenta atrás 3·2·1 a pantalla completa (solo visual), cortina del color del apartado --- */
 let cdTimers=[];
@@ -3214,7 +3237,7 @@ function _playExoAudio(idx){
 function barRanges(idx){
   const cont=document.getElementById('board-'+idx);
   if(!cont) return [];
-  const W=Math.max(560,cont.clientWidth-6);
+  const W=Math.max(560,anchoBoard(cont));
   const x0=8, totalW=W-16, firstExtra=66;
   const barW=(totalW-firstExtra)/4;
   const ranges=[]; let x=x0;
@@ -3278,17 +3301,18 @@ function drawBoard(idx){
   cont.style.position='relative';
   const VF=Vex.Flow;
   const renderer=new VF.Renderer(cont,VF.Renderer.Backends.SVG);
-  const W=Math.max(560,cont.clientWidth-6),rowH=130;
+  const W=Math.max(560,anchoBoard(cont)),rowH=130;
   renderer.resize(W,rowH);
   const ctx=renderer.getContext();ctx.setFont('Arial',10);
   // fuente de datos por slot: solución (si revelado) o las casillas del alumno
-  const source = ex.revealed ? ex.flatSolution.slice() : ex.slots;
+  const verSol = ex.revealed || !!ex._peek;   /* (19-nov-2026) también mientras se mantiene «Ver solución» */
+  const source = verSol ? ex.flatSolution.slice() : ex.slots;
   let colorMap=null;
   const COL_OK='#15a06a', COL_BAD='#d23145', COL_FIX='#2f6df6';   // verde acierto · rojo fallo · azul corregido
-  if(ex.checked&&!ex.revealed){
+  if(ex.checked&&!verSol){
     // vista "¿Qué tal fue?": se dibuja la respuesta del alumno -> verde lo acertado, rojo lo fallado
     colorMap=ex.slots.map((c,i)=>{ if(!c) return COL_BAD; return (ex.flatSolution[i]&&ex.flatSolution[i].id===c.id)?COL_OK:COL_BAD; });
-  } else if(ex.revealed){
+  } else if(verSol){
     // vista "Solución": se dibuja la solución -> verde lo que el alumno ya tenía bien, azul lo corregido
     colorMap=ex.flatSolution.map((c,i)=>{ const stu=ex.slots[i]; return (stu&&c&&stu.id===c.id)?COL_OK:COL_FIX; });
   }
@@ -3504,12 +3528,11 @@ function renderExos(){
             '<div class="score-line" id="score-'+idx+'"></div>'+
           '</div>'+
           '<div class="check-bar">'+
-            '<button class="check-link" id="check-'+idx+'">¿Qué tal fue?</button>'+
-            '<button class="btn-sol" id="sol-'+idx+'">Solución</button>'+
+            '<button class="btn-sol btn-corr" id="check-'+idx+'">Corregir</button>'+
           '</div>'+
         '</div>'+
       '</div>'+
-      '<div class="palette-head"><h3>Células disponibles</h3><span class="hint">Pulsa para añadir por orden · mantén y arrastra para soltar en un pulso concreto · cuando termines, pulsa <b>¿Qué tal fue?</b> para corregir</span></div>'+
+      '<div class="palette-head"><h3>Células disponibles</h3><span class="hint">Pulsa para añadir por orden · mantén y arrastra para soltar en un pulso concreto · cuando termines, pulsa <b>Corregir</b></span></div>'+
       '<div class="palette" id="palette-'+idx+'"></div>';
     cont.appendChild(block);
 
@@ -3528,8 +3551,8 @@ function renderExos(){
       pal.appendChild(card);
     });
     block.querySelector('#play-'+idx).addEventListener('click',()=>playExo(idx));
-    block.querySelector('#check-'+idx).addEventListener('click',()=>onCheck(idx));
-    block.querySelector('#sol-'+idx).addEventListener('click',()=>onReveal(idx));
+    montaCorregir(block.querySelector('#check-'+idx), { checked:()=>ex.checked, errores:()=> scoreOf(ex)<ex.nslots,
+      corregir:()=>onCheck(idx), peek:on=>{ ex._peek=on; drawBoard(idx); } });
     const td=block.querySelector('#tempo-down-'+idx), tu=block.querySelector('#tempo-up-'+idx);
     if(td) td.addEventListener('click',()=>{ ex.tempoOffset=Math.max(-10,(ex.tempoOffset||0)-5); updateTempo(idx); });
     if(tu) tu.addEventListener('click',()=>{ ex.tempoOffset=Math.min(10,(ex.tempoOffset||0)+5); updateTempo(idx); });
@@ -3558,14 +3581,7 @@ function refreshControls(idx){
   const solBtn=document.getElementById('sol-'+idx);
   const pal=document.getElementById('palette-'+idx);
   if(pal) pal.classList.toggle('locked',ex.checked);
-  if(checkBtn){
-    checkBtn.disabled=ex.checked;
-    checkBtn.textContent=ex.checked?'Corregido':'¿Qué tal fue?';
-  }
-  if(solBtn){
-    solBtn.disabled=ex.revealed;
-    solBtn.textContent=ex.revealed?'Solución mostrada':'Solución';
-  }
+  pintaCorregir(checkBtn, ex.checked, scoreOf(ex)<ex.nslots);
 }
 function addCell(idx,cell){
   const ex=exos[idx];if(ex.checked)return;
@@ -3577,6 +3593,28 @@ function placeCell(idx,slot,cell){
   const ex=exos[idx];if(ex.checked)return;
   if(slot<0||slot>=ex.nslots)return;
   ex.slots[slot]=cell;drawBoard(idx);refreshControls(idx);
+}
+/* (19-nov-2026, Iago) un solo botón: «Corregir» (verde/rojo) → si hay fallos, «Ver solución · mantén pulsado»:
+   mientras se mantiene, lo que estaba mal aparece en azul con lo correcto. */
+function montaCorregir(btn, o){
+  if(!btn) return;
+  let on=false;
+  const fin=()=>{ if(!on) return; on=false; btn.classList.remove('peek'); o.peek(false); };
+  btn.addEventListener('click',()=>{ if(!o.checked()) o.corregir(); });
+  btn.addEventListener('pointerdown',e=>{
+    if(!o.checked() || !o.errores()) return;
+    e.preventDefault(); on=true; btn.classList.add('peek');
+    try{ btn.setPointerCapture(e.pointerId); }catch(_){}
+    o.peek(true);
+  });
+  ['pointerup','pointercancel','lostpointercapture','blur'].forEach(t=>btn.addEventListener(t,fin));
+  btn.addEventListener('contextmenu',e=>e.preventDefault());
+}
+function pintaCorregir(btn, checked, errores){
+  if(!btn) return;
+  if(!checked){ btn.innerHTML='Corregir'; btn.disabled=false; }
+  else if(errores){ btn.innerHTML='<span>Ver solución</span><small>mantén pulsado</small>'; btn.disabled=false; }
+  else { btn.innerHTML='Todo correcto ✓'; btn.disabled=true; }
 }
 function onCheck(idx){
   const ex=exos[idx];
@@ -4024,15 +4062,16 @@ function drawMelBoard(idx){
   cont.innerHTML=''; cont.style.position='relative';
   const VF=Vex.Flow;
   const renderer=new VF.Renderer(cont,VF.Renderer.Backends.SVG);
-  const W=Math.max(620,cont.clientWidth-6),H=200;
+  const W=Math.max(620,anchoBoard(cont)),H=200;
   renderer.resize(W,H);
   const ctx=renderer.getContext();
   const stave=new VF.Stave(8,40,W-16);
   stave.addClef(ex.clef||'treble');
   if(ex.key.vfsig!=='C') stave.addKeySignature(ex.key.vfsig);
   stave.setContext(ctx).draw();
-  const source = ex.revealed ? ex.midis : ex.slots;
-  const scored = ex.scored && !ex.revealed;
+  const verSol = ex.revealed || !!ex._peek;   /* (19-nov-2026) también mientras se mantiene «Ver solución» */
+  const source = verSol ? ex.midis : ex.slots;
+  const scored = ex.scored && !verSol;
   const notes=[];
   const accState={};                              // arrastre de alteraciones (letra+octava) — entrada del alumno
   const solSigns=solSpellSeq(ex.midis);           // grafía de la SOLUCIÓN con arrastre de compás único
@@ -4044,23 +4083,21 @@ function drawMelBoard(idx){
       const zc=melSpell(cor); const corKey=zc.letter.toLowerCase()+'/'+zc.oct;
       const corAcc=(solSigns[i]==='n'?'n':solSigns[i]==='#'?'#':solSigns[i]==='b'?'b':''); // arrastre de compás único
       let keys, accs, styles;
+      /* (19-nov-2026, Iago) al corregir solo verde/rojo; la correcta (azul) se ve manteniendo «Ver solución» */
       if(stu===null || stu===undefined){
-        keys=[corKey]; accs=[corAcc]; styles=[BLUE];                       // vacía -> solo la correcta en azul
+        keys=[corKey]; accs=['']; styles=['rgba(0,0,0,0)'];                // vacía -> nada (se verá al mantener «Ver solución»)
       } else if(stu===cor){
         const z=melSlotVF(ex,i); keys=[z.letter.toLowerCase()+'/'+z.oct]; accs=[corAcc]; styles=[GREEN]; // acierto
       } else {
         const z=melSlotVF(ex,i);
-        const pair=[{key:z.letter.toLowerCase()+'/'+z.oct, acc:z.acc, midi:stu, col:RED},
-                    {key:corKey, acc:corAcc, midi:cor, col:BLUE}];
-        pair.sort((a,b)=>a.midi-b.midi);                                   // tu nota (rojo) + correcta (azul)
-        keys=pair.map(o=>o.key); accs=pair.map(o=>o.acc); styles=pair.map(o=>o.col);
+        keys=[z.letter.toLowerCase()+'/'+z.oct]; accs=[z.acc||'']; styles=[RED];   // tu nota, en rojo
       }
       const sn=new VF.StaveNote({keys,duration:'w',clef:ex.clef||'treble'});
       accs.forEach((a,k)=>{ if(a) sn.addModifier(new VF.Accidental(a),k); });
       styles.forEach((c,k)=>{ try{ sn.setKeyStyle(k,{fillStyle:c,strokeStyle:c}); }catch(e){} });
       notes.push(sn); continue;
     }
-    if(ex.revealed){
+    if(verSol){
       // solución: tus aciertos en verde y con TU grafía (no reescribir); lo fallado/vacío, la solución en azul
       // la grafía de la solución respeta el compás único (arrastre): no repite el sostenido vigente y pone becuadro al volver a natural
       const stu=ex.slots[i], cor=ex.midis[i];
@@ -4095,7 +4132,7 @@ function drawMelBoard(idx){
   new VF.Formatter().joinVoices([voice]).format([voice],W-70);
   voice.draw(ctx,stave);
   // X de cada una de las 10 posiciones (para el resaltado de la nota que suena)
-  let noteXs=[]; try{ noteXs=notes.map(n=>{ try{return n.getAbsoluteX();}catch(e){return null;} }); }catch(e){}
+  let noteXs=[]; try{ noteXs=notes.map(n=>{ try{ const b=n.getNoteHeadBeginX(), e=n.getNoteHeadEndX(); return (isFinite(b)&&isFinite(e)&&e>b)?(b+e)/2:n.getAbsoluteX(); }catch(e){return null;} }); }catch(e){}
   // guardar geometría para hover/click
   ex._geom={stave, notes, W, H, x0:stave.getNoteStartX(), x1:8+(W-16), noteXs};
   // ancla real: Y de una nota visible (sabemos su midi) -> referencia exacta para la fantasma
@@ -4116,7 +4153,7 @@ function drawMelBoard(idx){
     }
   }catch(e){ ex._anchor={midi:71, y:80, step:diatonicStepSpelled(idx,71)}; ex._half=5; } /* R5 10-jul-2026 */
   // números 1..10 bajo el pentagrama
-  ex._noteX=notes.map(n=>{try{return n.getAbsoluteX();}catch(e){return null;}});
+  ex._noteX=noteXs.slice();   /* (19-nov-2026) el CENTRO de la cabeza: ahí van la fantasma, los números y el menú ♭ ♯ × */
   drawMelNumbers(idx);
   // capa de interacción: editable siempre que no se haya revelado la solución
   // marcador de la nota que suena (banda azul)
@@ -4126,7 +4163,7 @@ function drawMelBoard(idx){
   if(!ex.revealed){
     const layer=document.createElement('div'); layer.className='mel-ilayer'; layer.id='mellayer-'+idx;
     cont.appendChild(layer);
-    layer.addEventListener('mousemove',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelHover(idx,e,true); /* R5 10-jul-2026 · arrastre con histéresis */ });
+    layer.addEventListener('mousemove',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelHover(idx,e,false); /* (19-nov-2026) con RATÓN la fantasma va justo al puntero; la histéresis, solo para el dedo */ });
     layer.addEventListener('mouseleave',()=>clearGhost(idx));
     layer.addEventListener('click',e=>{ if(melTouchGuard[idx]) return; /* GN-UNIF 8-jul-2026 */ onMelClick(idx,e); });
     layer.addEventListener('contextmenu',e=>{ e.preventDefault(); onMelDelete(idx,e); });
@@ -4195,7 +4232,7 @@ function drawMelNumbers(idx){
   /* R3 10-jul-2026 · en TABLET los números pasan a ser CÍRCULOS selectores de paso.
      El activo (ex._activeSlot) va resaltado en oro; los ya rellenos marcan "hecho";
      el slot 0 (tónica dada) se muestra tenue y no es seleccionable. En ratón: numeritos. */
-  const tablet = ES_TACTIL && !ex.revealed;   /* R3 10-jul-2026 · alineado con la app elemental: los círculos siguen operativos tras corregir (mientras no se revele la solución), para poder reeditar */
+  const tablet = !ex.revealed;   /* (19-nov-2026, Iago: «los números, igual que en el melódico de elemental») círculos también con ratón, abajo del todo */   /* R3 10-jul-2026 · alineado con la app elemental: los círculos siguen operativos tras corregir (mientras no se revele la solución), para poder reeditar */
   if(tablet) wrap.classList.add('tablet');
   /* R5 10-jul-2026 · CAMBIO C: subir los círculos bajo el pentagrama y que no se corten.
      R6 10-jul-2026 · AJUSTE: en vez de anclarlos a la línea inferior del pentagrama
@@ -4214,7 +4251,7 @@ function drawMelNumbers(idx){
     }catch(e){}
     if(topPx==null) topPx=205;                        // fallback intermedio
     const maxTop=(cont? cont.clientHeight : 294) - 36;
-    if(topPx>maxTop) topPx=maxTop;
+    topPx=Math.max(topPx, maxTop-4);   /* (19-nov-2026) abajo del todo de la tarjeta */
     wrap.style.top=Math.round(topPx)+'px'; wrap.style.bottom='auto';
   }
   for(let i=0;i<10;i++){
@@ -4224,9 +4261,11 @@ function drawMelNumbers(idx){
       if(i===0){ s.classList.add('given'); }              /* R3 10-jul-2026 · la tónica dada: no seleccionable */
       else{
         if(ex.slots[i]!=null && ex.slots[i]!==undefined) s.classList.add('done'); // paso ya escrito
-        if(i===ex._activeSlot) s.classList.add('active');                          // paso activo (oro)
+        if(ES_TACTIL && i===ex._activeSlot) s.classList.add('active');                          // paso activo (oro)
+        if(ES_TACTIL){
         s.addEventListener('click',ev=>{ ev.stopPropagation(); melSetActiveSlot(idx,i); });      /* R3 10-jul-2026 */
         s.addEventListener('touchend',ev=>{ ev.preventDefault(); ev.stopPropagation(); melSetActiveSlot(idx,i); },{passive:false}); /* R3 10-jul-2026 */
+        } else s.style.pointerEvents='none';   /* (19-nov-2026) con ratón solo indican */
       }
     }
     wrap.appendChild(s);
@@ -4328,6 +4367,11 @@ const ES_TACTIL = (typeof window!=='undefined') && (
 );
 /* R3 10-jul-2026 · último slot editable del ejercicio melódico (slot 0 = tónica dada; 1..MEL_LAST rellenables) */
 const MEL_LAST = 9;
+/* (19-nov-2026) ancho útil de una tarjeta de pentagrama (sin su relleno), para dibujar el SVG a escala 1 */
+function anchoBoard(cont){
+  try{ const cs=getComputedStyle(cont); return cont.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0)-2; }
+  catch(e){ return cont.clientWidth-30; }
+}
 function svgOffsetMel(idx){
   const cont=document.getElementById('melboard-'+idx);
   const svg=cont? cont.querySelector('svg'):null;
@@ -4563,17 +4607,16 @@ function renderMelExos(){
           '</div>'+
           '<div class="check-bar">'+
             '<button class="gn-undo" id="melundo-'+idx+'" disabled>↶ Deshacer</button>'+ /* GN-UNIF 8-jul-2026 */
-            '<button class="check-link" id="melcheck-'+idx+'">¿Qué tal fue?</button>'+
-            '<button class="btn-sol" id="melsol-'+idx+'">Solución</button>'+
+            '<button class="btn-sol btn-corr" id="melcheck-'+idx+'">Corregir</button>'+
           '</div>'+
         '</div>'+
       '</div>'+
-      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). <b>En tablet</b>, bajo el pentagrama aparecen los <b>círculos de paso</b> (1, 2, 3…): el círculo <b>dorado</b> es el paso donde escribirás la próxima nota. Al arrastrar con el dedo solo cambias la <b>altura</b> (el paso no salta aunque te desvíes a los lados) y, al soltar, avanza <b>un solo paso</b>. Para corregir una nota concreta, <b>toca su círculo</b> y volverás a ese paso. La nota que colocas queda <b>seleccionada</b> (en oro) y aparece encima su menú para añadirle <b>♭</b> o <b>♯</b> o borrarla con la <b>×</b>. Solo hay <b>una nota seleccionada a la vez</b>: para editar o borrar otra, <b>tócala primero</b> (o toca su círculo) para seleccionarla y saldrá su menú. Apuntar a otra altura sobre una nota ya puesta la reescribe. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. También puedes borrar con click derecho encima, y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>¿Qué tal fue?</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */ /* SEL-UNICA 10-jul-2026 */ /* R3 10-jul-2026 · hint menciona los círculos de paso en tablet */
+      '<div class="palette-head"><h3>Cómo responder</h3><span class="hint">No hay tonalidad: son notas sueltas sin relación tonal. Coloca cada nota en su línea o espacio: con el ratón (la nota fantasma sigue al cursor y un click la fija) o con el dedo (toca el pentagrama, arrastra hasta la altura exacta y suelta). <b>En tablet</b>, bajo el pentagrama aparecen los <b>círculos de paso</b> (1, 2, 3…): el círculo <b>dorado</b> es el paso donde escribirás la próxima nota. Al arrastrar con el dedo solo cambias la <b>altura</b> (el paso no salta aunque te desvíes a los lados) y, al soltar, avanza <b>un solo paso</b>. Para corregir una nota concreta, <b>toca su círculo</b> y volverás a ese paso. La nota que colocas queda <b>seleccionada</b> (en oro) y aparece encima su menú para añadirle <b>♭</b> o <b>♯</b> o borrarla con la <b>×</b>. Solo hay <b>una nota seleccionada a la vez</b>: para editar o borrar otra, <b>tócala primero</b> (o toca su círculo) para seleccionarla y saldrá su menú. Apuntar a otra altura sobre una nota ya puesta la reescribe. Una alteración afecta a las notas siguientes de la misma línea, igual que en la escritura real; da igual escribirla como sostenido o como su bemol equivalente: cuenta la altura. También puedes borrar con click derecho encima, y con <b>↶ Deshacer</b> recuperas el último cambio. Al terminar, pulsa <b>Corregir</b>; si algo falla, mantén pulsado <b>Ver solución</b>.</span></div>'; /* GN-UNIF 8-jul-2026 */ /* SEL-UNICA 10-jul-2026 */ /* R3 10-jul-2026 · hint menciona los círculos de paso en tablet */
     cont.appendChild(block);
     block.querySelector('#melplay-'+idx).addEventListener('click',()=>playMel(idx));
     block.querySelector('#melundo-'+idx).addEventListener('click',()=>gnMelUndo(idx)); /* GN-UNIF 8-jul-2026 */
-    block.querySelector('#melcheck-'+idx).addEventListener('click',()=>onMelCheck(idx));
-    block.querySelector('#melsol-'+idx).addEventListener('click',()=>onMelReveal(idx));
+    montaCorregir(block.querySelector('#melcheck-'+idx), { checked:()=>!!ex.scored, errores:()=> melScoreOf(ex)<10,
+      corregir:()=>onMelCheck(idx), peek:on=>{ ex._peek=on; clearGhost(idx); drawMelBoard(idx); } });
     block.querySelectorAll('.melspeed-btn').forEach(b=>{
       b.addEventListener('click',()=>{
         ex.melSpeed=parseFloat(b.dataset.sp);
@@ -4595,8 +4638,7 @@ function refreshMelControls(idx){
   const ex=melExos[idx];
   const checkBtn=document.getElementById('melcheck-'+idx);
   const solBtn=document.getElementById('melsol-'+idx);
-  if(checkBtn){ checkBtn.textContent=ex.scored?'Corregido':'¿Qué tal fue?'; checkBtn.disabled=false; }
-  if(solBtn){ solBtn.disabled=ex.revealed; solBtn.textContent=ex.revealed?'Solución mostrada':'Solución'; }
+  pintaCorregir(checkBtn, !!ex.scored, melScoreOf(ex)<10);
   gnMelRefreshUndo(idx); /* GN-UNIF 8-jul-2026 */
 }
 function melScoreOf(ex){
@@ -5383,7 +5425,7 @@ function renderTonExos(){
           '<h4>Tonalidad</h4>'+
           '<input class="ton-input '+(ex.checked?(keyOk?'ok':'bad'):'')+'" id="tonkey-'+idx+'" type="text" '+
             'placeholder="ej. Do m  ·  Lab M" value="'+(ex.chosenKey?ex.chosenKey.replace(/"/g,'&quot;'):'')+'" '+(ex.checked?'disabled':'')+' autocomplete="off" spellcheck="false">'+
-          (ex.checked&&!keyOk&&ex.showSol?'<div class="ton-correct">Correcta: '+ex.key.name+'</div>':'')+
+          (ex.checked&&!keyOk?'<div class="ton-correct ton-sol">Correcta: '+ex.key.name+'</div>':'')+
         '</div>'+
         // 2) ARMADURA (selector)
         '<div class="ton-pick">'+
@@ -5396,7 +5438,7 @@ function renderTonExos(){
             '</div>'+
             '<div class="arm-wheel-center"></div>'+
           '</div>'+
-          (ex.checked?'<div class="ton-correct" style="text-align:center;margin-top:8px">'+(ex.chosenArm===ex.key.sig?'<span style="color:var(--green)">Correcta</span>':(ex.showSol?'<span style="color:var(--red)">Correcta: '+armLabel(ex.key.sig)+'</span>':'<span style="color:var(--red)">Incorrecta</span>'))+'</div>':'')+
+          (ex.checked?'<div class="ton-correct" style="text-align:center;margin-top:8px">'+(ex.chosenArm===ex.key.sig?'<span style="color:var(--green)">Correcta</span>':('<span class="ton-nosol" style="color:var(--red)">Incorrecta</span><span class="ton-sol">Correcta: '+armLabel(ex.key.sig)+'</span>'))+'</div>':'')+
         '</div>'+
         // 3) tarjeta LA + TÓNICA + ACORDES
         '<button class="ton-playcard" id="ton-acordes-'+idx+'">'+
@@ -5413,13 +5455,13 @@ function renderTonExos(){
               let cls='compas-opt';
               if(ex.checked){
                 if(c===ex.chosenCompas){ cls += (c===ex.compas.ts)?' ok':' bad'; }
-                else if(ex.showSol && c===ex.compas.ts){ cls+=' ok'; }
+                else if(c===ex.compas.ts){ cls+=' ton-sol-ok'; }
               }
               else if(ex.chosenCompas===c) cls+=' sel';
               return '<div class="'+cls+'" data-c="'+c+'">'+c+'</div>';
             }).join('')+
           '</div>'+
-          (ex.checked&&!ex.chosenCompas&&ex.showSol?'<div class="ton-correct">Correcto: '+ex.compas.ts+'</div>':'')+
+          (ex.checked&&ex.chosenCompas!==ex.compas.ts?'<div class="ton-correct ton-sol">Correcto: '+ex.compas.ts+'</div>':'')+
         '</div>'+
         // 5) tarjeta DICTADO COMPLETO
         '<button class="ton-playcard" id="ton-completo-'+idx+'">'+
@@ -5430,10 +5472,8 @@ function renderTonExos(){
         '</button>'+
         // barra ¿qué tal fue? + corrección, debajo de "Dictado completo" (última columna)
         '<div class="check-bar ton-check-bar">'+
-          '<button class="check-link" id="toncheck-'+idx+'" '+(ex.checked?'disabled':'')+'>¿Qué tal fue?</button>'+
-          (ex.checked
-            ? '<span class="ton-pts" id="tonscore-'+idx+'"></span>'
-            : '<button class="btn-sol" id="tonsol-'+idx+'">Solución</button>')+
+          (ex.checked ? '<span class="ton-pts" id="tonscore-'+idx+'"></span>' : '')+
+          '<button class="btn-sol btn-corr" id="toncheck-'+idx+'">Corregir</button>'+
         '</div>'+
       '</div>';
     cont.appendChild(block);
@@ -5450,8 +5490,11 @@ function renderTonExos(){
       o.addEventListener('click',()=>{ if(ex.checked)return; ex.chosenCompas=o.dataset.c; renderTonExos(); });
     });
     initArmWheel(idx);
-    const cb=block.querySelector('#toncheck-'+idx); if(cb) cb.addEventListener('click',()=>onTonCheck(idx));
-    const sb=block.querySelector('#tonsol-'+idx); if(sb) sb.addEventListener('click',()=>onTonSolution(idx));
+    const cb=block.querySelector('#toncheck-'+idx);
+    const tonMal=()=> !(tonKeyMatches(ex.chosenKey,ex.key.name) && ex.chosenArm===ex.key.sig && ex.chosenCompas===ex.compas.ts);
+    montaCorregir(cb, { checked:()=>!!ex.checked, errores:tonMal, corregir:()=>onTonCheck(idx),
+      peek:on=>{ const b=document.getElementById('tonexo-'+idx); if(b) b.classList.toggle('peek',on); } });
+    pintaCorregir(cb, !!ex.checked, ex.checked && tonMal());
     if(ex.checked){ const sc=block.querySelector('#tonscore-'+idx); if(sc){ const pts=(keyOk?1:0)+(armOk?1:0)+(compOk?1:0); sc.innerHTML='<b>'+pts+'</b> / 3'; } }
     renderTonAudioButtons(idx);
   });
