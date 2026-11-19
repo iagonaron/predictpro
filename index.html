@@ -3108,6 +3108,15 @@ function woodSound(ctx,dest,when){
   g.gain.exponentialRampToValueAtTime(0.0001,when+0.12);
   o.connect(lp);lp.connect(g);g.connect(dest);o.start(when);o.stop(when+0.13);
 }
+/* (19-nov-2026, Iago: el sonido grave que marca la duración de cada figura, como en PreDict de elemental y en los quiz)
+   Seno en La2 (110 Hz) que entra con el golpe y dura lo que la figura (menos 50 ms); el golpe de madera no cambia. */
+function graveSound(ctx,dest,when,durSec){
+  const sustain=Math.max(0.05,durSec-0.05), pk=0.24;
+  const o=ctx.createOscillator(),g=ctx.createGain(); o.type='sine'; o.frequency.value=110;
+  g.gain.setValueAtTime(0.0001,when); g.gain.exponentialRampToValueAtTime(pk,when+0.01);
+  g.gain.setValueAtTime(pk,when+Math.max(0.03,sustain*0.6)); g.gain.exponentialRampToValueAtTime(0.0001,when+sustain);
+  o.connect(g); g.connect(dest); o.start(when); o.stop(when+sustain+0.03);
+}
 /* --- cuenta atrás 3·2·1 a pantalla completa (solo visual), cortina del color del apartado --- */
 let cdTimers=[];
 function clearCountdown(){
@@ -3186,7 +3195,7 @@ function _playExoAudio(idx){
     cell.notes.forEach((n,i)=>{
       const dur=pulseSec*(weights[i]/total);
       const isRest=n.rest||/r$/.test(n.dur);
-      if(!isRest) woodSound(ctx,dest,t);
+      if(!isRest){ woodSound(ctx,dest,t); graveSound(ctx,dest,t,dur); }   /* (19-nov-2026) + la duración en grave */
       t+=dur;
     });
   }));
