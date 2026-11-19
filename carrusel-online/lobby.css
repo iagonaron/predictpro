@@ -1,0 +1,169 @@
+/* ============================================================================
+   C1 · Carrusel online — lobby, reserva y sala con la estética de la portada de PreDict Carrusel
+   (remolino multicolor por detrás —lo pone guiado-online.js en #pcg—, espiral multicolor que gira, título «PreDict Carrusel»,
+   tarjetas de cristal oscuro y botones blancos). 19-nov-2026.
+   ============================================================================ */
+#co{--text:#fff;--muted:#d9d3ff;--line:rgba(255,255,255,.24);--glass:rgba(14,10,42,.58);
+    --azul:#5bd0ff;--ama:#ffd23f;--nar:#f97316;--vio:#bd92ff;--ver:#22c55e;--ko:#ff7a8a;--or:#ff9a3c}
+#co *{box-sizing:border-box}
+#co{position:fixed;inset:0;z-index:2147483000;overflow:auto;background:transparent;color:var(--text);
+  font:16px/1.4 "Helvetica Neue",Arial,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#co button{font:inherit;color:inherit;cursor:pointer}
+html.co-on,html.co-on body{overflow:hidden}
+
+/* cabecera: la espiral gira sin parar (no se vuelve a pintar con cada refresco) */
+#co #cab{max-width:1060px;margin:0 auto;padding:18px 18px 0}
+#co .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:6px}
+#co .logo{display:flex;align-items:center;gap:16px}
+#co .logo .lg{position:relative;width:92px;height:92px;flex:none}
+#co .logo .lg::before{content:"";position:absolute;left:6%;top:12%;width:88%;height:88%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.40),rgba(0,0,0,0))}
+#co .logo .lg svg{position:relative;width:100%;height:100%;display:block;animation:coGiro 26s linear infinite;will-change:transform}
+@keyframes coGiro{to{transform:rotate(360deg)}}
+#co .logo .tt{display:flex;align-items:baseline;gap:14px;line-height:1;text-shadow:0 6px 26px rgba(0,0,0,.5)}
+#co .logo .pre{font-size:56px;font-weight:800;color:#fff;letter-spacing:-.03em}
+#co .logo .dict{font-size:56px;font-weight:300;color:#e2ddff;letter-spacing:-.03em;margin-left:-10px}
+#co .logo .car{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;font-size:38px;display:inline-block;transform:rotate(-8deg) translateY(-6px);padding:0 .1em;
+  background:linear-gradient(100deg,#5bd0ff 8%,#ffd23f 40%,#ff9a3c 60%,#bd92ff 92%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 4px 14px rgba(0,0,0,.45))}
+#co .logo .kick{margin-top:7px;font-size:17px;font-weight:700;letter-spacing:.06em;color:#f1eeff;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+#co .top .sp{flex:1}
+#co .tag{color:var(--muted);font-size:13px}
+#co #cab.sin-sonido #bSonido{display:none}
+
+#co .cowrap{max-width:1060px;margin:0 auto;padding:14px 18px 44px}
+
+/* botones: rectángulos de esquinas suaves, minimalistas */
+#co .btn{background:rgba(10,8,30,.45);border:1.5px solid rgba(255,255,255,.42);border-radius:10px;padding:10px 18px;font-weight:700;color:#fff;transition:transform .12s,background .12s,filter .12s}
+#co .btn:hover{background:rgba(255,255,255,.16)}
+#co .btn:disabled{opacity:.5;cursor:default}
+#co .btn.pri{background:#fff;border-color:#fff;color:#1a1238;font-weight:800;box-shadow:none}
+#co .btn.pri:hover{filter:brightness(.94);background:#fff}
+#co .btn.pri.sel{background:var(--ver);border-color:var(--ver);color:#fff}
+#co .btn.sel{background:rgba(34,197,94,.22);border-color:var(--ver)}
+#co .btn.ko{background:#ef4444;border-color:#ef4444;color:#fff;font-weight:800}
+#co .btn.ko:hover{filter:brightness(.92);background:#ef4444}
+#co .btn.peq{padding:0;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center}
+#co .btn.gr{font-size:17px;padding:13px 24px}
+
+/* tarjetas de cristal */
+#co .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#co .card{background:var(--glass);border:1.5px solid var(--line);border-radius:14px;padding:18px 20px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 14px 40px rgba(0,0,0,.28)}
+#co .card + .card,#co .cols + .card{margin-top:14px}
+#co h2{margin:0 0 8px;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:#fff;font-weight:900}
+#co h2::after{content:"";display:block;width:36px;height:2px;border-radius:0;margin-top:7px;background:linear-gradient(90deg,#5bd0ff,#ffd23f,#ff9a3c,#bd92ff)}
+#co .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#co .muted{color:var(--muted)}
+#co p{margin:8px 0}
+#co input[type=datetime-local]{background:rgba(10,8,30,.5);border:1.5px solid rgba(255,255,255,.42);border-radius:10px;color:#fff;padding:10px 12px;font:inherit;color-scheme:dark}
+
+#co .dot{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--ver);margin-right:7px;vertical-align:middle}
+#co .dot.live{animation:coPulso 1.1s infinite}
+#co .dot.nar{background:var(--nar)}
+@keyframes coPulso{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,.7)}50%{opacity:.55;box-shadow:0 0 0 8px rgba(52,211,153,0)}}
+
+#co .partida{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line)}
+#co .partida:first-of-type{border-top:0}
+#co .partida .info{flex:1;min-width:240px}
+#co .partida .quien{font-weight:900;font-size:19px}
+#co .partida .cuando{color:var(--muted);font-size:14px}
+
+#co .chip{display:inline-block;border:1.5px solid var(--line);border-radius:8px;padding:5px 12px;margin:3px 6px 3px 0;font-size:14px;background:rgba(255,255,255,.08);animation:coPop .45s ease both}
+@keyframes coPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+#co .chip.yo{border-color:var(--azul);background:rgba(91,208,255,.18)}
+#co .chip.host{border-color:var(--ama);background:rgba(255,210,63,.2)}
+#co .chip.pend{opacity:.6;border-style:dashed;animation:none}
+
+#co .banner{border-radius:12px;padding:14px 16px;border:1.5px solid var(--ama);background:rgba(255,210,63,.16);margin-bottom:14px;backdrop-filter:blur(6px)}
+#co .banner.ko{border-color:var(--ko);background:rgba(255,122,138,.18)}
+#co .banner b{font-size:17px}
+#co .grande{font-size:44px;font-weight:900;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+#co .msg{margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.1);font-size:14px}
+
+@media (max-width:760px){
+  #co .cols{grid-template-columns:1fr}
+  #co .logo .lg{width:64px;height:64px}
+  #co .logo .pre,#co .logo .dict{font-size:36px}
+  #co .logo .car{font-size:26px}
+  #co .grande{font-size:34px}
+}
+#co .cols .card{margin-top:0}
+
+/* ventana de confirmación */
+#co .comodal{position:fixed;inset:0;z-index:5;background:rgba(6,4,24,.66);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+#co .cm-caja{max-width:470px;background:rgba(18,13,52,.96);border:1.5px solid rgba(255,255,255,.34);border-radius:14px;padding:22px 24px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+#co .cm-caja h3{margin:0 0 6px;font-size:22px;font-weight:900}
+#co .cm-caja h3::after{content:"";display:block;width:36px;height:2px;border-radius:0;margin-top:8px;background:linear-gradient(90deg,#5bd0ff,#ffd23f,#ff9a3c,#bd92ff)}
+#co .cm-caja p{margin:12px 0 18px;color:#e8e4ff;font-size:16px}
+#co .cm-caja .row{justify-content:flex-end}
+
+#co svg.ic{width:18px;height:18px;vertical-align:-4px;margin-right:7px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#co .btn.peq svg.ic{margin:0;width:16px;height:16px;vertical-align:0}
+#co .btn.gr svg.ic{width:20px;height:20px}
+#co #bSonido{padding:8px 14px;font-size:13px;white-space:nowrap}
+#co #bSonido svg.ic{width:16px;height:16px}
+#co .partida.mia .quien svg.ic{width:17px;height:17px;vertical-align:-3px;margin-right:6px}
+#co .partida.mia{box-shadow:inset 3px 0 0 #fff;padding-left:12px}
+#co .mon svg.ic{width:15px;height:15px;margin-right:0;vertical-align:-3px}
+#co .card.solo{max-width:640px;margin:20px auto}
+#co .btn:disabled{opacity:.45}
+#coSonido svg.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#co .vid{position:relative;width:100%;max-width:760px;margin:6px auto 0;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;border:1.5px solid var(--line);margin-top:6px}#co .vid iframe,#co .vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
+#co .rojo{color:#ef4444;font-weight:800}
+
+/* monigotes con nombre (19-nov) */
+#co .mon{display:inline-flex;flex-wrap:wrap;gap:4px 12px;align-items:center;vertical-align:middle}
+#co .mon .m{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+#co .mon b{font-weight:600;font-size:12px}
+#co .mon i{font-style:normal;font-size:12px}
+
+/* (19-nov, Iago) «Cancelar partida» ocupa exactamente lo mismo que «Me apunto» + ✕ */
+#co .partida > .row{width:250px;flex:none;flex-wrap:nowrap;justify-content:flex-end}
+#co .partida > .row .btn.pri,#co .partida > .row .btn.ko{flex:1;display:inline-flex;align-items:center;justify-content:center}
+
+/* (19-nov 21:05) lobby centrado en vertical y a escala de la pantalla (--z lo calcula lobby.js) */
+#co{display:flex;flex-direction:column;--z:1}
+#co>#cab{margin-top:auto;width:100%;zoom:var(--z)}
+#co>#app{margin-bottom:auto;width:100%;zoom:var(--z)}
+/* actitud ganada, al volver al lobby */
+#co #coAct{position:fixed;left:50%;top:22px;transform:translate(-50%,-30px);opacity:0;transition:opacity .4s,transform .4s;z-index:5;
+  display:flex;align-items:center;gap:14px;padding:12px 14px 12px 16px;border-radius:12px;background:rgba(14,10,42,.92);border:1.5px solid rgba(249,115,22,.8);box-shadow:0 14px 40px rgba(0,0,0,.45)}
+#co #coAct.on{opacity:1;transform:translate(-50%,0)}
+#co #coAct .ic{width:40px;height:40px;border-radius:10px;background:var(--nar);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800}
+#co #coAct .tx{display:flex;flex-direction:column;gap:2px}
+#co #coAct .tx b{font-size:19px}
+#co #coAct .tx span{font-size:14px;color:var(--muted)}
+#co #coAct button{background:none;border:0;color:var(--muted);font-size:16px;padding:6px;margin-left:6px}
+
+/* (19-nov 21:26, Iago) «Carrusel» y a la derecha «Online» (ya no PreDict) */
+#co .logo .tt .car{font-size:60px;transform:rotate(-6deg) translateY(-2px);padding:0 .12em 0 .02em}
+#co .logo .tt .onl{font-size:54px;font-weight:300;color:#e2ddff;letter-spacing:-.02em}
+#co .logo .kick{margin-top:12px}
+
+/* (19-nov 21:47, Iago) el hueco de día y hora, vacío, invita a pulsar */
+#co .fh{position:relative;display:inline-flex}
+#co .fh .ph{position:absolute;inset:0;display:flex;align-items:center;gap:9px;padding:0 14px;pointer-events:none;font-weight:700;color:var(--ama);white-space:nowrap}
+#co .fh:not(.vacio) .ph{display:none}
+#co .fh.vacio input{color:transparent;border-style:dashed;border-color:rgba(255,210,63,.85);cursor:pointer}
+#co .fh.vacio input::-webkit-datetime-edit{opacity:0}
+#co .fh.vacio input::-webkit-calendar-picker-indicator{opacity:0}
+#co .fh.vacio:hover input{background:rgba(255,210,63,.1)}
+#co .fh .ph svg{width:19px;height:19px;flex:none}
+
+/* (19-nov 22:01, Iago) «Carrusel» recto, con la letra de la marca de la partida y los colores; hueco de fecha más ancho; megáfono */
+#co .logo .tt .car{font-style:normal;transform:none;font-size:58px;padding:0 .02em;letter-spacing:-.01em}
+#co .card .row:has(.fh){flex-wrap:nowrap}
+#co .fh{flex:1;min-width:0}
+#co .fh input{width:100%;min-width:0;box-sizing:border-box}
+#co .card .row:has(.fh) .btn{flex:none}
+#co .meg{display:inline-flex;vertical-align:-3px;margin-left:7px;color:#fff}
+#co .meg svg{width:19px;height:19px}
+/* (20-nov-2026) en el móvil (≤ 480 px) el título y la fila de «Anunciar» no cabían: más pequeño y la fila se parte */
+@media (max-width:480px){
+  #co .logo .tt{gap:7px;flex-wrap:wrap;row-gap:0}
+  #co .logo .tt .car{font-size:34px}
+  #co .logo .tt .onl{font-size:29px}
+  #co .card .row:has(.fh){flex-wrap:wrap}
+  #co .card .row:has(.fh) .fh{flex:1 1 100%}
+}
+
+#co .logo .tt .pro{font-size:30px;align-self:center;font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.05em;margin:0 .22em 0 .18em;background:linear-gradient(180deg,#fff3c2,#f5d061 45%,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (max-width:480px){#co .logo .tt .pro{font-size:17px}}
