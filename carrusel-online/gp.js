@@ -7,7 +7,7 @@
    · Melódico: atonal (Melódico atonal del Carrusel PRO), 10 notas entre si3 y mi5, con al menos 4 teclas negras; la primera
      y la última ya escritas.
    · TonCom: las 22 tonalidades hasta 5 alteraciones y compases 2/4, 3/4, 6/8 y 9/8.
-   · Armónico: acorde 1 entre los 10 tipos del Armónico PRO; acorde 2, tríada M/m/dis/sus4 en cualquier estado.
+   · Armónico: acorde 1 entre los 10 tipos del Armónico PRO; acorde 2, tríada M/m/dis en cualquier estado.
    (Cadencias —las 6 del PRO— y Modos van en el motor: gp_guiado.js)
    ===================================================================================================================== */
 window.CO_GP=true;
@@ -107,7 +107,7 @@ Object.assign(ARM_ROOTS,{
   Sd7:[['B',0],['E',0],['A',0],['D',0],['F',1],['C',1],['G',1]]
 });
 const GP_ARM_A=['PM','Pm','Aum','Dis','Sus4','D7','m7','M7','Dis7','Sd7'];
-const GP_ARM_B=['PM','Pm','Dis','Sus4'];
+const GP_ARM_B=['PM','Pm','Dis'];   /* (20-nov) sin sus4 en el acorde 2: la corrección ordena por terceras (fund./3.ª/5.ª) y con la 4.ª suspendida saldría mal */
 function gpPasos(q){ return q==='Sus4'?[0,3,4]:[0,2,4,6]; }
 function gpSpell(rl,q,member,midi){
   const li=((ARM_LETTERS.indexOf(rl)+gpPasos(q)[member])%7+7)%7, letter=ARM_LETTERS[li], natural=ARM_LPC[letter], pc=((midi%12)+12)%12;
@@ -120,9 +120,11 @@ function gpEncaja(rl,q,notes){
   return notes.map(n=>gpSpell(rl,q,n.member,n.midi+shift)).sort((a,b)=>a.midi-b.midi);
 }
 function renderArmonico(seed){
-  const qa=pick(GP_ARM_A), [rla,raa]=pick(ARM_ROOTS[qa]), roa=60+ARM_LPC[rla]+raa;
+  let qa=pick(GP_ARM_A); if(GP_ARM_A.includes(GP_QS.get('armA'))) qa=GP_QS.get('armA');
+  const [rla,raa]=pick(ARM_ROOTS[qa]), roa=60+ARM_LPC[rla]+raa;
   const a={quality:qa,label:ARM_QUAL[qa].label,notes:gpEncaja(rla,qa,ARM_QUAL[qa].iv.map((s,k)=>({member:k,midi:roa+s})))};
-  const qb=pick(GP_ARM_B), inv=rint(3), [rlb,rab]=pick(ARM_ROOTS[qb]), rob=60+ARM_LPC[rlb]+rab, iv=ARM_QUAL[qb].iv;
+  let qb=pick(GP_ARM_B); if(GP_ARM_B.includes(GP_QS.get('armB'))) qb=GP_QS.get('armB');
+  const inv=rint(3), [rlb,rab]=pick(ARM_ROOTS[qb]), rob=60+ARM_LPC[rlb]+rab, iv=ARM_QUAL[qb].iv;
   const nb=[]; for(let k=0;k<3;k++){ const member=(inv+k)%3; nb.push({member,midi:rob+iv[member]+(member<inv?12:0)}); }
   const notes=gpEncaja(rlb,qb,nb);
   const b={quality:qb,inv,notes,tiple:armNombreES(notes[2]),bajo:armNombreES(notes[0]),dada:armNombreES(notes[1])};
