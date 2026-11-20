@@ -1748,7 +1748,7 @@ function coRx(on){
       if(r&&r.ok) (r.r||[]).forEach((x,i)=>{ R.desde=Math.max(R.desde,x.id); CO.rxDesde=R.desde; if(!x.yo) setTimeout(()=>coRxFlota(x.emoji,x.nombre,false),i*180); }); }catch(e){} },1200);
   /* partida individual del Tester con compañeros inventados: también lanzan alguno */
   if(CO.bots&&CO.bots.length){ const nb=CO.bots.map(b=>b.nombre);
-    R.bots=setInterval(()=>{ if(Math.random()<0.6) coRxFlota(CO_EMO[Math.floor(Math.random()*CO_EMO.length)],nb[Math.floor(Math.random()*nb.length)],false); },900); }
+    R.bots=setInterval(()=>{ if(Math.random()<(nb.length>=8?0.6:0.2)) coRxFlota(CO_EMO[Math.floor(Math.random()*CO_EMO.length)],nb[Math.floor(Math.random()*nb.length)],false); },900); }
   CO_RX=R;
 }
 async function coRanking(i,finOff){ const kT=i; i=coPos(i);
@@ -2448,6 +2448,8 @@ async function coPrep(finOff){
     p.innerHTML='<div class="t">El carrusel empezará en…</div><div class="reloj">0:00</div><div class="sub">Sube el volumen: vas a necesitar el oído</div>';
     STAGE.appendChild(p); }
   p.classList.remove('co-previa'); const r=$('.reloj',p);
+  if(CO.bots&&CO.bots.length&&!p.querySelector('.co-bots')){ const nb=CO.bots.map(b=>b.nombre), lst=nb.length<2?nb[0]:nb.slice(0,-1).join(', ')+' y '+nb[nb.length-1];
+    p.appendChild(el('div','co-bots','<span>🤖</span><span>'+(nb.length===1?'Se suma 1 bot: ':'Se suman '+nb.length+' bots: ')+coEsc(lst)+'</span>')); }   /* (20-nov 18:14) */
   const tic=()=>{ const s=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000)); r.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
   tic(); const iv=setInterval(tic,200);   /* (19-nov 22:31, Iago) sin el «0:00» de un instante */
   /* (19-nov, Iago) la música de la previa, como en clase: suena el final de su crescendo, a tempo con el reloj */
@@ -2495,14 +2497,19 @@ function coParar(vuelve){
   MODO='portada'; if(vuelve&&c.onFin) c.onFin(c.act||null);
 }
 /* (19-nov, Iago) 8 compañeros inventados para probar: cada uno con su nivel; puntos por fase con la misma escala (0–1000) */
+/* (20-nov-2026 18:14, Iago) bots: si al empezar hay menos de 5 jugadores, se completan hasta 5 (el servidor fija cuántos).
+   Nombre de compositor (para que se sepa que son bots) y nivel al azar en cada partida, de 2 a 9,5: puede tocar uno que
+   lo hace fatal o uno que es un crack, pero NUNCA llega al pleno (si un alumno lo hace perfecto, siempre gana al bot).
+   Todo sale de la semilla de la partida: todos ven los mismos bots y los mismos puntos. */
+const CO_COMPOSITORES=['J. S. Bach','Händel','Haydn','Mozart','Beethoven','Vivaldi','Scarlatti','Chopin','Schubert','Liszt','Mendelssohn','Fanny Mendelssohn','Verdi','Clara Schumann','Chaikovski','Brahms','Debussy','Ravel','Rossini','Puccini','Grieg','Dvořák','Albéniz','Falla','Purcell','Monteverdi','Hildegard von Bingen','Rajmáninov'];
 function coBots(n,sem,est){
   let a=(sem*2654435761)>>>0; const rnd=()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
-  const NOM=['Lúa R.','Xián P.','Antía M.','Breogán S.','Sabela F.','Uxío L.','Noa C.','Martiño V.','Iria D.','Brais O.'];
-  const yo=((est&&est.jugadores)||[]).find(j=>j.yo), gr=yo?yo.grupo:'';
-  const q=(x,paso)=>Math.round(Math.max(0,Math.min(1000,x))/paso)*paso;
-  return NOM.slice(0,n).map((nombre,i)=>{ const s=0.35+0.6*rnd(), r=()=>s+(rnd()-0.5)*0.35;
-    const ton=[400,300,300].reduce((t,v)=>t+(rnd()<s?v:0),0), cad=rnd()<s?(rnd()<0.6?1000:700):0;
-    return {id:'bot'+i,nombre,grupo:gr,p:[q(1000*r(),1000/12),q(1000*r(),125),ton,q(1000*r(),100),cad,rnd()<s?(rnd()<0.6?1000:700):0].map(Math.round),ms:[0,0,0,0,0,0].map(()=>Math.round(3000+22000*rnd()))}; });
+  const noms=CO_COMPOSITORES.slice(); for(let i=noms.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const x=noms[i]; noms[i]=noms[j]; noms[j]=x; }
+  const q=(x,paso)=>Math.floor(Math.max(0,Math.min(1000,x))/paso)*paso;   /* hacia abajo: nunca redondea al pleno */
+  return noms.slice(0,Math.max(0,n)).map((nombre,i)=>{ const s=0.2+0.75*rnd(), r=()=>Math.min(0.94,Math.max(0.02,s+(rnd()-0.5)*0.3));
+    let ton=[400,300,300].reduce((t,v)=>t+(rnd()<s?v:0),0); if(ton>=1000) ton=700;
+    const cad=rnd()<s?(rnd()<0.6?1000:700):0;
+    return {id:'bot'+i,nombre,grupo:'bot',p:[q(1000*r(),1000/12),q(1000*r(),125),ton,q(1000*r(),100),cad,rnd()<s?(rnd()<0.6?1000:700):0].map(Math.round),ms:[0,0,0,0,0,0].map(()=>Math.round(3000+22000*rnd()))}; });
 }
 /* (19-nov, Iago: en el iPad no sonaba nada y no dejaba hacer nada) Safari solo deja arrancar el audio dentro de un toque
    «de verdad» (touchend/click): ahí reanudamos el AudioContext, tocamos un instante de silencio y un <audio> mudo (pasa el

@@ -483,7 +483,8 @@ function pintaSala(){
     '</div><div class="row">'+(p.soy_anfitrion?(fase==='antes'?'<button class="btn pri" id="bEmpezar" disabled title="Podrás empezar a la hora en punto">'+I.play+'Empezar a las '+hh+'</button>':'<button class="btn pri" id="bEmpezar">'+I.play+'Empezar ya</button>')+'<button class="btn ko" id="bCancelar">Cancelar partida</button>':'')+
     '<button class="btn" id="bSalir">← Salir</button></div></div></div>'+
     '<div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>Jugadores · '+dentro.length+' dentro</h2><span class="muted resumen'+(pend.length?'':' todos')+'">'+(pend.length?'':I.ok)+esc(resumen)+'</span></div>'+
-    '<div class="plaza">'+(dentro.map(j=>mono(j,false)).join('')+pend.map(j=>mono(j,true)).join('')||'<span class="muted">Nadie todavía.</span>')+'</div></div>'+
+    '<div class="plaza">'+(dentro.map(j=>mono(j,false)).join('')+pend.map(j=>mono(j,true)).join('')||'<span class="muted">Nadie todavía.</span>')+'</div>'+
+    (dentro.length<5?'<p class="muted nota" style="margin:14px 0 0">🤖 Si al empezar hay menos de 5 jugadores, se suman bots con nombre de compositor hasta completar 5.</p>':'')+'</div>'+
     '<p class="muted" style="font-size:13px">Cuando empiece, oirás lo mismo que los demás a la vez. Pon el volumen y no cierres esta pestaña.</p>';
   /* las frases que seguían en el aire */
   Object.keys(BOCAS).forEach(id=>{ const b=BOCAS[id]; if(b.hasta<Date.now()){ delete BOCAS[id]; return; } const m=app.querySelector('.mono[data-id="'+id+'"]'); if(m){ const d=document.createElement('div'); d.className='boca quieta'+(b.yo?' yo':''); d.textContent=b.f; m.appendChild(d); setTimeout(()=>d.remove(),b.hasta-Date.now()); } });
@@ -534,7 +535,8 @@ function empiezaJuego(est){
   raiz.style.display='none'; raiz.style.visibility='';
   try{ localStorage.setItem('co_partida',p.id); }catch(e){}
   PCOnline.jugar({id:p.id,inicio:new Date(p.inicio).getTime(),semilla:p.semilla,now:sNow,cr:cr,est:est,
-    bots:(ST.tester&&ST.bots===p.id)?8:0, solo:ST.soloId===p.id,   /* (19-nov, Iago) el Tester juega su partida individual con 8 compañeros inventados */
+    /* (20-nov 18:14, Iago) bots hasta completar 5 jugadores (el número lo fija el servidor al empezar); el Tester, en su individual, 8 */
+    bots:(ST.tester&&ST.bots===p.id)?8:(p.bots!=null?Number(p.bots):Math.max(0,5-(est.jugadores||[]).filter(j=>j.dentro).length)), solo:ST.soloId===p.id,
     /* (19-nov) sin pings: la actitud se apunta al terminar la partida (suite_cr_actividad) */
     onFin:(act)=>{ try{ localStorage.removeItem('co_partida'); }catch(e){} raiz.style.display=''; arrancaLobby(); muestraActitud(act); }});
   avisoSonido();
