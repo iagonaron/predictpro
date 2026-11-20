@@ -2445,12 +2445,13 @@ async function coPrep(finOff){
   /* si ya está la cuenta atrás provisional (partida individual), se aprovecha: sin volver a aparecer */
   let p=STAGE.querySelector('.pcg-prep.co-previa');
   if(!p){ STAGE.innerHTML=''; p=el('div','pcg-prep');
-    p.innerHTML='<div class="t">El carrusel empezará en…</div><div class="reloj">0:00</div><div class="sub">Sube el volumen: vas a necesitar el oído</div>';
+    p.innerHTML='<div class="t">El carrusel empezará en…</div><div class="reloj">10</div><div class="sub">Sube el volumen: vas a necesitar el oído</div>';
     STAGE.appendChild(p); }
   p.classList.remove('co-previa'); const r=$('.reloj',p);
   if(CO.bots&&CO.bots.length&&!p.querySelector('.co-bots')){ const nb=CO.bots.map(b=>b.nombre), lst=nb.length<2?nb[0]:nb.slice(0,-1).join(', ')+' y '+nb[nb.length-1];
-    p.appendChild(el('div','co-bots','<span>🤖</span><span>'+(nb.length===1?'Se suma 1 bot: ':'Se suman '+nb.length+' bots: ')+coEsc(lst)+'</span>')); }   /* (20-nov 18:14) */
-  const tic=()=>{ const s=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000)); r.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+    const d=el('div','co-bots','<span>🤖</span><span>'+(nb.length===1?'Se suma 1 bot: ':'Se suman '+nb.length+' bots: ')+nb.map((n,k)=>'<b class="bn">'+(k&&k===nb.length-1?'y ':'')+coEsc(n)+(k<nb.length-2?',':'')+'</b>').join(' ')+'</span>');
+    p.appendChild(d); d.querySelectorAll('.bn').forEach((b,k)=>setTimeout(()=>b.classList.add('on'),600+k*900)); }   /* (20-nov 18:14 / 18:35) se van sumando uno a uno */
+  const tic=()=>{ const s=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000)); r.textContent=s<60?String(s):Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };   /* (20-nov 18:35) 10, 9, 8… */
   tic(); const iv=setInterval(tic,200);   /* (19-nov 22:31, Iago) sin el «0:00» de un instante */
   /* (19-nov, Iago) la música de la previa, como en clase: suena el final de su crescendo, a tempo con el reloj */
   let mus=true;
@@ -2541,7 +2542,7 @@ async function coJugar(cfg){
   if(CO) return;
   CO={id:cfg.id,inicio:cfg.inicio,now:cfg.now,cr:cfg.cr,onFin:cfg.onFin,est:cfg.est||null,mias:{}};
   /* (19-nov 20:55, Iago) en la partida individual, cuenta atrás de 10 s en total (6 del servidor + 4); con más gente, 15 */
-  CO.prep=cfg.solo?4:CO_PREP;
+  CO.prep=4;   /* (20-nov 18:35, Iago) siempre cuenta atrás de 10: 6 s del servidor + 4 */
   CO.vigila=coVigilaAudio();
   /* (19-nov 21:48, Iago) en la partida individual se puede pausar (botón «Pausa» o barra espaciadora): se para todo y, al
      seguir, la partida se corre lo que duró la pausa (también en el servidor: no cuenta para la actitud) */
@@ -2589,7 +2590,7 @@ window.PCOnline={ jugar:coJugar, parar:coParar, piano:()=>PIANO_EST,
   /* (19-nov 22:31, Iago: «unos frames de pantalla extraña antes de la cuenta atrás») mientras se crea la partida individual,
      ya se ve la pantalla de la cuenta atrás (con el remolino), y la partida entra encima sin saltos */
   previa(seg){ if(CO) return; if(!ROOT) montar(); ROOT.classList.add('online'); ROOT.classList.remove('lobby','en-portada','quieto'); MODO='lobby'; ESC=null; fondo('multi');
-    STAGE.innerHTML='<div class="pcg-prep co-previa"><div class="t">El carrusel empezará en…</div><div class="reloj">0:'+String(seg||10).padStart(2,'0')+'</div><div class="sub">Sube el volumen: vas a necesitar el oído</div></div>'; },
+    STAGE.innerHTML='<div class="pcg-prep co-previa"><div class="t">El carrusel empezará en…</div><div class="reloj">'+(seg||10)+'</div><div class="sub">Sube el volumen: vas a necesitar el oído</div></div>'; },
   logo:id=>logoSVG(id),   // la espiral multicolor de la portada del aula (para el lobby)
   fondoLobby(on){ if(CO) return;   // el remolino multicolor de la portada, por detrás del lobby
     if(on){ if(!ROOT) montar(); ROOT.classList.add('online','en-portada','lobby'); ROOT.classList.remove('quieto'); MODO='lobby'; ESC=null; fondo('multi'); STAGE.innerHTML=''; }
