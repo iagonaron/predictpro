@@ -2012,7 +2012,7 @@ function coMelUI(D,key,mel){
   }
   function pon(i,dn){ if(bloq||rev||i<1||i>8) return; dn=Math.max(topdn-13,Math.min(topdn+5,dn)); const a=ans[i]||{dn,sharp:false}; a.dn=dn; ans[i]=a; sel=i; dibuja(); coTic(); }
   function borra(i){ if(bloq||rev||i<1||i>8) return; ans[i]=null; dibuja(); }
-  try{ if(window.__CO) window.__melUI={pon:(i,dn)=>pon(i,dn),mel,topdn,key,ans,midi:(dn,sh)=>coDnMidi(dn,sh,key)}; }catch(e){}
+  try{ if(window.__CO) window.__melUI={pon:(i,dn)=>pon(i,dn),mel,topdn,key,ans,sol,midi:(dn,sh)=>coDnMidi(dn,sh,key),xy:(i,dn)=>{ const m=svg.getScreenCTM(); return [m.a*P[i].cx+m.e, m.d*yDn(dn)+m.f]; }}; }catch(e){}
   function punto(ev){ return coPuntoSVG(svg,ev); }
   function col(x){ let k=-1,bd=1e9; for(let i=1;i<=8;i++){ const d=Math.abs(P[i].cx-x); if(d<bd){ bd=d; k=i; } } return bd<(P[2].cx-P[1].cx)*0.55?k:-1; }
   svg.style.touchAction='none';
@@ -2476,6 +2476,7 @@ function coFinal(){
   STAGE.appendChild(c);
   $('#coVolver').onclick=()=>coParar(true);
   sonidoUI('fin'); confeti(); coMusPodio();
+  try{ coRx(true); }catch(e){}   /* (20-nov, Iago) los emojis también en el podio */
 }
 /* (19-nov 21:05, Iago) en el podio, música como la del principio: el tramo «lleno» de la previa (8 compases), en bucle */
 function coMusPodio(){
