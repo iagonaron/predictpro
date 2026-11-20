@@ -259,7 +259,7 @@ function sinCuenta(){
 }
 
 async function arrancaLobby(){
-  ST.vista='lobby'; ST.partida=null; ST.est=null; try{ localStorage.removeItem('co_partida'); }catch(e){}
+  ST.vista='lobby'; ST.partida=null; ST.est=null; ST.salaFirma=''; musicaNo(); dockNo(); try{ localStorage.removeItem('co_partida'); }catch(e){}
   clearInterval(POLL); clearInterval(TIC);
   await refrescaLista(); pintaLobby();
   POLL=setInterval(async()=>{ if(ST.vista!=='lobby'||document.hidden) return; await refrescaLista(); pintaLobby(); },5000);
@@ -358,7 +358,7 @@ function enlaza(){
 
 /* ---------- sala ---------- */
 async function entraEnSala(id){
-  ST.vista='sala'; ST.partida=id; ST.aviso='';
+  ST.vista='sala'; ST.partida=id; ST.aviso=''; ST.dentroAntes=null; ST.salaFirma='';
   try{ localStorage.setItem('co_partida',id); }catch(e){}
   clearInterval(POLL); clearInterval(TIC);
   await refrescaSala(); pintaSala();
@@ -373,33 +373,132 @@ async function refrescaSala(){
   if(p.estado==='en_juego' && yo && yo.dentro){ clearInterval(POLL); clearInterval(TIC); empiezaJuego(r); return; }
   if(p.estado==='terminada' || (p.estado==='en_juego' && !(yo&&yo.dentro))){ ST.aviso=p.estado==='terminada'?'La partida ha terminado.':'La partida ya ha empezado.'; arrancaLobby(); }
 }
+/* (20-nov-2026 16:00, Iago) LOBBY VIVO
+   · 5 minutos de cortesía: el anfitrión puede empezar desde la hora en punto (el servidor no deja antes); si no, empieza sola
+     a los 5 minutos. Se ve siempre el reloj.
+   · «Que se sepa muy claro quiénes son los monigotes que ya están y los que todavía no»: cada apuntado es un monigote; los que
+     están dentro, de color, botando y con ✓; los que faltan, en silueta discontinua y «aún no ha llegado». Al entrar alguien,
+     su monigote salta, suena una campanita y sale «¡X ha entrado!».
+   · Al pulsar «Empezar ya» con apuntados que faltan: «¿Seguro? X e Y quizá aún estén por llegar».
+   · Abajo, barra de 10 frases cerradas + 10 emojis (nada de texto libre): salen sobre el monigote de quien los manda.
+   · Música en bucle (lobby.mp3, 37 s sin costura) con botón para silenciarla.
+   Deshacer: volver a lobby.js.bak40 / lobby.css.bak40 (work/co2) y reconstruir. */
+const CO_FRASES=['¡Vaya tardones!','¡Vais a flipar!','Esta ronda gano yo','Estoy en mi prime','¡Os voy a arrasar!','¡Os voy a pulir!','¡Estoy deseando empezar!','Hoy tengo el oído fino','No fallo ni una','¡Que empiece ya!'];
+const CO_EMOS=['😊','😎','😂','❤️','💪','👏','🔥','😮','😱','😢'];
+const CO_COLS=['#5bd0ff','#ffd23f','#34d399','#ff9a3c','#bd92ff','#ff5fa2','#7dd3fc','#a3e635','#f472b6','#facc15'];
+function colDe(id){ let h=0; String(id||'').split('').forEach(c=>{ h=(h*31+c.charCodeAt(0))>>>0; }); return CO_COLS[h%CO_COLS.length]; }
+function monigoteSVG(col,fuera){
+  if(fuera) return '<svg class="mg" viewBox="0 0 60 64" aria-hidden="true"><circle cx="30" cy="17" r="12" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-dasharray="4 3"/><path d="M10 62c0-13 9-22 20-22s20 9 20 22z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-dasharray="4 3"/></svg>';
+  return '<svg class="mg" viewBox="0 0 60 64" aria-hidden="true"><circle cx="30" cy="17" r="12" fill="'+col+'"/><path d="M10 62c0-13 9-22 20-22s20 9 20 22z" fill="'+col+'"/><circle cx="25.5" cy="16" r="1.8" fill="#1a1238"/><circle cx="34.5" cy="16" r="1.8" fill="#1a1238"/><path d="M25 21q5 4.2 10 0" stroke="#1a1238" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>';
+}
+function listaNombres(a){ return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' y '+a[a.length-1]; }
+
+/* ---- música del lobby ---- */
+const MUS={ac:null,buf:null,src:null,g:null,on:true,carga:null};
+try{ MUS.on=localStorage.getItem('co_musica')!=='no'; }catch(e){}
+function musAC(){ if(!MUS.ac){ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; MUS.ac=new C(); MUS.g=MUS.ac.createGain(); MUS.g.gain.value=0; MUS.g.connect(MUS.ac.destination); } return MUS.ac; }
+function musCarga(){ if(!MUS.carga) MUS.carga=fetch('lobby.mp3?v=1').then(r=>r.arrayBuffer()).then(a=>new Promise((ok,ko)=>musAC().decodeAudioData(a,ok,ko))).then(b=>(MUS.buf=b)).catch(()=>null); return MUS.carga; }
+async function musicaSi(){
+  if(!MUS.on||MUS.src||ST.vista!=='sala') return; const ac=musAC(); if(!ac) return;
+  try{ if(ac.state!=='running') ac.resume(); }catch(e){}
+  const b=await musCarga(); if(!b||MUS.src||!MUS.on||ST.vista!=='sala') return;
+  const s=ac.createBufferSource(); s.buffer=b; s.loop=true; s.loopStart=1.0; s.loopEnd=1.0+1628308/44100; s.connect(MUS.g);
+  const t=ac.currentTime; MUS.g.gain.cancelScheduledValues(t); MUS.g.gain.setValueAtTime(0,t); MUS.g.gain.linearRampToValueAtTime(0.3,t+2.0);
+  s.start(t,1.0); MUS.src=s;
+}
+function musicaNo(){ const s=MUS.src; if(!s) return; MUS.src=null; try{ const t=MUS.ac.currentTime; MUS.g.gain.cancelScheduledValues(t); MUS.g.gain.setValueAtTime(MUS.g.gain.value,t); MUS.g.gain.linearRampToValueAtTime(0,t+0.8); s.stop(t+0.85); }catch(e){} }
+function campanita(){ const ac=MUS.ac; if(!ac||ac.state!=='running') return; const t=ac.currentTime+0.02;
+  [[1046.5,0],[1568,0.11]].forEach(([f,d])=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(0,t+d); g.gain.linearRampToValueAtTime(0.13,t+d+0.01); g.gain.exponentialRampToValueAtTime(0.0008,t+d+0.9); o.connect(g); g.connect(ac.destination); o.start(t+d); o.stop(t+d+1); }); }
+['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,()=>{ const ac=musAC(); if(ac&&ac.state!=='running'){ try{ ac.resume(); }catch(e){} } if(ST.vista==='sala') musicaSi(); },true));
+
+/* ---- barra de frases y emojis + lo que mandan los demás ---- */
+let DOCK=null, RXS=null;
+function dockSi(){
+  if(!DOCK){ DOCK=document.createElement('div'); DOCK.id='coDock';
+    DOCK.innerHTML='<div class="fr">'+CO_FRASES.map(f=>'<button type="button" data-f="'+esc(f)+'">'+esc(f)+'</button>').join('')+'</div>'+
+      '<div class="em">'+CO_EMOS.map(e=>'<button type="button" data-f="'+e+'">'+e+'</button>').join('')+'</div>';
+    raiz.appendChild(DOCK);
+    DOCK.addEventListener('click',ev=>{ const b=ev.target.closest('button[data-f]'); if(!b||!ST.partida) return; const f=b.dataset.f;
+      const yo=((ST.est&&ST.est.jugadores)||[]).find(j=>j.yo); rxPinta(yo?yo.id:null,yo?yo.nombre:'Tú',f,true);
+      b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+      cr('reaccion',{p_partida:ST.partida,p_emoji:f}).catch(()=>{}); });
+  }
+  DOCK.hidden=false; raiz.classList.add('con-dock');
+  if(!RXS){ RXS={desde:0,primera:true};
+    RXS.t=setInterval(async()=>{ if(ST.vista!=='sala'||document.hidden) return; try{ const r=await cr('reacciones',{p_partida:ST.partida,p_desde:RXS.desde});
+      if(r&&r.ok){ const xs=r.r||[]; xs.forEach((x,i)=>{ RXS.desde=Math.max(RXS.desde,x.id); if(!x.yo&&!RXS.primera) setTimeout(()=>rxPinta(x.cuenta,x.nombre,x.emoji,false),i*220); }); RXS.primera=false; } }catch(e){} },1200); }
+}
+function dockNo(){ if(DOCK) DOCK.hidden=true; raiz.classList.remove('con-dock'); if(RXS){ clearInterval(RXS.t); RXS=null; } }
+const BOCAS={};   /* frases a la vista, para volver a ponerlas si la plaza se redibuja */
+function rxPinta(id,nombre,f,yo){
+  const esEmo=CO_EMOS.indexOf(f)>=0, mono=id&&app.querySelector('.mono[data-id="'+id+'"]');
+  if(!mono){ const d=document.createElement('div'); d.className='rx-suelto'+(esEmo?' emo':''); d.innerHTML=(esEmo?'<span class="e">'+f+'</span>':'<span class="f">'+esc(f)+'</span>')+'<span class="n">'+esc(nombre||'')+'</span>';
+    d.style.left=(10+Math.random()*80)+'%'; raiz.appendChild(d); setTimeout(()=>d.remove(),3600); return; }
+  if(esEmo){ const e=document.createElement('span'); e.className='emo-sube'; e.textContent=f; e.style.setProperty('--dx',((Math.random()-0.5)*50).toFixed(0)+'px'); mono.appendChild(e); setTimeout(()=>e.remove(),2500); return; }
+  const v=mono.querySelector('.boca'); if(v) v.remove();
+  const b=document.createElement('div'); b.className='boca'+(yo?' yo':''); b.textContent=f; mono.appendChild(b);
+  BOCAS[id]={f,hasta:Date.now()+3600,yo}; setTimeout(()=>{ if(b.parentNode) b.remove(); },3600);
+}
+function toast(html){ const d=document.createElement('div'); d.className='co-toast'; d.innerHTML=html; raiz.appendChild(d); setTimeout(()=>d.remove(),2800); }
+
+function salaFase(p){ const n=sNow(); return n<new Date(p.programada).getTime()?'antes':(n<new Date(p.auto).getTime()?'cortesia':'ya'); }
 function pintaSala(){
   if(ST.vista!=='sala'||!ST.est) return;
   if(raiz.style.visibility!=='hidden'){ try{ PCOnline.fondoLobby(true); }catch(e){} }   /* con la cuenta atrás de la individual a la vista, no se toca */
-  const e=ST.est, p=e.p, js=e.jugadores||[];
+  const e=ST.est, p=e.p, js=e.jugadores||[], fase=salaFase(p);
   const dentro=js.filter(j=>j.dentro), pend=js.filter(j=>!j.dentro&&j.resp==='si');
   const hostDentro=p.anfitrion_id && dentro.some(j=>j.id===p.anfitrion_id);
-  const chips=dentro.map(j=>'<span class="chip'+(j.yo?' yo':'')+(j.id===p.anfitrion_id?' host':'')+'">'+(j.id===p.anfitrion_id?I.cor:'')+esc(j.nombre)+' <span class="muted">'+esc(grupoTxt(j.grupo))+'</span></span>').join('');
-  const chipsP=pend.map(j=>'<span class="chip pend">'+esc(j.nombre)+' · '+'apuntado'+'</span>').join('');
+  /* quién acaba de llegar (no en el primer pintado) */
+  const ids=new Set(dentro.map(j=>j.id)), llegan=new Set();
+  if(ST.dentroAntes){ dentro.forEach(j=>{ if(!ST.dentroAntes.has(j.id)&&!j.yo) llegan.add(j.id); }); }
+  ST.dentroAntes=ids;
+  if(llegan.size){ const nn=dentro.filter(j=>llegan.has(j.id)).map(j=>j.nombre); campanita();
+    toast(monigoteSVG(colDe([...llegan][0]))+'<b>¡'+esc(listaNombres(nn))+(nn.length>1?' han entrado!':' ha entrado!')+'</b>'); }
+  const firma=JSON.stringify([p.estado,p.anfitrion_id,p.anfitrion_cancelo,p.soy_anfitrion,fase,!!hostDentro,js.map(j=>j.id+':'+(j.dentro?1:0)+(j.resp||''))]);
+  dockSi(); musicaSi();
+  if(firma===ST.salaFirma && !llegan.size){ pintaSalaTiempos(); return; }
+  ST.salaFirma=firma;
   let banner='';
   if(p.anfitrion_cancelo && !p.anfitrion){
     banner='<div class="banner ko"><b>El anfitrión ha cancelado la partida</b><br>Se puede jugar igualmente. <button class="btn pri" id="bHeredar" style="margin-left:6px">¿Quieres ser el anfitrión?</button> <span class="muted">Si lo heredas, tus minutos en esta partida contarán ×1,5: es el premio por mantenerla viva. Podrás empezar cuando quieras; si no, empezará sola.</span></div>';
-  } else if(!hostDentro && p.anfitrion && new Date(p.programada).getTime()<=sNow()){
-    banner='<div class="banner ko"><b>El anfitrión todavía no ha llegado</b><br>La partida empieza sola en <span id="cuentaAuto" class="grande" style="font-size:26px"></span></div>';
+  } else if(!hostDentro && p.anfitrion && fase!=='antes'){
+    banner='<div class="banner ko"><b>El anfitrión todavía no ha llegado</b><br>Si no llega, la partida empieza sola cuando acabe la cortesía.</div>';
   }
+  const hh=new Date(p.programada).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
   const anfNombre=p.anfitrion?esc(p.anfitrion):'sin anfitrión';
+  /* monigotes: primero los que están (por orden de llegada), luego los apuntados que faltan */
+  const mono=(j,fuera)=>{ const host=j.id===p.anfitrion_id;
+    return '<div class="mono'+(fuera?' fuera':'')+(j.yo?' yo':'')+(llegan.has(j.id)?' llega':'')+'" data-id="'+esc(j.id)+'" style="--d:'+((parseInt(String(j.id).slice(-2),16)||0)%9)*0.21+'s">'+
+      (host?'<span class="cor" title="Anfitrión">'+I.cor+'</span>':'')+monigoteSVG(colDe(j.id),fuera)+(fuera?'':'<span class="ok">'+I.ok+'</span>')+
+      '<span class="nm">'+esc(j.nombre)+(j.yo?' <i>(tú)</i>':'')+'</span><span class="gr">'+esc(grupoTxt(j.grupo))+'</span>'+
+      '<span class="est">'+(fuera?'aún no ha llegado':'dentro')+'</span></div>'; };
+  const nSi=js.filter(j=>j.resp==='si').length, nSiD=js.filter(j=>j.resp==='si'&&j.dentro).length;
+  const resumen=pend.length?nSiD+' de los '+nSi+' apuntados ya están dentro':(nSi?'Están todos los apuntados':'');
   app.innerHTML=banner+
-    '<div class="card"><h2>Partida de '+esc(p.creador)+' <span class="muted">('+esc(grupoTxt(p.grupo))+')</span></h2>'+
-    '<div class="row" style="justify-content:space-between"><div><div class="muted">Empieza '+esc(cuando(p.programada))+' · '+(p.anfitrion?I.cor:'')+'<b>'+anfNombre+'</b></div>'+
-    '<div style="margin-top:6px">Empieza sola en <span id="cuentaAuto2" class="grande" style="font-size:30px"></span></div></div>'+
-    '<div class="row">'+(p.soy_anfitrion?'<button class="btn pri" id="bEmpezar">'+I.play+'Empezar ya</button><button class="btn ko" id="bCancelar">Cancelar partida</button>':'')+
+    '<div class="card sala-top"><button class="btn cuad" id="bMus" title="'+(MUS.on?'Quitar la música':'Poner la música')+'">'+(MUS.on?I.spk:'<span class="tach">'+I.spk+'</span>')+'</button>'+
+    '<h2>Partida de '+esc(p.creador)+' <span class="muted">('+esc(grupoTxt(p.grupo))+')</span></h2>'+
+    '<div class="row" style="justify-content:space-between;align-items:flex-end"><div><div class="muted">'+esc(cuando(p.programada).replace(/^./,c=>c.toUpperCase()))+' · '+(p.anfitrion?I.cor:'')+'<b>'+anfNombre+'</b></div>'+
+    (fase==='antes'?'<div class="reloj"><span class="et">Empieza a las '+hh+' · faltan</span><b class="grande" id="relojN"></b></div><div class="muted nota">A la hora en punto hay 5 minutos de cortesía: el anfitrión puede empezar cuando quiera y, si no, la partida empieza sola.</div>'
+      :'<div class="reloj"><span class="et cort">5 minutos de cortesía</span><span class="et">Empieza sola en</span><b class="grande" id="relojN"></b></div><div class="muted nota">'+(p.soy_anfitrion?'Puedes empezar cuando quieras.':'El anfitrión puede empezarla antes.')+'</div>')+
+    '</div><div class="row">'+(p.soy_anfitrion?(fase==='antes'?'<button class="btn pri" id="bEmpezar" disabled title="Podrás empezar a la hora en punto">'+I.play+'Empezar a las '+hh+'</button>':'<button class="btn pri" id="bEmpezar">'+I.play+'Empezar ya</button>')+'<button class="btn ko" id="bCancelar">Cancelar partida</button>':'')+
     '<button class="btn" id="bSalir">← Salir</button></div></div></div>'+
-    '<div class="card"><h2>En el lobby ('+dentro.length+')</h2><div>'+(chips||'<span class="muted">Nadie todavía.</span>')+'</div>'+
-    (chipsP?'<h2 style="margin-top:12px">Apuntados que aún no han entrado</h2><div>'+chipsP+'</div>':'')+'</div>'+
-    '<p class="muted" style="font-size:13px">Cuando empiece, todos oís lo mismo a la vez. Pon el volumen y no cierres esta pestaña.</p>';
+    '<div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>Jugadores · '+dentro.length+' dentro</h2><span class="muted resumen'+(pend.length?'':' todos')+'">'+(pend.length?'':I.ok)+esc(resumen)+'</span></div>'+
+    '<div class="plaza">'+(dentro.map(j=>mono(j,false)).join('')+pend.map(j=>mono(j,true)).join('')||'<span class="muted">Nadie todavía.</span>')+'</div></div>'+
+    '<p class="muted" style="font-size:13px">Cuando empiece, oirás lo mismo que los demás a la vez. Pon el volumen y no cierres esta pestaña.</p>';
+  /* las frases que seguían en el aire */
+  Object.keys(BOCAS).forEach(id=>{ const b=BOCAS[id]; if(b.hasta<Date.now()){ delete BOCAS[id]; return; } const m=app.querySelector('.mono[data-id="'+id+'"]'); if(m){ const d=document.createElement('div'); d.className='boca quieta'+(b.yo?' yo':''); d.textContent=b.f; m.appendChild(d); setTimeout(()=>d.remove(),b.hasta-Date.now()); } });
   enlaza();
+  const bm=document.getElementById('bMus'); if(bm) bm.onclick=()=>{ MUS.on=!MUS.on; try{ localStorage.setItem('co_musica',MUS.on?'si':'no'); }catch(e){} if(MUS.on) musicaSi(); else musicaNo(); ST.salaFirma=''; pintaSala(); };
   const bh=document.getElementById('bHeredar'); if(bh) bh.onclick=async()=>{ bh.disabled=true; await cr('heredar',{p_partida:ST.partida}); await refrescaSala(); pintaSala(); };
-  const be=document.getElementById('bEmpezar'); if(be) be.onclick=async()=>{ be.disabled=true; audioListo(); await cr('empezar',{p_partida:ST.partida,p_duracion:700}); await refrescaSala(); pintaSala(); };
+  const be=document.getElementById('bEmpezar'); if(be) be.onclick=async()=>{
+    audioListo();
+    const faltan=((ST.est&&ST.est.jugadores)||[]).filter(j=>!j.dentro&&j.resp==='si').map(j=>j.nombre);
+    if(faltan.length){ const rest=(new Date(ST.est.p.auto).getTime()-sNow())/1000;
+      if(!await confirma('¿Seguro que quieres empezar?',listaNombres(faltan)+(faltan.length>1?' quizá aún estén por llegar.':' quizá aún esté por llegar.')+(rest>2?' Si esperas, la partida empezará sola en '+mmss(rest)+'.':''),'Empezar igualmente','Esperar un poco')) return;
+      audioListo(); }
+    be.disabled=true; const r=await cr('empezar',{p_partida:ST.partida,p_duracion:700});
+    if(r&&!r.ok&&r.error==='aun_no'){ ST.aviso='Podrás empezar a la hora en punto.'; }
+    await refrescaSala(); pintaSala(); };
   const bc=document.getElementById('bCancelar'); if(bc) bc.onclick=async()=>{
     const js=((ST.est&&ST.est.jugadores)||[]).filter(j=>!j.yo), otros=js.filter(j=>j.resp==='si').length, pen=tarde(p)&&otros>0, nadie=!js.some(j=>j.resp==='si'||j.dentro);   /* (20-nov 13:58) */
     const ok=await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar la partida?',nadie?'No hay nadie más: la partida desaparece. No pierdes actitud.':(pen?'Hay gente apuntada: perderás 0,5 de actitud por cancelar con menos de 5 minutos de margen. Los demás podrán seguir si alguien se queda de anfitrión (×1,5). ¿Cancelar la partida igualmente?':'No pierdes actitud. Los demás podrán seguir si alguien se queda de anfitrión (sus minutos cuentan ×1,5).'),'Sí, cancelar','No, sigo');
@@ -411,11 +510,13 @@ function pintaSala(){
 }
 function pintaSalaTiempos(){
   const e=ST.est; if(!e) return;
-  const rest=(new Date(e.p.auto).getTime()-sNow())/1000;
-  ['cuentaAuto','cuentaAuto2'].forEach(id=>{ const n=document.getElementById(id); if(n) n.textContent=rest>0?mmss(rest):'ya'; });
-  if(rest<=1.5 && rest>-3) refrescaSala().then(pintaSala);
+  const p=e.p, fase=salaFase(p), n=document.getElementById('relojN');
+  const obj=fase==='antes'?new Date(p.programada).getTime():new Date(p.auto).getTime(), rest=(obj-sNow())/1000;
+  if(n) n.textContent=rest>0?mmss(rest):'ya';
+  if(ST.salaFirma && JSON.parse(ST.salaFirma)[4]!==fase){ pintaSala(); return; }   /* llega la hora en punto: se redibuja (botón «Empezar ya») */
+  const ra=(new Date(p.auto).getTime()-sNow())/1000;
+  if(ra<=1.5 && ra>-3) refrescaSala().then(pintaSala);
 }
-
 
 /* ---------- la partida: la lleva el motor del carrusel (guiado-online.js) ---------- */
 function avisoSonido(){
@@ -429,7 +530,7 @@ function avisoSonido(){
 }
 ['pointerdown','keydown','touchstart','touchend','click','pointerup'].forEach(ev=>document.addEventListener(ev,()=>{ try{ audioListo(); }catch(e){} const d=document.getElementById('coSonido'); if(d) d.remove(); },true));
 function empiezaJuego(est){
-  const p=est.p; clearInterval(POLL); clearInterval(TIC); ST.vista='juego';
+  const p=est.p; clearInterval(POLL); clearInterval(TIC); ST.vista='juego'; musicaNo(); dockNo();
   raiz.style.display='none'; raiz.style.visibility='';
   try{ localStorage.setItem('co_partida',p.id); }catch(e){}
   PCOnline.jugar({id:p.id,inicio:new Date(p.inicio).getTime(),semilla:p.semilla,now:sNow,cr:cr,est:est,

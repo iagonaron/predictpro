@@ -183,5 +183,64 @@ html.co-on,html.co-on body{overflow:hidden}
 #co .btn.peq.vvb{width:auto;height:32px;padding:0 12px;gap:6px;margin-left:8px;font-size:13px;vertical-align:middle;opacity:.9}
 #co .btn.peq.vvb svg{width:14px;height:14px}
 
+/* ---- (20-nov-2026 16:00, Iago) lobby vivo: reloj de cortesía, monigotes, frases/emojis, música ---- */
+#co .sala-top{position:relative}
+#co .btn.cuad{position:absolute;top:12px;right:12px;width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center}
+#co .btn.cuad .ic{width:20px;height:20px;margin:0}
+#co .tach{position:relative;display:flex;opacity:.55}#co .tach::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:2px;background:currentColor;transform:rotate(-40deg)}
+#co .sala-top h2{padding-right:48px}
+#co .reloj{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:8px}
+#co .reloj .et{font-weight:800;font-size:15px}
+#co .reloj .et.cort{color:#1a1238;background:var(--ama);border-radius:6px;padding:3px 8px;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+#co .reloj .grande{font-size:38px;line-height:1}
+#co .nota{font-size:13px;margin-top:4px;max-width:520px}
+#co .resumen{font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+#co .resumen.todos{color:var(--ver)}#co .resumen .ic{width:16px;height:16px;margin:0}
+#co .plaza{display:flex;flex-wrap:wrap;gap:14px 6px;margin-top:22px}
+#co .mono{position:relative;width:108px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 4px 8px;border-radius:12px;border:1.5px solid transparent}
+#co .mono .mg{width:58px;height:62px;display:block;animation:coBota 2.6s ease-in-out infinite;animation-delay:var(--d,0s);filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+#co .mono .nm{font-weight:800;font-size:13px;line-height:1.15;margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#co .mono .nm i{font-style:normal;font-weight:600;color:var(--azul)}
+#co .mono .gr{font-size:11px;color:var(--muted)}
+#co .mono .est{font-size:11px;font-weight:800;margin-top:3px;color:var(--ver);text-transform:uppercase;letter-spacing:.06em}
+#co .mono.fuera .mg{animation:none;filter:none}
+#co .mono.fuera .nm{opacity:.65}#co .mono.fuera .est{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+#co .mono.yo{border-color:rgba(91,208,255,.7);background:rgba(91,208,255,.1)}
+#co .mono .cor{position:absolute;top:-13px;left:50%;transform:translateX(-50%);color:var(--ama);display:flex}
+#co .mono .cor .ic{width:22px;height:22px;margin:0}
+#co .mono .ok{position:absolute;top:52px;left:calc(50% + 15px);width:22px;height:22px;border-radius:50%;background:var(--ver);color:#06210f;display:flex;align-items:center;justify-content:center;border:2px solid #17113a}
+#co .mono .ok .ic{width:13px;height:13px;margin:0;stroke-width:3.4}
+#co .mono.llega{animation:coLlega 1.5s cubic-bezier(.2,.8,.3,1)}
+#co .mono.llega .mg{filter:drop-shadow(0 0 14px rgba(255,255,255,.75))}
+@keyframes coBota{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes coLlega{0%{transform:scale(.3) translateY(40px);opacity:0}45%{transform:scale(1.18) translateY(-10px);opacity:1}70%{transform:scale(.96)}100%{transform:none}}
+#co .boca{position:absolute;bottom:calc(100% - 4px);left:50%;transform:translateX(-50%);background:#fff;color:#1a1238;font-weight:800;font-size:13px;line-height:1.2;padding:7px 11px;border-radius:10px;white-space:nowrap;z-index:6;box-shadow:0 8px 22px rgba(0,0,0,.4);pointer-events:none;animation:coBoca 3.6s ease forwards}
+#co .boca.yo{background:var(--ama)}
+#co .boca::after{content:"";position:absolute;top:100%;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:#fff}
+#co .boca.yo::after{border-top-color:var(--ama)}
+#co .boca.quieta{animation:none}
+@keyframes coBoca{0%{opacity:0;transform:translate(-50%,8px) scale(.7)}10%{opacity:1;transform:translate(-50%,0) scale(1.06)}16%{transform:translate(-50%,0) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-6px)}}
+#co .emo-sube{position:absolute;left:50%;top:6px;font-size:38px;line-height:1;z-index:7;pointer-events:none;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;animation:coEmo 2.4s ease-out forwards}
+@keyframes coEmo{0%{opacity:0;transform:translate(-50%,10px) scale(.5)}15%{opacity:1;transform:translate(-50%,-10px) scale(1.15)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),-90px) scale(1)}}
+#co .rx-suelto{position:fixed;bottom:150px;display:flex;flex-direction:column;align-items:center;gap:3px;z-index:8;pointer-events:none;animation:coEmo2 3.4s ease-out forwards}
+#co .rx-suelto .e{font-size:44px;line-height:1}#co .rx-suelto .f{background:#fff;color:#1a1238;font-weight:800;font-size:14px;padding:6px 10px;border-radius:10px}
+#co .rx-suelto .n{font:800 13px/1 "Helvetica Neue",Arial,sans-serif;background:rgba(14,10,42,.85);padding:4px 8px;border-radius:7px}
+@keyframes coEmo2{0%{opacity:0;transform:translateY(20px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0;transform:translateY(-120px)}}
+#co .co-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border-radius:12px;background:#fff;color:#1a1238;font-size:16px;box-shadow:0 12px 34px rgba(0,0,0,.5);animation:coToast 2.8s ease forwards;pointer-events:none}
+#co .co-toast svg{width:30px;height:32px}
+@keyframes coToast{0%{opacity:0;transform:translate(-50%,-20px)}10%{opacity:1;transform:translate(-50%,0)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-10px)}}
+#coDock{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:7;width:max-content;max-width:calc(100% - 20px);box-sizing:border-box;background:rgba(14,10,42,.88);border:1.5px solid var(--line);border-radius:14px;padding:9px 10px 6px;display:flex;flex-direction:column;gap:6px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 14px 40px rgba(0,0,0,.4)}
+#coDock[hidden]{display:none}
+#coDock .fr{display:grid;grid-template-columns:repeat(5,auto);gap:5px;justify-content:center}
+#coDock .fr button{border:1.5px solid var(--line);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 9px;font:700 12.5px/1.1 "Helvetica Neue",Arial,sans-serif;cursor:pointer;transition:transform .12s,background .12s,border-color .12s}
+#coDock .fr button:hover{border-color:var(--ama);background:rgba(255,210,63,.18);transform:translateY(-2px)}
+#coDock .em{display:flex;justify-content:center;gap:2px;flex-wrap:wrap}
+#coDock .em button{width:44px;height:44px;border:0;border-radius:8px;background:transparent;font-size:28px;line-height:1;cursor:pointer;padding:0;transition:transform .12s,background .12s}
+#coDock .em button:hover{background:rgba(255,255,255,.12);transform:translateY(-3px)}
+#coDock button.pop{animation:coRxPop2 .3s ease-out}
+@keyframes coRxPop2{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+#co.con-dock .wrap{padding-bottom:170px}
+@media (max-width:760px){ #coDock{padding:7px 6px 4px;gap:4px;width:calc(100% - 12px)} #coDock .fr,#coDock .em{display:flex;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;-webkit-overflow-scrolling:touch} #coDock .fr::-webkit-scrollbar,#coDock .em::-webkit-scrollbar{display:none} #coDock .fr button,#coDock .em button{flex:none} #coDock .em button{width:38px;height:38px;font-size:24px} #co .mono{width:92px} #co.con-dock .wrap{padding-bottom:120px} #co .co-toast{font-size:14px;white-space:nowrap} }
+
 #co .logo .tt .pro{font-size:30px;align-self:center;font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.05em;margin:0 .22em 0 .18em;background:linear-gradient(180deg,#fff3c2,#f5d061 45%,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:480px){#co .logo .tt .pro{font-size:17px}}
