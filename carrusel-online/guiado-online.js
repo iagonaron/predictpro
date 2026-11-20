@@ -1864,14 +1864,18 @@ async function coEnvia(i,res){
   coRefrescaEstado();
 }
 async function coRefrescaEstado(){ try{ const r=await CO.cr('estado',{p_partida:CO.id}); if(r&&r.ok) CO.est=r; }catch(e){} }
+/* (20-nov-2026 22:25, Iago) la rapidez también puntúa: a los puntos de cada ejercicio (si has sumado algo) se le resta 1 por cada
+   segundo que tardaste en dar tu ÚLTIMA respuesta (desde que empieza el ejercicio hasta tu último cambio). Lo que más pesa
+   sigue siendo acertar; así, entre los que aciertan, queda delante el más rápido. Igual para los bots. */
+function coPtsRapidez(p,ms){ return p>0?Math.max(0,Math.round(p-Math.round((Number(ms)||0)/1000))):0; }
 function coRankDatos(hasta){
   const e=CO.est||{jugadores:[],resp:[]}, suma={}, delta={}, tms={};
-  (e.resp||[]).forEach(r=>{ if(hasta==null||r.fase<=hasta){ suma[r.id]=(suma[r.id]||0)+r.puntos; tms[r.id]=(tms[r.id]||0)+(r.ms==null?9e8:r.ms); } if(r.fase===hasta) delta[r.id]=(delta[r.id]||0)+r.puntos; });
+  (e.resp||[]).forEach(r=>{ const pr=coPtsRapidez(r.puntos,r.ms); if(hasta==null||r.fase<=hasta){ suma[r.id]=(suma[r.id]||0)+pr; tms[r.id]=(tms[r.id]||0)+(r.ms==null?9e8:r.ms); } if(r.fase===hasta) delta[r.id]=(delta[r.id]||0)+pr; });
   const js=(e.jugadores||[]).filter(j=>j.dentro||suma[j.id]!=null);
   const filas=js.map(j=>({id:j.id,nombre:j.nombre,grupo:j.grupo,yo:j.yo,ms:tms[j.id]==null?9e9:tms[j.id],pts:Math.round((suma[j.id]||0)*(Number(j.mult)||1)),delta:Math.round((delta[j.id]||0)*(Number(j.mult)||1))}));
   /* compañeros inventados (solo en la partida individual del Tester, para ver rankings y podio llenos) */
-  (CO.bots||[]).forEach(b=>{ let p=0,m=0; b.p.forEach((x,f)=>{ if(hasta==null||f<=hasta){ p+=x; m+=b.ms[f]; } });
-    filas.push({id:b.id,nombre:b.nombre,grupo:b.grupo,yo:false,ms:m,pts:p,delta:hasta==null?0:(b.p[hasta]||0)}); });
+  (CO.bots||[]).forEach(b=>{ let p=0,m=0; b.p.forEach((x,f)=>{ if(hasta==null||f<=hasta){ p+=coPtsRapidez(x,b.ms[f]); m+=b.ms[f]; } });
+    filas.push({id:b.id,nombre:b.nombre,grupo:b.grupo,yo:false,ms:m,pts:p,delta:hasta==null?0:coPtsRapidez(b.p[hasta]||0,b.ms[hasta])}); });
   filas.sort((a,b)=>b.pts-a.pts||a.ms-b.ms||String(a.nombre).localeCompare(String(b.nombre)));
   filas.forEach((f,i)=>{ f.pos=i+1; });
   return filas;
@@ -1995,7 +1999,7 @@ async function coRanking(i,finOff){ const kT=i; i=coPos(i);
   else {
     const pa={}, posA={}; antes.forEach(x=>{ pa[x.id]=x.pts; posA[x.id]=x.pos; });
     const ini=ver.map(x=>({f:x,p0:pa[x.id]||0})).sort((a,b)=>b.p0-a.p0||(posA[a.f.id]||99)-(posA[b.f.id]||99)||String(a.f.nombre).localeCompare(String(b.f.nombre)));
-    c.innerHTML='<div class="lista"></div><div class="pie-rk"><div class="sig"></div><div class="consejo">💡 Lo más importante es acertar. Si empatas a puntos con alguien, queda delante quien contestó antes.</div></div>';
+    c.innerHTML='<div class="lista"></div><div class="pie-rk"><div class="sig"></div><div class="consejo">💡 Lo más importante es acertar. Además, cada segundo que tardas en dar tu última respuesta te resta 1 punto.</div></div>';
     const L=$('.lista',c), filas={};
     const nTot=nuevo.length;
     ini.forEach((q,k)=>{ const f=q.f, d=el('div','fila'+(f.yo?' yo':''),'<span class="pos">'+(k+1)+'</span><span class="co-avr" data-avid="'+coEsc(f.id)+'">'+coAvHTML(f,posA[f.id]?avatarAnimo(posA[f.id],null,nTot):{cara:'sonrisa',gafas:false})+'</span><span class="nom">'+coEsc(f.nombre)+' <i>'+coEsc(coGrupo(f.grupo))+'</i></span><span class="del">–</span><span class="pts">'+q.p0+'</span>');
@@ -2774,7 +2778,7 @@ function coBots(n,sem,est){
   return noms.slice(0,Math.max(0,n)).map((nombre,i)=>{ const s=0.2+0.75*rnd(), r=()=>Math.min(0.94,Math.max(0.02,s+(rnd()-0.5)*0.3));
     let ton=[400,300,300].reduce((t,v)=>t+(rnd()<s?v:0),0); if(ton>=1000) ton=700;
     const cad=rnd()<s?(rnd()<0.6?1000:700):0;
-    return {id:'bot'+i,nombre,grupo:'bot',p:[q(1000*r(),1000/12),q(1000*r(),125),ton,q(1000*r(),100),cad,rnd()<s?(rnd()<0.6?1000:700):0].map(Math.round),ms:[0,0,0,0,0,0].map(()=>Math.round(3000+22000*rnd()))}; });
+    return {id:'bot'+i,nombre,grupo:'bot',p:[q(1000*r(),1000/12),q(1000*r(),125),ton,q(1000*r(),100),cad,rnd()<s?(rnd()<0.6?1000:700):0].map(Math.round),ms:[0,0,0,0,0,0].map(()=>Math.round(12000+45000*rnd()))}; });
 }
 /* (19-nov, Iago: en el iPad no sonaba nada y no dejaba hacer nada) Safari solo deja arrancar el audio dentro de un toque
    «de verdad» (touchend/click): ahí reanudamos el AudioContext, tocamos un instante de silencio y un <audio> mudo (pasa el
