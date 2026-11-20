@@ -1741,7 +1741,8 @@ function coRx(on){
   const bar=el('div','co-rx-bar',CO_EMO.map(e=>'<button type="button" data-e="'+e+'">'+e+'</button>').join(''));
   (ROOT||document.body).appendChild(bar);
   const yo=((CO.est&&CO.est.jugadores)||[]).find(j=>j.yo), miNom=yo?yo.nombre:'Tú';
-  bar.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ const e=b.dataset.e; coRxFlota(e,miNom,true); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  bar.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ if(bar.classList.contains('frio')) return; const e=b.dataset.e; coRxFlota(e,miNom,true); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+    bar.classList.add('frio'); clearTimeout(bar.tf); bar.tf=setTimeout(()=>bar.classList.remove('frio'),2000);   /* (20-nov 19:10, Iago) 2 s en gris */
     CO.cr('reaccion',{p_partida:CO.id,p_emoji:e}).catch(()=>{}); }; });
   const R={bar,desde:CO.rxDesde||0};
   R.poll=setInterval(async()=>{ if(!CO) return; try{ const r=await CO.cr('reacciones',{p_partida:CO.id,p_desde:R.desde});
@@ -2480,6 +2481,13 @@ function coFinal(){
   $('#coVolver').onclick=()=>coParar(true);
   sonidoUI('fin'); confeti(); coMusPodio();
   try{ coRx(true); }catch(e){}   /* (20-nov, Iago) los emojis también en el podio */
+  /* (20-nov 19:11, Iago) cuenta atrás para cerrar la partida; si el chat extraordinario está abierto, espera a que el profe lo cierre */
+  const yo0=CO, cierre=el('div','co-cierre',''); c.appendChild(cierre); let rest=CO_FINAL;
+  const ivc=setInterval(()=>{ if(CO!==yo0||MODO!=='fin'){ clearInterval(ivc); return; }
+    if(window.__coChat){ rest=CO_FINAL; cierre.innerHTML='💬 Chat abierto: la partida se cerrará cuando Iago cierre el chat'; return; }
+    rest--; cierre.textContent='La partida se cierra en '+rest+' s';
+    if(rest<=0){ clearInterval(ivc); coParar(true); } },1000);
+  cierre.textContent='La partida se cierra en '+rest+' s';
 }
 /* (19-nov 21:05, Iago) en el podio, música como la del principio: el tramo «lleno» de la previa (8 compases), en bucle */
 function coMusPodio(){

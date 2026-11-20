@@ -737,6 +737,8 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 .pcg-prep .co-bots{margin-top:18px;display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:10px;background:rgba(14,10,42,.7);border:1.5px solid rgba(255,255,255,.28);font:700 19px/1.25 "Helvetica Neue",Arial,sans-serif;color:#fff;max-width:min(860px,92vw)}
 .pcg-prep .co-bots span:first-child{font-size:28px}
 .pcg-prep .co-bots .bn{opacity:0;display:inline-block;transform:translateY(8px) scale(.8);transition:opacity .35s,transform .35s cubic-bezier(.2,.8,.3,1.4)}.pcg-prep .co-bots .bn.on{opacity:1;transform:none}
+.co-rx-bar.frio button{filter:grayscale(1);opacity:.4;pointer-events:none}
+.co-fin .co-cierre{margin-top:14px;font:700 16px/1.3 "Helvetica Neue",Arial,sans-serif;color:#d9d3ff}
 
 /* ===== CARRUSEL PRO ONLINE (grado profesional) · 20-nov-2026 ===== */
 /* «PRO» en mayúsculas y dorado (Iago, 19-nov 23:11) */

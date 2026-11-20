@@ -239,8 +239,24 @@ html.co-on,html.co-on body{overflow:hidden}
 #coDock .em button:hover{background:rgba(255,255,255,.12);transform:translateY(-3px)}
 #coDock button.pop{animation:coRxPop2 .3s ease-out}
 @keyframes coRxPop2{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
-#co.con-dock .wrap{padding-bottom:170px}
-@media (max-width:760px){ #coDock{padding:7px 6px 4px;gap:4px;width:calc(100% - 12px)} #coDock .fr,#coDock .em{display:flex;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;-webkit-overflow-scrolling:touch} #coDock .fr::-webkit-scrollbar,#coDock .em::-webkit-scrollbar{display:none} #coDock .fr button,#coDock .em button{flex:none} #coDock .em button{width:38px;height:38px;font-size:24px} #co .mono{width:92px} #co.con-dock .wrap{padding-bottom:120px} #co .co-toast{font-size:14px;white-space:nowrap} }
+#co.con-dock{padding-bottom:150px;box-sizing:border-box}
+@media (max-width:760px){ #coDock{padding:7px 6px 4px;gap:4px;width:calc(100% - 12px)} #coDock .fr,#coDock .em{display:flex;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;-webkit-overflow-scrolling:touch} #coDock .fr::-webkit-scrollbar,#coDock .em::-webkit-scrollbar{display:none} #coDock .fr button,#coDock .em button{flex:none} #coDock .em button{width:38px;height:38px;font-size:24px} #co .mono{width:92px} #co.con-dock{padding-bottom:110px} #co .co-toast{font-size:14px;white-space:nowrap} }
+
+/* (20-nov 19:10) barra fría 2 s y chat extraordinario */
+#coDock.frio button{filter:grayscale(1);opacity:.4;pointer-events:none}
+#coChat{position:fixed;right:16px;top:16px;bottom:16px;z-index:2147483300;width:min(330px,92vw);display:flex;flex-direction:column;background:rgba(14,10,42,.94);border:1.5px solid #ffd23f;border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.55);font:500 14px/1.35 "Helvetica Neue",Arial,sans-serif;color:#fff;overflow:hidden}
+#coChat[hidden]{display:none}
+#coChat .cab{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;background:rgba(255,210,63,.16);border-bottom:1px solid rgba(255,255,255,.15);font-size:13px}
+#coChat .cab b{color:#ffd23f}
+#coChat .cierra{border:1.5px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:7px;padding:4px 8px;font:700 12px/1 inherit;cursor:pointer}
+#coChat .lista{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:120px}
+#coChat .m b{color:#5bd0ff;margin-right:4px}#coChat .m.profe b{color:#ffd23f}#coChat .m.yo b{color:#34d399}
+#coChat .pie{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(255,255,255,.15)}
+#coChat input{flex:1;min-width:0;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 10px;font:500 14px/1 inherit}
+#coChat .pie button{border:0;background:#fff;color:#14112b;border-radius:8px;padding:0 12px;font:800 13px/1 inherit;cursor:pointer}
+#coChatAbre{position:fixed;right:16px;bottom:16px;z-index:2147483300;border:1.5px solid #ffd23f;background:rgba(14,10,42,.9);color:#ffd23f;border-radius:10px;padding:9px 14px;font:800 14px/1 "Helvetica Neue",Arial,sans-serif;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+@media (min-width:1100px){ #co.con-chat{padding-right:356px;box-sizing:border-box} #co.con-chat #coDock{left:calc((100% - 346px)/2)} }
+@media (max-width:1099px){ #coChat{top:auto;bottom:130px;right:6px;max-height:44vh} #coChatAbre{bottom:130px;right:6px} }
 
 #co .logo .tt .pro{font-size:30px;align-self:center;font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.05em;margin:0 .22em 0 .18em;background:linear-gradient(180deg,#fff3c2,#f5d061 45%,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:480px){#co .logo .tt .pro{font-size:17px}}

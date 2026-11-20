@@ -259,7 +259,7 @@ function sinCuenta(){
 }
 
 async function arrancaLobby(){
-  ST.vista='lobby'; ST.partida=null; ST.est=null; ST.salaFirma=''; musicaNo(); dockNo(); try{ localStorage.removeItem('co_partida'); }catch(e){}
+  ST.vista='lobby'; ST.partida=null; ST.est=null; ST.salaFirma=''; musicaNo(); dockNo(); chatNo(); try{ localStorage.removeItem('co_partida'); }catch(e){}
   clearInterval(POLL); clearInterval(TIC);
   await refrescaLista(); pintaLobby();
   POLL=setInterval(async()=>{ if(ST.vista!=='lobby'||document.hidden) return; await refrescaLista(); pintaLobby(); },5000);
@@ -358,7 +358,7 @@ function enlaza(){
 
 /* ---------- sala ---------- */
 async function entraEnSala(id){
-  ST.vista='sala'; ST.partida=id; ST.aviso=''; ST.dentroAntes=null; ST.salaFirma='';
+  ST.vista='sala'; ST.partida=id; ST.aviso=''; ST.dentroAntes=null; ST.salaFirma=''; chatSi(id);
   try{ localStorage.setItem('co_partida',id); }catch(e){}
   clearInterval(POLL); clearInterval(TIC);
   await refrescaSala(); pintaSala();
@@ -418,9 +418,10 @@ function dockSi(){
     DOCK.innerHTML='<div class="fr">'+CO_FRASES.map(f=>'<button type="button" data-f="'+esc(f)+'">'+esc(f)+'</button>').join('')+'</div>'+
       '<div class="em">'+CO_EMOS.map(e=>'<button type="button" data-f="'+e+'">'+e+'</button>').join('')+'</div>';
     raiz.appendChild(DOCK);
-    DOCK.addEventListener('click',ev=>{ const b=ev.target.closest('button[data-f]'); if(!b||!ST.partida) return; const f=b.dataset.f;
+    DOCK.addEventListener('click',ev=>{ const b=ev.target.closest('button[data-f]'); if(!b||!ST.partida||DOCK.classList.contains('frio')) return; const f=b.dataset.f;
       const yo=((ST.est&&ST.est.jugadores)||[]).find(j=>j.yo); rxPinta(yo?yo.id:null,yo?yo.nombre:'Tú',f,true);
       b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+      DOCK.classList.add('frio'); clearTimeout(DOCK.tf); DOCK.tf=setTimeout(()=>DOCK.classList.remove('frio'),2000);   /* (20-nov 19:10, Iago) 2 s en gris */
       cr('reaccion',{p_partida:ST.partida,p_emoji:f}).catch(()=>{}); });
   }
   DOCK.hidden=false; raiz.classList.add('con-dock');
@@ -440,6 +441,44 @@ function rxPinta(id,nombre,f,yo){
   BOCAS[id]={f,hasta:Date.now()+3600,yo}; setTimeout(()=>{ if(b.parentNode) b.remove(); },3600);
 }
 function toast(html){ const d=document.createElement('div'); d.className='co-toast'; d.innerHTML=html; raiz.appendChild(d); setTimeout(()=>d.remove(),2800); }
+
+/* (20-nov-2026 19:10, Iago) CHAT EXTRAORDINARIO · prueba. Solo existe si el profe (cuenta Tester) lo abre en una partida.
+   Se ve en el lobby y en el podio final (durante el juego, no). Mientras está abierto, el podio no se cierra solo
+   (window.__coChat lo lee guiado-online.js); cuando el profe lo cierra, arranca la cuenta atrás de cierre. */
+const CHAT={on:false,profe:false,desde:0,pid:null,t:null,caja:null,btn:null,frio:0};
+function chatVisible(){ return ST.vista==='sala' || (ST.vista==='juego' && !!document.querySelector('.co-fin')); }
+function chatSi(pid){ if(CHAT.pid===pid&&CHAT.t) return; chatNo(); CHAT.pid=pid; CHAT.desde=0; CHAT.t=setInterval(chatPoll,2000); chatPoll(); }
+function chatNo(){ clearInterval(CHAT.t); CHAT.t=null; CHAT.pid=null; CHAT.on=false; window.__coChat=false; raiz.classList.remove('con-chat'); if(CHAT.caja){ CHAT.caja.remove(); CHAT.caja=null; } if(CHAT.btn){ CHAT.btn.remove(); CHAT.btn=null; } }
+async function chatPoll(){
+  const pid=CHAT.pid; if(!pid||document.hidden&&!CHAT.on) return;
+  let r=null; try{ r=await cr('chat_estado',{p_partida:pid,p_desde:CHAT.desde}); }catch(e){}
+  if(!r||!r.ok||CHAT.pid!==pid) return;
+  CHAT.profe=!!r.profe; const antes=CHAT.on; CHAT.on=!!r.on; window.__coChat=CHAT.on;
+  chatPinta(r.msgs||[], antes!==CHAT.on);
+}
+function chatPinta(msgs,cambio){
+  const ver=chatVisible();
+  /* botón del profe para abrirlo (solo él lo ve) */
+  if(CHAT.profe&&!CHAT.on&&ver){ if(!CHAT.btn){ CHAT.btn=document.createElement('button'); CHAT.btn.id='coChatAbre'; CHAT.btn.type='button'; CHAT.btn.innerHTML='💬 Abrir chat extraordinario';
+      CHAT.btn.onclick=async()=>{ CHAT.btn.disabled=true; await cr('chat_on',{p_partida:CHAT.pid,p_on:true}); chatPoll(); }; document.body.appendChild(CHAT.btn); } }
+  else if(CHAT.btn){ CHAT.btn.remove(); CHAT.btn=null; }
+  raiz.classList.toggle('con-chat',!!(CHAT.on&&ver&&ST.vista==='sala'));
+  if(!CHAT.on||!ver){ if(CHAT.caja){ CHAT.caja.hidden=!CHAT.on?true:!ver; if(!CHAT.on){ CHAT.caja.remove(); CHAT.caja=null; } } return; }
+  if(!CHAT.caja){ const c=document.createElement('div'); c.id='coChat';
+    c.innerHTML='<div class="cab"><span>💬 <b>Chat extraordinario</b> · prueba</span>'+(CHAT.profe?'<button type="button" class="cierra">Cerrar chat</button>':'')+'</div><div class="lista"></div>'+
+      '<form class="pie"><input type="text" maxlength="200" placeholder="'+(CHAT.profe?'Escribe a tus alumnos…':'Escribe aquí…')+'" autocomplete="off"><button type="submit">Enviar</button></form>';
+    document.body.appendChild(c); CHAT.caja=c; CHAT.desde=0;
+    const cb=c.querySelector('.cierra'); if(cb) cb.onclick=async()=>{ cb.disabled=true; await cr('chat_on',{p_partida:CHAT.pid,p_on:false}); chatPoll(); };
+    c.querySelector('form').onsubmit=async ev=>{ ev.preventDefault(); const i=c.querySelector('input'), t=i.value.trim(); if(!t||Date.now()<CHAT.frio) return;
+      CHAT.frio=Date.now()+2000; i.value=''; const r=await cr('chat_enviar',{p_partida:CHAT.pid,p_texto:t}); if(!(r&&r.ok)&&r&&r.error==='calma') i.value=t; chatPoll(); };
+    if(cambio===true&&!CHAT.profe) toast('💬 <b>Iago ha abierto el chat extraordinario</b>');
+    chatPoll(); return; }
+  CHAT.caja.hidden=false;
+  const L=CHAT.caja.querySelector('.lista'), abajo=L.scrollHeight-L.scrollTop-L.clientHeight<30;
+  msgs.forEach(m=>{ CHAT.desde=Math.max(CHAT.desde,m.id); if(L.querySelector('[data-id="'+m.id+'"]')) return;
+    const d=document.createElement('div'); d.className='m'+(m.profe?' profe':'')+(m.yo?' yo':''); d.dataset.id=m.id; d.innerHTML='<b>'+esc(m.nombre)+'</b> '+esc(m.texto); L.appendChild(d); });
+  if(abajo||msgs.length) L.scrollTop=L.scrollHeight;
+}
 
 function salaFase(p){ const n=sNow(); return n<new Date(p.programada).getTime()?'antes':(n<new Date(p.auto).getTime()?'cortesia':'ya'); }
 function pintaSala(){
@@ -531,7 +570,7 @@ function avisoSonido(){
 }
 ['pointerdown','keydown','touchstart','touchend','click','pointerup'].forEach(ev=>document.addEventListener(ev,()=>{ try{ audioListo(); }catch(e){} const d=document.getElementById('coSonido'); if(d) d.remove(); },true));
 function empiezaJuego(est){
-  const p=est.p; clearInterval(POLL); clearInterval(TIC); ST.vista='juego'; musicaNo(); dockNo();
+  const p=est.p; clearInterval(POLL); clearInterval(TIC); ST.vista='juego'; musicaNo(); dockNo(); chatSi(p.id);   /* el chat sigue vivo (oculto) para el podio */
   raiz.style.display='none'; raiz.style.visibility='';
   try{ localStorage.setItem('co_partida',p.id); }catch(e){}
   PCOnline.jugar({id:p.id,inicio:new Date(p.inicio).getTime(),semilla:p.semilla,now:sNow,cr:cr,est:est,
