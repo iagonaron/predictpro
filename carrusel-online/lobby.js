@@ -242,7 +242,7 @@ function enlaza(){
   const an=document.getElementById('bAnunciar'); if(an) an.onclick=async()=>{
     const v=(document.getElementById('hora')||{}).value; if(!v) return;
     const d=new Date(v);
-    if(!await confirma('¿Anunciar esta partida?','Será '+cuando(d.toISOString())+' y serás el anfitrión. Si alguien se apunta y luego no asistes, perderás 0,25 de actitud. Puedes evitarlo cancelando la partida hasta 5 minutos antes de su inicio.','Sí, anunciar')) return;
+    if(!await confirma('¿Anunciar esta partida?','Será '+cuando(d.toISOString())+' y serás el anfitrión. Si alguien se apunta y luego no asistes, perderás 0,5 de actitud. Puedes evitarlo cancelando la partida hasta 5 minutos antes de su inicio.','Sí, anunciar')) return;
     an.disabled=true;
     const r=await cr('crear',{p_programada:d.toISOString()});
     if(r&&r.ok){ ST.aviso='Partida anunciada para '+cuando(d.toISOString())+'.'; ST.hora=''; await refrescaLista(); }
@@ -251,11 +251,11 @@ function enlaza(){
   };
   app.querySelectorAll('button[data-a]').forEach(bt=>bt.onclick=async()=>{
     const a=bt.dataset.a, id=bt.dataset.id, P=ST.lista.find(x=>x.id===id);
-    if(a==='si'&&P&&P.tipo==='anunciada'&&P.yo!=='si'){ if(!await confirma('¿Estás seguro?','Si luego no asistes, perderás 0,1 de actitud. Puedes evitarlo quitándote de la partida hasta 5 minutos antes de que empiece.','Sí, me apunto')) return; }
-    if((a==='no'||a==='quiza')&&P&&P.yo==='si'&&!P.soy_creador&&tarde(P)){ if(!await confirma('Ya es tarde para quitarte','Quitarte ahora cuenta como no asistir: perderás 0,1 de actitud. ¿Quieres quitarte igualmente?','Sí, quitarme','No, me quedo')) return; }
+    if(a==='si'&&P&&P.tipo==='anunciada'&&P.yo!=='si'){ if(!await confirma('¿Estás seguro?','Si luego no asistes, perderás 0,25 de actitud. Puedes evitarlo quitándote de la partida hasta 5 minutos antes de que empiece.','Sí, me apunto')) return; }
+    if((a==='no'||a==='quiza')&&P&&P.yo==='si'&&!P.soy_creador&&tarde(P)){ if(!await confirma('Ya es tarde para quitarte','Quitarte ahora cuenta como no asistir: perderás 0,25 de actitud. ¿Quieres quitarte igualmente?','Sí, quitarme','No, me quedo')) return; }
     if(a==='cancelar'&&P){
       const pen=tarde(P)&&(P.apuntados||0)>1;
-      if(!await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar tu partida?',pen?'Hay gente apuntada y faltan menos de 5 minutos: perderás 0,25 de actitud. ¿Cancelar igualmente?':(tarde(P)?'No pierdes actitud porque no hay nadie apuntado.':'No pierdes actitud porque faltan más de 5 minutos.'),'Sí, cancelar','No, la mantengo')) return;
+      if(!await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar tu partida?',pen?'Hay gente apuntada y faltan menos de 5 minutos: perderás 0,5 de actitud. ¿Cancelar igualmente?':(tarde(P)?'No pierdes actitud porque no hay nadie apuntado.':'No pierdes actitud porque faltan más de 5 minutos.'),'Sí, cancelar','No, la mantengo')) return;
       bt.disabled=true; const r=await cr('cancelar',{p_partida:id}); ST.aviso=r&&r.ok?'Has cancelado la partida.':'No he podido cancelar la partida.'; await refrescaLista(); pintaLobby(); return;
     }
     bt.disabled=true;
@@ -310,7 +310,7 @@ function pintaSala(){
   const be=document.getElementById('bEmpezar'); if(be) be.onclick=async()=>{ be.disabled=true; audioListo(); await cr('empezar',{p_partida:ST.partida,p_duracion:700}); await refrescaSala(); pintaSala(); };
   const bc=document.getElementById('bCancelar'); if(bc) bc.onclick=async()=>{
     const otros=((ST.est&&ST.est.jugadores)||[]).filter(j=>!j.yo&&j.resp==='si').length, pen=tarde(p)&&otros>0;
-    const ok=await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar la partida?',pen?'Hay gente apuntada: perderás 0,25 de actitud por cancelar con menos de 5 minutos de margen. ¿Cancelar la partida igualmente?':'No pierdes actitud. Los demás podrán seguir si alguien quiere ser anfitrión.','Sí, cancelar','No, sigo');
+    const ok=await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar la partida?',pen?'Hay gente apuntada: perderás 0,5 de actitud por cancelar con menos de 5 minutos de margen. ¿Cancelar la partida igualmente?':'No pierdes actitud. Los demás podrán seguir si alguien quiere ser anfitrión.','Sí, cancelar','No, sigo');
     if(!ok) return;
     await cr('cancelar',{p_partida:ST.partida}); ST.aviso='Has cancelado la partida.'; arrancaLobby();
   };
