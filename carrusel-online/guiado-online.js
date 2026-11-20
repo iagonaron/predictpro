@@ -2721,6 +2721,8 @@ function coFinal(){
     rest--; cierre.textContent='La partida se cierra en '+rest+' s';
     if(rest<=0){ clearInterval(ivc); coParar(true); } },1000);
   cierre.textContent='La partida se cierra en '+rest+' s';
+  /* (20-nov 21:50) que la barra de emojis/frases no tape «La partida se cierra en…» ni «Volver al lobby»: se le deja su hueco abajo */
+  requestAnimationFrame(()=>{ try{ const rb=document.querySelector('.co-rx-bar'); if(rb&&MODO==='fin') c.style.paddingBottom=Math.ceil(rb.getBoundingClientRect().height+22)+'px'; }catch(e){} });
 }
 /* (19-nov 21:05, Iago) en el podio, música como la del principio: el tramo «lleno» de la previa (8 compases), en bucle */
 function coMusPodio(){
