@@ -101,7 +101,10 @@ html.co-on,html.co-on body{overflow:hidden}
 #co #bSonido{padding:8px 14px;font-size:13px;white-space:nowrap}
 #co #bSonido svg.ic{width:16px;height:16px}
 #co .partida.mia .quien svg.ic{width:17px;height:17px;vertical-align:-3px;margin-right:6px}
-#co .partida.mia{box-shadow:inset 3px 0 0 #fff;padding-left:12px}
+/* (20-nov, Iago) «Tu partida» más destacada: tarjeta dorada propia */
+#co .partida.mia{border:2px solid rgba(255,210,63,.9);border-radius:12px;padding:12px 14px;margin:6px 0;background:linear-gradient(135deg,rgba(255,210,63,.22),rgba(255,122,192,.10));box-shadow:0 0 0 4px rgba(255,210,63,.14),0 8px 24px rgba(0,0,0,.35)}
+#co .partida.mia + .partida{border-top:0}
+#co .partida.mia .quien{color:#ffe28a;font-weight:800}
 #co .mon svg.ic{width:15px;height:15px;margin-right:0;vertical-align:-3px}
 #co .card.solo{max-width:640px;margin:20px auto}
 #co .btn:disabled{opacity:.45}

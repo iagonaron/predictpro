@@ -22,7 +22,7 @@ function cuentaId(){
   return null;
 }
 const CUENTA=cuentaId();
-/* apertura (19-nov-2026, Iago): elemental desde el viernes 20-nov a las 19:00; el servidor también lo impide. Tester/Protester siempre. */
+/* apertura (19-nov-2026, Iago): elemental desde el viernes 20-nov a las 17:30 (cambiado el 20-nov 08:40; antes 19:00); el servidor también lo impide. Tester/Protester siempre. */
 const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL='';
 function esTester(){ try{ const s=JSON.parse(localStorage.getItem('lmpro_session')||'null'); return !!(s&&/tester/i.test(String(s.nombre||'')+' '+String(s.apellidos||''))); }catch(e){ return false; } }
 /* (19-nov) la apertura la decide el servidor (lista → abierto): así el Tester pasa aunque su nombre de sesión no diga «tester» */
@@ -108,7 +108,7 @@ function pintaLobby(){
   const act=document.activeElement, enInput=act&&act.id==='hora', valorHora=enInput?act.value:null;
   const lista=ST.lista.map(p=>{
     const abierta=p.lobby_abierto, mia=p.soy_creador;
-    const quien=mia?I.cor+'Tu partida · la has anunciado tú':esc(p.creador)+' <span class="muted">('+esc(grupoTxt(p.grupo))+')</span>';
+    const quien=mia?I.cor+'Tu partida':esc(p.creador)+' <span class="muted">('+esc(grupoTxt(p.grupo))+')</span>';
     /* (19-nov, Iago) cada monigote con el nombre e inicial del primer apellido, siempre a la vista */
     const nom=p.confirmados||[], mons=n=>'<span class="mon">'+Array.from({length:Math.min(n,8)},(_,i)=>'<span class="m">'+I.per+(nom[i]?'<b>'+esc(nom[i])+'</b>':'')+'</span>').join('')+(n>8?'<i>+'+(n-8)+'</i>':'')+'</span>';
     const conf=Math.max(0,(p.apuntados||0)-1), confTxt=conf===0?'sin confirmados todavía':mons(conf);
