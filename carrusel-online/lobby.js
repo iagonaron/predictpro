@@ -27,7 +27,7 @@ const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de no
   /* (20-nov-2026, Iago) Selector propio de DÍA y HORA para anunciar partidas (el mismo en ordenador, iPad y móvil):
      calendario del mes con los días pasados apagados y HOY marcado; la hora con DOS RUEDAS verticales como en el iPhone
      (horas 8–22 y minutos de 5 en 5), que se arrastran con el dedo o el ratón, giran con la rueda del ratón o se tocan.
-     Solo deja elegir desde dentro de 10 minutos hasta 14 días (lo mismo que exige el servidor).
+     Solo deja elegir desde dentro de 10 minutos hasta 7 días (lo mismo que exige el servidor; 20-nov 22:00, Iago: antes 14).
      lmSelFecha(valor 'AAAA-MM-DDTHH:MM' o '', alElegir(valor)) */
   var LMF_MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var LMF_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -126,7 +126,7 @@ const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de no
   }
   function lmSelFecha(valor, alElegir) {
     lmfCss();
-    var ahora = new Date(), min = new Date(ahora.getTime() + 10 * 6e4), max = new Date(ahora.getTime() + 14 * 864e5);
+    var ahora = new Date(), min = new Date(ahora.getTime() + 10 * 6e4), max = new Date(ahora.getTime() + 7 * 864e5);
     var hoy0 = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
     var HORAS = []; for (var h = 8; h <= 22; h++) HORAS.push(h);
     var MINS = []; for (var m5 = 0; m5 < 60; m5 += 5) MINS.push(m5);
@@ -336,7 +336,7 @@ function enlaza(){
     an.disabled=true;
     const r=await cr('crear',{p_programada:d.toISOString()});
     if(r&&r.ok){ ST.aviso='Partida anunciada para '+cuando(d.toISOString())+'.'; ST.hora=''; await refrescaLista(); }
-    else ST.aviso=r&&r.error==='aun_no'?'El carrusel online se abre '+ABRE_TXT+'.':r&&r.error==='hora'?'La hora debe estar entre 10 minutos y 14 días desde ahora.':'No he podido anunciar la partida.';
+    else ST.aviso=r&&r.error==='aun_no'?'El carrusel online se abre '+ABRE_TXT+'.':r&&r.error==='hora'?'La hora debe estar entre 10 minutos y 7 días desde ahora.':'No he podido anunciar la partida.';
     pintaLobby();
   };
   app.querySelectorAll('button[data-a]').forEach(bt=>bt.onclick=async()=>{
