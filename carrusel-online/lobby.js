@@ -341,9 +341,10 @@ function enlaza(){
     if(a==='si'&&P&&P.tipo==='anunciada'&&P.yo!=='si'){ if(!await confirma('¿Estás seguro?','Si luego no asistes, perderás 0,25 de actitud. Puedes evitarlo quitándote de la partida hasta 5 minutos antes de que empiece.','Sí, me apunto')) return; }
     if((a==='no'||a==='quiza')&&P&&P.yo==='si'&&!P.soy_creador&&tarde(P)){ if(!await confirma('Ya es tarde para quitarte','Quitarte ahora cuenta como no asistir: perderás 0,25 de actitud. ¿Quieres quitarte igualmente?','Sí, quitarme','No, me quedo')) return; }
     if(a==='cancelar'&&P){
-      const pen=tarde(P)&&(P.apuntados||0)>1;
-      if(!await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar tu partida?',pen?'Hay gente apuntada y faltan menos de 5 minutos: perderás 0,5 de actitud. ¿Cancelar igualmente?':(tarde(P)?'No pierdes actitud porque no hay nadie apuntado.':'No pierdes actitud porque faltan más de 5 minutos.'),'Sí, cancelar','No, la mantengo')) return;
-      bt.disabled=true; const r=await cr('cancelar',{p_partida:id}); ST.aviso=r&&r.ok?'Has cancelado la partida.':'No he podido cancelar la partida.'; await refrescaLista(); pintaLobby(); return;
+      /* (20-nov 13:58, Iago) sin nadie apuntado, la partida desaparece; con gente, los apuntados reciben el aviso «!» para quedarse de anfitrión (×1,5) */
+      const otros=Math.max(0,(P.apuntados||0)-1), pen=tarde(P)&&otros>0, AV='Avisaremos a los apuntados para que uno se quede de anfitrión (sus minutos cuentan ×1,5).';
+      if(!await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar tu partida?',!otros?'No hay nadie apuntado: la partida desaparece. No pierdes actitud.':(pen?'Hay gente apuntada y faltan menos de 5 minutos: perderás 0,5 de actitud. '+AV+' ¿Cancelar igualmente?':'No pierdes actitud porque faltan más de 5 minutos. '+AV),'Sí, cancelar','No, la mantengo')) return;
+      bt.disabled=true; const r=await cr('cancelar',{p_partida:id}); ST.aviso=r&&r.ok?(r.quitada?'Partida cancelada. Como no había nadie apuntado, ya no aparece.':'Has cancelado la partida. Los apuntados ya tienen el aviso para quedarse de anfitrión.'):'No he podido cancelar la partida.'; await refrescaLista(); pintaLobby(); return;
     }
     if(a==='heredar'&&P){   /* (20-nov, Iago) heredar la partida cuyo anfitrión canceló: minutos ×1,5 */
       if(!await confirma('¿Quieres ser el anfitrión?','La partida será tuya: la empiezas tú. Los minutos que practiques en ella contarán ×1,5. Si luego no asistes, perderás 0,5 de actitud.','Sí, seré el anfitrión')) return;
@@ -400,8 +401,8 @@ function pintaSala(){
   const bh=document.getElementById('bHeredar'); if(bh) bh.onclick=async()=>{ bh.disabled=true; await cr('heredar',{p_partida:ST.partida}); await refrescaSala(); pintaSala(); };
   const be=document.getElementById('bEmpezar'); if(be) be.onclick=async()=>{ be.disabled=true; audioListo(); await cr('empezar',{p_partida:ST.partida,p_duracion:700}); await refrescaSala(); pintaSala(); };
   const bc=document.getElementById('bCancelar'); if(bc) bc.onclick=async()=>{
-    const otros=((ST.est&&ST.est.jugadores)||[]).filter(j=>!j.yo&&j.resp==='si').length, pen=tarde(p)&&otros>0;
-    const ok=await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar la partida?',pen?'Hay gente apuntada: perderás 0,5 de actitud por cancelar con menos de 5 minutos de margen. ¿Cancelar la partida igualmente?':'No pierdes actitud. Los demás podrán seguir si alguien quiere ser anfitrión.','Sí, cancelar','No, sigo');
+    const js=((ST.est&&ST.est.jugadores)||[]).filter(j=>!j.yo), otros=js.filter(j=>j.resp==='si').length, pen=tarde(p)&&otros>0, nadie=!js.some(j=>j.resp==='si'||j.dentro);   /* (20-nov 13:58) */
+    const ok=await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar la partida?',nadie?'No hay nadie más: la partida desaparece. No pierdes actitud.':(pen?'Hay gente apuntada: perderás 0,5 de actitud por cancelar con menos de 5 minutos de margen. Los demás podrán seguir si alguien se queda de anfitrión (×1,5). ¿Cancelar la partida igualmente?':'No pierdes actitud. Los demás podrán seguir si alguien se queda de anfitrión (sus minutos cuentan ×1,5).'),'Sí, cancelar','No, sigo');
     if(!ok) return;
     await cr('cancelar',{p_partida:ST.partida}); ST.aviso='Has cancelado la partida.'; arrancaLobby();
   };
