@@ -739,6 +739,38 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 .pcg-prep .co-bots .bn{opacity:0;display:inline-block;transform:translateY(8px) scale(.8);transition:opacity .35s,transform .35s cubic-bezier(.2,.8,.3,1.4)}.pcg-prep .co-bots .bn.on{opacity:1;transform:none}
 .co-rx-bar.frio button{filter:grayscale(1);opacity:.4;pointer-events:none}
 .co-fin .co-cierre{margin-top:14px;font:700 16px/1.3 "Helvetica Neue",Arial,sans-serif;color:#d9d3ff}
+/* ==== (20-nov-2026 20:50, Iago) AVATARES en la clasificación y el podio ==== */
+.co-rank .cab,.co-rank .fila{grid-template-columns:90px 64px 1fr 190px 150px}
+.co-rank .cab span:nth-child(2){grid-column:span 2}
+.co-avr{display:block;line-height:0;position:relative}
+.co-avr .av{width:58px;height:58px;display:block}
+.co-rank:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .co-avr .av{width:44px;height:44px}
+.co-rank .fila.sub2{background:rgba(52,211,153,.24)}.co-rank .fila.baja{background:rgba(255,90,90,.22)}.co-rank .fila.lider{background:rgba(255,210,63,.18)}
+.co-rank .fila.sub2 .co-avr,.co-rank .fila.sube .co-avr{animation:coAvSalta .8s ease 1.2s}.co-rank .fila.baja .co-avr{animation:coAvHunde 1s ease 1.2s}
+@keyframes coAvSalta{30%{transform:translateY(-9px) scale(1.14)}60%{transform:translateY(1px)}}
+@keyframes coAvHunde{20%{transform:translateY(3px) rotate(-7deg)}45%{transform:translateY(3px) rotate(7deg)}70%{transform:translateY(2px) rotate(-3deg)}}
+.co-avr.agita{animation:coAvAgita .7s ease}
+@keyframes coAvAgita{0%,100%{transform:none}15%{transform:rotate(-10deg) scale(1.08)}35%{transform:rotate(8deg) scale(1.1)}55%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
+.av .lagrima{transform-box:fill-box;animation:coLagrima 1.1s ease-in infinite}
+@keyframes coLagrima{0%{transform:translateY(-1px);opacity:.25}30%{opacity:1}100%{transform:translateY(6px);opacity:0}}
+.coronado{position:relative;display:inline-block;line-height:0}
+.coronado .corona{position:absolute;left:50%;top:0;width:58%;transform:translate(calc(-50% + var(--x,0%)),-62%) rotate(var(--r,0deg));transform-origin:50% 100%;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45));animation:coCorona .9s cubic-bezier(.2,.9,.3,1.3) both}
+.co-pod .p2 .corona{animation-delay:.25s}.co-pod .p3 .corona{animation-delay:.5s}
+.coronado .corona-svg{width:100%;height:auto;display:block}
+@keyframes coCorona{0%{opacity:0;transform:translate(calc(-50% + var(--x,0%)),-160%) rotate(0deg)}100%{opacity:1}}
+.co-pod{margin-top:70px}
+.co-pod .co-avr.podio{margin-bottom:8px}.co-pod .co-avr.podio .av{width:132px;height:132px}
+.co-resto{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 22px;margin:4px 0 10px;max-width:1500px}
+.co-resto .rs{display:flex;flex-direction:column;align-items:center;font:800 19px "Helvetica Neue",Arial,sans-serif;color:#fff}.co-resto .rs.yo{color:#ffd23f}
+.co-resto .co-avr .av{width:60px;height:60px}
+.co-flota2{position:fixed;z-index:2147483200;pointer-events:none;transform:translate(-50%,-100%);white-space:nowrap;font:800 17px/1.2 "Helvetica Neue",Arial,sans-serif;color:#1a1238;background:#fff;padding:7px 13px;border-radius:13px;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.co-flota2 small{display:block;font-size:11px;font-weight:700;color:rgba(26,18,56,.72);margin-top:1px}
+.co-flota2.emo{background:none;box-shadow:none;font-size:46px;padding:0;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.co-rx-bar.con-fr{flex-direction:column;align-items:center;gap:6px}
+.co-rx-bar .em{display:flex;gap:6px}
+.co-rx-bar .fr{display:flex;gap:8px}
+.co-rx-bar .fr button.f{width:auto;height:46px;padding:0 16px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);font:800 19px/1 "Helvetica Neue",Arial,sans-serif;color:#fff;white-space:nowrap}
+.co-rx-bar .fr button.f:hover{border-color:#ffd23f;background:rgba(255,210,63,.2)}
 
 /* ===== CARRUSEL PRO ONLINE (grado profesional) · 20-nov-2026 ===== */
 /* «PRO» en mayúsculas y dorado (Iago, 19-nov 23:11) */

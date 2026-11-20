@@ -225,7 +225,7 @@ function cuando(iso){
 }
 function grupoTxt(g){ return g?String(g).replace(/ge$/i,'').toUpperCase().replace(/^(\d)([A-Z])/,'$1.º $2'):''; }
 const ESPIRAL=c=>'<svg viewBox="0 0 44 44"><g fill="none" stroke="'+c+'" stroke-linecap="round"><path d="M22 4 a18 18 0 1 0 18 18" stroke-width="3"/><path d="M22 10 a12 12 0 1 1 -12 12" stroke-width="2.4" opacity=".7"/></g><circle cx="40" cy="22" r="3" fill="'+c+'"/></svg>';
-const CABECERA='<div class="top"><div class="logo"><div class="lg" id="coLogo"></div><div class="nm"><div class="tt"><span class="car">Carrusel</span><span class="pro">PRO</span><span class="onl">Online</span></div><div class="kick">Grado Profesional</div></div></div><div class="sp"></div><span class="tag" id="estPiano"></span><button class="btn" id="bSonido" title="Comprobar el sonido">'+I.spk+'Probar sonido</button></div>';
+const CABECERA='<div class="top"><div class="logo"><div class="lg" id="coLogo"></div><div class="nm"><div class="tt"><span class="car">Carrusel</span><span class="pro">PRO</span><span class="onl">Online</span></div><div class="kick">Grado Profesional</div></div></div><div class="sp"></div><span class="tag" id="estPiano"></span><button class="btn" id="bSonido" title="Comprobar el sonido">'+I.spk+'<span class="tx">Probar sonido</span></button></div>';
 
 /* ---------- ventana de confirmación (estética PreDict) ---------- */
 function confirma(titulo,texto,okTxt,noTxt){
@@ -259,7 +259,7 @@ function sinCuenta(){
 }
 
 async function arrancaLobby(){
-  ST.vista='lobby'; ST.partida=null; ST.est=null; ST.salaFirma=''; musicaNo(); dockNo(); chatNo(); try{ localStorage.removeItem('co_partida'); }catch(e){}
+  raiz.classList.remove('en-sala'); ST.vista='lobby'; ST.partida=null; ST.est=null; ST.salaFirma=''; musicaNo(); dockNo(); chatNo(); try{ localStorage.removeItem('co_partida'); }catch(e){}
   clearInterval(POLL); clearInterval(TIC);
   await refrescaLista(); pintaLobby();
   POLL=setInterval(async()=>{ if(ST.vista!=='lobby'||document.hidden) return; await refrescaLista(); pintaLobby(); },5000);
@@ -290,15 +290,18 @@ function pintaLobby(){
     const botones=abierta
       ? '<button class="btn pri" data-a="entrar" data-id="'+p.id+'">Entrar al lobby</button>'
       : cancelada ? '<span class="muted">La cancelaste</span>'
-      : mia ? '<button class="btn ko" data-a="cancelar" data-id="'+p.id+'">'+I.x+'Cancelar partida</button>'
+      : mia ? '<span class="ap anf">'+I.cor+'Eres el anfitrión</span>'   /* (20-nov 20:58, Iago) sin botón rojo: «¿No vas a poder jugar?» discreto */
       : sinAnf ? '<button class="btn pri" data-a="heredar" data-id="'+p.id+'">'+I.cal+'Ser el anfitrión</button><button class="btn peq" data-a="no" data-id="'+p.id+'" title="Quitarme de la partida">'+I.x+'</button>'
-      : '<button class="btn pri'+(resp==='si'?' sel':'')+'" data-a="si" data-id="'+p.id+'">'+(resp==='si'?I.ok+'Me apunto':'Me apunto')+'</button>'+
-        (resp==='quiza'?'':'<button class="btn peq" data-a="'+(resp==='si'?'no':'quiza')+'" data-id="'+p.id+'" title="'+(resp==='si'?'Quitarme de la partida':'Marcar como visto')+'">'+I.x+'</button>');
+      : resp==='si' ? '<span class="ap">'+I.ok+'Apuntado</span>'
+      : '<button class="btn pri" data-a="si" data-id="'+p.id+'">Me apunto</button>'+
+        (resp==='quiza'?'':'<button class="btn peq" data-a="quiza" data-id="'+p.id+'" title="Marcar como visto">'+I.x+'</button>');
+    const nop=(!abierta&&!cancelada&&!sinAnf&&(mia||resp==='si'))?'<button type="button" class="nop" data-a="nop" data-id="'+p.id+'">¿No vas a poder jugar?</button>':'';
+    const lob=(!abierta&&!cancelada)?'<div class="cuando lob">Se habilitará el lobby 5 minutos antes de la hora. Podrás acceder desde aquí.</div>':'';
     return '<div class="partida'+(mia?' mia':'')+'"><div class="info"><div class="quien">'+quien+cancel+'</div>'+
       '<div class="cuando">'+cabecera+' · <span data-t="'+p.programada+'">'+cuando(p.programada)+'</span></div>'+
       '<div class="cuando">'+(mia?confTxt:(conf?mons(conf):'nadie apuntado todavía'))+(p.dentro>0?' · '+p.dentro+' en el lobby':'')+'</div>'+
-      (sinAnf?'<div class="alerta"><span class="ex">!</span><span><b>El anfitrión ha cancelado.</b> Si heredas tú la partida y te haces anfitrión, los minutos que practiques contarán ×1,5: es el premio por mantenerla viva.</span></div>':'')+'</div>'+
-      '<div class="row">'+botones+'</div></div>';
+      (sinAnf?'<div class="alerta"><span class="ex">!</span><span><b>El anfitrión ha cancelado.</b> Si heredas tú la partida y te haces anfitrión, los minutos que practiques contarán ×1,5: es el premio por mantenerla viva.</span></div>':'')+lob+'</div>'+
+      '<div class="row">'+botones+'</div>'+nop+'</div>';
   }).join('');
   app.innerHTML=
     (ST.aviso?'<div class="banner">'+esc(ST.aviso)+'</div>':'')+
@@ -329,7 +332,7 @@ function enlaza(){
   const an=document.getElementById('bAnunciar'); if(an) an.onclick=async()=>{
     const v=(document.getElementById('hora')||{}).value; if(!v) return;
     const d=new Date(v);
-    if(!await confirma('¿Anunciar esta partida?','Será '+cuando(d.toISOString())+' y serás el anfitrión. Si alguien se apunta y luego no asistes, perderás 0,5 de actitud. Puedes evitarlo cancelando la partida hasta 5 minutos antes de su inicio.','Sí, anunciar')) return;
+    if(!await confirma('¿Anunciar esta partida?','Será '+cuando(d.toISOString())+' y serás el anfitrión. Si alguien se apunta y luego no asistes, perderás 0,5 de actitud. Puedes evitarlo cancelando la partida hasta 5 minutos antes de su inicio. Recuerda: solo se puede jugar desde un ordenador o una tablet; con el móvil no te dejará entrar.','Sí, anunciar')) return;
     an.disabled=true;
     const r=await cr('crear',{p_programada:d.toISOString()});
     if(r&&r.ok){ ST.aviso='Partida anunciada para '+cuando(d.toISOString())+'.'; ST.hora=''; await refrescaLista(); }
@@ -338,8 +341,18 @@ function enlaza(){
   };
   app.querySelectorAll('button[data-a]').forEach(bt=>bt.onclick=async()=>{
     const a=bt.dataset.a, id=bt.dataset.id, P=ST.lista.find(x=>x.id===id);
-    if(a==='si'&&P&&P.tipo==='anunciada'&&P.yo!=='si'){ if(!await confirma('¿Estás seguro?','Si luego no asistes, perderás 0,25 de actitud. Puedes evitarlo quitándote de la partida hasta 5 minutos antes de que empiece.','Sí, me apunto')) return; }
+    if(a==='si'&&P&&P.tipo==='anunciada'&&P.yo!=='si'){ if(!await confirma('¿Estás seguro?','Si luego no asistes, perderás 0,25 de actitud. Puedes evitarlo quitándote de la partida hasta 5 minutos antes de que empiece. Recuerda: solo se puede jugar desde un ordenador o una tablet; con el móvil no te dejará entrar.','Sí, me apunto')) return; }
     if((a==='no'||a==='quiza')&&P&&P.yo==='si'&&!P.soy_creador&&tarde(P)){ if(!await confirma('Ya es tarde para quitarte','Quitarte ahora cuenta como no asistir: perderás 0,25 de actitud. ¿Quieres quitarte igualmente?','Sí, quitarme','No, me quedo')) return; }
+    if(a==='nop'&&P){
+      if(P.soy_creador&&!P.anfitrion_cancelo||P.soy_anfitrion){
+        const otros=Math.max(0,(P.apuntados||0)-1), pen=tarde(P)&&otros>0, AV='Avisaremos a los apuntados para que uno se quede de anfitrión (sus minutos cuentan ×1,5).';
+        if(!await confirma('¿No vas a poder jugar?',!otros?'No hay nadie apuntado: si la cancelas, la partida desaparece y no pierdes actitud.':(pen?'Faltan menos de 5 minutos: cancelar ahora cuenta como no asistir y perderás 0,5 de actitud. '+AV:'Cancélala ahora y no pierdes actitud. '+AV+' Si no apareces sin haberla cancelado, perderás 0,5 de actitud.'),'Cancelar la partida','Sí que juego')) return;
+        bt.disabled=true; const r=await cr('cancelar',{p_partida:id}); ST.aviso=r&&r.ok?(r.quitada?'Partida cancelada. Como no había nadie apuntado, ya no aparece.':'Has cancelado la partida. Los apuntados ya tienen el aviso para quedarse de anfitrión.'):'No he podido cancelar la partida.'; await refrescaLista(); pintaLobby(); return;
+      }
+      const an=String(P.anfitrion||P.creador||'El anfitrión').split(' ')[0];
+      if(!await confirma('¿No vas a poder jugar?',tarde(P)?'Faltan menos de 5 minutos: desapuntarte ahora cuenta como no asistir y perderás 0,25 de actitud.':'Desapúntate ahora y no pierdes actitud. '+an+' cuenta contigo: si no apareces sin haberte desapuntado, perderás 0,25 de actitud.','Desapuntarme','Sí que juego')) return;
+      bt.disabled=true; await cr('apuntar',{p_partida:id,p_resp:'no'}); await refrescaLista(); pintaLobby(); return;
+    }
     if(a==='cancelar'&&P){
       /* (20-nov 13:58, Iago) sin nadie apuntado, la partida desaparece; con gente, los apuntados reciben el aviso «!» para quedarse de anfitrión (×1,5) */
       const otros=Math.max(0,(P.apuntados||0)-1), pen=tarde(P)&&otros>0, AV='Avisaremos a los apuntados para que uno se quede de anfitrión (sus minutos cuentan ×1,5).';
@@ -347,7 +360,7 @@ function enlaza(){
       bt.disabled=true; const r=await cr('cancelar',{p_partida:id}); ST.aviso=r&&r.ok?(r.quitada?'Partida cancelada. Como no había nadie apuntado, ya no aparece.':'Has cancelado la partida. Los apuntados ya tienen el aviso para quedarse de anfitrión.'):'No he podido cancelar la partida.'; await refrescaLista(); pintaLobby(); return;
     }
     if(a==='heredar'&&P){   /* (20-nov, Iago) heredar la partida cuyo anfitrión canceló: minutos ×1,5 */
-      if(!await confirma('¿Quieres ser el anfitrión?','La partida será tuya: la empiezas tú. Los minutos que practiques en ella contarán ×1,5. Si luego no asistes, perderás 0,5 de actitud.','Sí, seré el anfitrión')) return;
+      if(!await confirma('¿Quieres ser el anfitrión?','La partida será tuya: la empiezas tú. Los minutos que practiques en ella contarán ×1,5. Si luego no asistes, perderás 0,5 de actitud. Recuerda: solo se puede jugar desde un ordenador o una tablet; con el móvil no te dejará entrar.','Sí, seré el anfitrión')) return;
       bt.disabled=true; const r=await cr('heredar',{p_partida:id}); ST.aviso=r&&r.ok?'Ahora eres el anfitrión. Tus minutos en esta partida contarán ×1,5.':'No he podido hacerte anfitrión (puede que otro se haya adelantado).'; await refrescaLista(); pintaLobby(); return;
     }
     bt.disabled=true;
@@ -358,7 +371,7 @@ function enlaza(){
 
 /* ---------- sala ---------- */
 async function entraEnSala(id){
-  ST.vista='sala'; ST.partida=id; ST.aviso=''; ST.dentroAntes=null; ST.salaFirma=''; chatSi(id);
+  raiz.classList.add('en-sala'); ST.vista='sala'; ST.partida=id; ST.aviso=''; ST.dentroAntes=null; ST.salaFirma=''; chatSi(id);
   try{ localStorage.setItem('co_partida',id); }catch(e){}
   clearInterval(POLL); clearInterval(TIC);
   await refrescaSala(); pintaSala();
@@ -383,7 +396,17 @@ async function refrescaSala(){
    · Abajo, barra de 10 frases cerradas + 10 emojis (nada de texto libre): salen sobre el monigote de quien los manda.
    · Música en bucle (lobby.mp3, 37 s sin costura) con botón para silenciarla.
    Deshacer: volver a lobby.js.bak40 / lobby.css.bak40 (work/co2) y reconstruir. */
-const CO_FRASES=['¡Vaya tardones!','¡Vais a flipar!','Esta ronda gano yo','Estoy en mi prime','¡Os voy a arrasar!','¡Os voy a pulir!','¡Estoy deseando empezar!','Hoy tengo el oído fino','No fallo ni una','¡Que empiece ya!'];
+/* (20-nov-2026 19:34, Iago) 50 frases; cada jugador ve 10 al azar, distintas en cada partida (fijas durante la partida) */
+const CO_F50=["¡Vaya tardones!", "¡Vais a flipar!", "Esta ronda gano yo", "Estoy en mi prime", "¡Os voy a arrasar!", "¡Os voy a pulir!", "¡Estoy deseando empezar!", "Hoy tengo el oído fino", "No fallo ni una", "¡Que empiece ya!", "+1000 de aura", "−1000 de aura", "Modo tryhard activado", "Skill issue", "GG", "Soy el GOAT del dictado", "Nos vemos en el podio", "Esto es pan comido", "Calentando las orejas", "Oído absoluto activado", "Afinadísimo", "¿Quién es el MVP?", "Ni tan mal", "Tremendo", "Bro, ¿qué acaba de pasar?", "Literal yo", "Sin presión… o sí", "Que no cunda el pánico", "Hoy no fallo el compás", "Revancha, ya", "Hoy vengo a por todas", "Esto va a ser épico", "Que gane el mejor (o sea, yo)", "¿Listos para el carrusel?", "Mis orejas están on fire", "Voy a por el podio", "Hoy me sé todos los acordes", "Cadencia perfecta incoming", "Mi metrónomo interno no falla", "¿Quién se ha estudiado los intervalos?", "Primer puesto del podio: reservado", "Esto lo gano con los ojos cerrados", "Nivel: conservatorio superior", "¡Vamos, vamos, vamos!", "Ritmo en las venas", "Hoy no me pilláis", "Que suene la música", "A ver quién aguanta", "Ojo, que vengo afinado", "Esto se pone interesante"];
+function frasesMias(pid){ let h=2166136261; for(const c of String(pid)+'|'+CUENTA){ h^=c.charCodeAt(0); h=Math.imul(h,16777619)>>>0; }
+  const rnd=()=>{ h=(h+0x6D2B79F5)>>>0; let t=h; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; };
+  const a=CO_F50.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,10); }
+/* ---- AVATAR (20-nov-2026 19:26–20:08, Iago): pegatina redonda; sin editar, monigote simple calvo y sonriente de un color al azar
+   (fijo para cada alumno); se personaliza tocando tu pegatina; el instrumento sale solo de la ficha; el profe, su avatar. ---- */
+function avCfg(j){ if(!j) return null; if(j.yo&&ST.miAv) return ST.miAv; return j.av||avatarPorDefecto(j.id); }
+function avDe(j,extra){ if(j&&j.profe) return avatarProfeSimple((extra&&extra.cara)||'guino',extra); return avatarSVG(Object.assign({},avCfg(j),{instr:(j&&AV_INSTR[j.ins])||null},extra||{})); }
+function avColor(j){ return j&&j.profe?'#ffd23f':(avCfg(j)||{}).color||'#ffffff'; }
+function jugadorDe(id){ return ((ST.est&&ST.est.jugadores)||[]).find(j=>j.id===id)||null; }
 const CO_EMOS=['😊','😎','😂','❤️','💪','👏','🔥','😮','😱','😢'];
 const CO_COLS=['#5bd0ff','#ffd23f','#34d399','#ff9a3c','#bd92ff','#ff5fa2','#7dd3fc','#a3e635','#f472b6','#facc15'];
 function colDe(id){ let h=0; String(id||'').split('').forEach(c=>{ h=(h*31+c.charCodeAt(0))>>>0; }); return CO_COLS[h%CO_COLS.length]; }
@@ -415,7 +438,7 @@ function campanita(){ const ac=MUS.ac; if(!ac||ac.state!=='running') return; con
 let DOCK=null, RXS=null;
 function dockSi(){
   if(!DOCK){ DOCK=document.createElement('div'); DOCK.id='coDock';
-    DOCK.innerHTML='<div class="fr">'+CO_FRASES.map(f=>'<button type="button" data-f="'+esc(f)+'">'+esc(f)+'</button>').join('')+'</div>'+
+    DOCK.innerHTML='<div class="fr"></div>'+
       '<div class="em">'+CO_EMOS.map(e=>'<button type="button" data-f="'+e+'">'+e+'</button>').join('')+'</div>';
     raiz.appendChild(DOCK);
     DOCK.addEventListener('click',ev=>{ const b=ev.target.closest('button[data-f]'); if(!b||!ST.partida||DOCK.classList.contains('frio')) return; const f=b.dataset.f;
@@ -424,21 +447,98 @@ function dockSi(){
       DOCK.classList.add('frio'); clearTimeout(DOCK.tf); DOCK.tf=setTimeout(()=>DOCK.classList.remove('frio'),2000);   /* (20-nov 19:10, Iago) 2 s en gris */
       cr('reaccion',{p_partida:ST.partida,p_emoji:f}).catch(()=>{}); });
   }
-  DOCK.hidden=false; raiz.classList.add('con-dock');
+  if(DOCK.pid!==ST.partida){ DOCK.pid=ST.partida; DOCK.querySelector('.fr').innerHTML=frasesMias(ST.partida).map(f=>'<button type="button" data-f="'+esc(f)+'">'+esc(f)+'</button>').join(''); }
+  const ya=!DOCK.hidden&&raiz.classList.contains('con-dock'); DOCK.hidden=false; raiz.classList.add('con-dock'); if(!ya) requestAnimationFrame(()=>{ try{ encajaSala(); }catch(e){} });
   if(!RXS){ RXS={desde:0,primera:true};
     RXS.t=setInterval(async()=>{ if(ST.vista!=='sala'||document.hidden) return; try{ const r=await cr('reacciones',{p_partida:ST.partida,p_desde:RXS.desde});
       if(r&&r.ok){ const xs=r.r||[]; xs.forEach((x,i)=>{ RXS.desde=Math.max(RXS.desde,x.id); if(!x.yo&&!RXS.primera) setTimeout(()=>rxPinta(x.cuenta,x.nombre,x.emoji,false),i*220); }); RXS.primera=false; } }catch(e){} },1200); }
 }
-function dockNo(){ if(DOCK) DOCK.hidden=true; raiz.classList.remove('con-dock'); if(RXS){ clearInterval(RXS.t); RXS=null; } }
-const BOCAS={};   /* frases a la vista, para volver a ponerlas si la plaza se redibuja */
+function dockNo(){ if(DOCK) DOCK.hidden=true; raiz.classList.remove('con-dock'); raiz.style.paddingBottom=''; if(RXS){ clearInterval(RXS.t); RXS=null; } }
+/* (20-nov-2026 19:31–19:48, Iago) frases y emojis salen de la pegatina de quien los manda y suben flotando hacia el centro;
+   las frases, en un bocadillo del color de su avatar; suena algo al mandar; la pegatina se agita y las de al lado la miran.
+   Van en una capa aparte (fuera de la plaza), así un repintado no las corta. */
+function capaRx(){ let c=document.getElementById('coCapa'); if(!c){ c=document.createElement('div'); c.id='coCapa'; document.body.appendChild(c); } return c; }
+function sonidoRx(mio,emo){ try{ const ac=musAC(); if(!ac||ac.state!=='running') return; const t=ac.currentTime+0.01;
+  (mio?[784,1175]:(emo?[988,1319]:[659,880])).forEach((f,i)=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=f*(1+(Math.random()-.5)*0.04);
+    g.gain.setValueAtTime(0,t+i*0.06); g.gain.linearRampToValueAtTime(mio?0.09:0.06,t+i*0.06+0.008); g.gain.exponentialRampToValueAtTime(0.0005,t+i*0.06+0.28); o.connect(g); g.connect(ac.destination); o.start(t+i*0.06); o.stop(t+i*0.06+0.3); }); }catch(e){} }
+const vivos=()=>app.querySelectorAll('.mono:not(.fuera)');
+function reaccionan(m){
+  m.classList.remove('agita'); void m.offsetWidth; m.classList.add('agita');
+  const r=m.getBoundingClientRect(), cx=r.left+r.width/2;
+  vivos().forEach(o=>{ if(o===m) return; const q=o.getBoundingClientRect(); if(Math.hypot(q.left-r.left,q.top-r.top)>r.width*2.6) return;
+    const c=(q.left+q.width/2)>cx?'mira-i':'mira-d'; o.classList.remove('mira-i','mira-d','mira-a'); o.dataset.fija='1'; o.classList.add(c);
+    setTimeout(()=>{ o.classList.remove(c); delete o.dataset.fija; },1700); });
+}
+(function vida(){ setInterval(()=>{ if(ST.vista!=='sala'||document.hidden) return; vivos().forEach(m=>{ if(Math.random()<.22){ m.classList.add('parpadea'); setTimeout(()=>m.classList.remove('parpadea'),140); } }); },900);
+  setInterval(()=>{ if(ST.vista!=='sala'||document.hidden) return; vivos().forEach(m=>{ if(Math.random()<.12&&!m.dataset.fija){ const c=['mira-i','mira-d','mira-a'][Math.floor(Math.random()*3)]; m.classList.add(c); setTimeout(()=>m.classList.remove(c),900+Math.random()*900); } }); },1100); })();
 function rxPinta(id,nombre,f,yo){
-  const esEmo=CO_EMOS.indexOf(f)>=0, mono=id&&app.querySelector('.mono[data-id="'+id+'"]');
-  if(!mono){ const d=document.createElement('div'); d.className='rx-suelto'+(esEmo?' emo':''); d.innerHTML=(esEmo?'<span class="e">'+f+'</span>':'<span class="f">'+esc(f)+'</span>')+'<span class="n">'+esc(nombre||'')+'</span>';
+  const esEmo=CO_EMOS.indexOf(f)>=0, m=id&&app.querySelector('.mono[data-id="'+id+'"]'); sonidoRx(!!yo,esEmo);
+  if(!m){ const d=document.createElement('div'); d.className='rx-suelto'+(esEmo?' emo':''); d.innerHTML=(esEmo?'<span class="e">'+f+'</span>':'<span class="f">'+esc(f)+'</span>')+'<span class="n">'+esc(nombre||'')+'</span>';
     d.style.left=(10+Math.random()*80)+'%'; raiz.appendChild(d); setTimeout(()=>d.remove(),3600); return; }
-  if(esEmo){ const e=document.createElement('span'); e.className='emo-sube'; e.textContent=f; e.style.setProperty('--dx',((Math.random()-0.5)*50).toFixed(0)+'px'); mono.appendChild(e); setTimeout(()=>e.remove(),2500); return; }
-  const v=mono.querySelector('.boca'); if(v) v.remove();
-  const b=document.createElement('div'); b.className='boca'+(yo?' yo':''); b.textContent=f; mono.appendChild(b);
-  BOCAS[id]={f,hasta:Date.now()+3600,yo}; setTimeout(()=>{ if(b.parentNode) b.remove(); },3600);
+  reaccionan(m);
+  const pg=m.querySelector('.pg')||m, r=pg.getBoundingClientRect(), x0=r.left+r.width/2, y0=r.top+6, cx=innerWidth/2;
+  const d=document.createElement('div'); d.className='co-flota'+(esEmo?' emo':''); if(!esEmo) d.style.background=avColor(jugadorDe(id));
+  d.innerHTML=esc(f)+(esEmo?'':'<small>'+esc(yo?'Tú':(nombre||''))+'</small>'); d.style.left=x0+'px'; d.style.top=y0+'px'; capaRx().appendChild(d);
+  const dx=(cx-x0)*0.38, dy=-(70+Math.random()*40), w=(Math.random()<.5?-1:1)*12;
+  const an=d.animate([{transform:'translate(-50%,-80%) scale(.6)',opacity:0},{transform:'translate(-50%,-100%) scale(1.05)',opacity:1,offset:.1},
+    {transform:'translate(calc(-50% + '+(dx*.45+w)+'px),calc(-100% + '+(dy*.45)+'px)) scale(1)',opacity:1,offset:.45},
+    {transform:'translate(calc(-50% + '+(dx*.8-w)+'px),calc(-100% + '+(dy*.8)+'px))',opacity:1,offset:.8},
+    {transform:'translate(calc(-50% + '+dx+'px),calc(-100% + '+dy+'px))',opacity:0}],{duration:4600,easing:'cubic-bezier(.25,.6,.4,1)'});
+  an.onfinish=()=>d.remove();
+}
+/* (20-nov-2026 20:08, Iago) todo cabe en la pantalla y nada tapa a los jugadores: debajo se reserva el hueco de la barra
+   (y del chat en pantallas estrechas) y las pegatinas encogen hasta que no hay que desplazarse */
+function reservaAbajo(){
+  const d=DOCK&&!DOCK.hidden?DOCK.offsetHeight+16:0, ch=document.getElementById('coChat');
+  const estrecho=innerWidth<1100, chH=(ch&&!ch.hidden&&estrecho)?ch.offsetHeight+8:0;
+  document.documentElement.style.setProperty('--coDockH',d+'px');
+  raiz.style.paddingBottom=(d+chH)+'px';
+}
+function encajaSala(){
+  if(ST.vista!=='sala') return; const pl=document.getElementById('coPlaza'); reservaAbajo(); if(!pl) return;
+  const estr=innerWidth<600, pon=x=>{ pl.style.setProperty('--av',x+'px'); pl.style.setProperty('--cw',Math.max(estr?58:70,x+(estr?18:28))+'px'); };
+  const sobra=()=>raiz.scrollHeight-raiz.clientHeight;
+  ajustaLobby(); pl.classList.remove('peq'); let x=96; pon(x); while(x>60&&sobra()>0){ x-=2; pon(x); }
+  if(sobra()>0){ raiz.style.setProperty('--z','1'); x=96; pon(x); while(x>44&&sobra()>0){ x-=2; pon(x); } }
+  if(sobra()>0){ pl.classList.add('peq'); while(x>26&&sobra()>0){ x-=2; pon(x); } }
+}
+addEventListener('resize',()=>{ try{ encajaSala(); }catch(e){} });
+/* ---- editor del avatar: se abre tocando tu pegatina ---- */
+let ED=null;
+function abreEd(j){
+  ED={cfg:Object.assign({peloColor:'#1f1a17',gorroColor:'#111827',cara:'sonrisa',pelo:'ninguno',gorro:'ninguno',gafas:false},avCfg(j)),ins:(j&&AV_INSTR[j.ins])||null};
+  let w=document.getElementById('coEd');
+  if(!w){ w=document.createElement('div'); w.id='coEd'; document.body.appendChild(w);
+    w.innerHTML='<div class="caja" role="dialog" aria-label="Personalizar mi avatar"><div class="prev"><div id="coEdPrev"></div><b>Tú</b><span class="mu">Tu instrumento sale solo, de tu ficha.</span></div><div>'+
+      '<div class="paso"><h3>1 · Color <i>todo lo demás se pinta de este color</i></h3><div class="ops" id="coEdCol"></div></div>'+
+      '<div class="paso"><h3>2 · Cara y gafas</h3><div class="ops" id="coEdCara"></div><div class="ops" id="coEdGaf" style="margin-top:6px"></div></div>'+
+      '<div class="paso"><h3>3 · Peinado</h3><div class="ops" id="coEdPelo"></div></div>'+
+      '<div class="paso"><h3>4 · Color del pelo <i>tu mismo peinado, en cada color</i></h3><div class="ops" id="coEdPc"></div></div>'+
+      '<div class="paso"><h3>5 · Gorro</h3><div class="ops" id="coEdGor"></div></div>'+
+      '<div class="paso"><h3>6 · Color del gorro</h3><div class="ops" id="coEdGc"></div></div></div>'+
+      '<div class="pie"><button type="button" class="b" id="coEdNo">Cancelar</button><button type="button" class="b pri" id="coEdSi">Guardar mi avatar</button></div></div>';
+    w.querySelector('#coEdNo').onclick=()=>{ w.hidden=true; };
+    w.addEventListener('click',ev=>{ if(ev.target===w) w.hidden=true; });
+    w.querySelector('#coEdSi').onclick=async()=>{ const b=w.querySelector('#coEdSi'); b.disabled=true;
+      const cfg={color:ED.cfg.color,cara:ED.cfg.cara,pelo:ED.cfg.pelo,peloColor:ED.cfg.peloColor,gorro:ED.cfg.gorro,gorroColor:ED.cfg.gorroColor,gafas:!!ED.cfg.gafas};
+      let r=null; try{ r=await cr('avatar_guardar',{p_cfg:cfg}); }catch(e){} b.disabled=false;
+      if(r&&r.ok){ ST.miAv=r.cfg; window.__coMiAv=r.cfg; try{ localStorage.setItem('co_avatar',JSON.stringify(r.cfg)); }catch(e){} w.hidden=true; ST.salaFirma=''; pintaSala(); toast('<b>Avatar guardado: así saldrás en todas las partidas</b>'); }
+      else toast('<b>No he podido guardarlo. Prueba otra vez.</b>'); };
+  }
+  pintaEd(); w.hidden=false;
+}
+function pintaEd(){
+  const w=document.getElementById('coEd'), q=id=>w.querySelector('#'+id), c=ED.cfg, A=o=>avatarSVG(Object.assign({},c,{instr:null},o));
+  const op=(id,items,cur,fn)=>{ const el=q(id); el.innerHTML=items.map((it,i)=>'<button type="button" class="op'+(it.k===cur?' sel':'')+'" data-i="'+i+'" title="'+esc(it.t)+'" aria-label="'+esc(it.t)+'">'+it.h+'</button>').join('');
+    el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ fn(items[+b.dataset.i].k); pintaEd(); }); };
+  q('coEdPrev').innerHTML=avatarSVG(Object.assign({},c,{instr:ED.ins}));
+  op('coEdCol',Object.entries(AV_COLS).map(([n,k])=>({k,t:n,h:avatarSVG({color:k,cara:'sonrisa',pelo:'ninguno'})})),c.color,k=>{ c.color=k; });
+  op('coEdCara',AV_CARAS.map(([k,t])=>({k,t,h:A({cara:k,gafas:false})})),c.gafas?null:c.cara,k=>{ c.cara=k; c.gafas=false; });
+  op('coEdGaf',[{k:'sin',t:'Sin gafas',h:A({gafas:false})},{k:'con',t:'Gafas de sol',h:A({gafas:true})}],c.gafas?'con':'sin',k=>{ c.gafas=k==='con'; });
+  op('coEdPelo',AV_PEINADOS.map(([k,t])=>({k,t,h:A({pelo:k,gorro:'ninguno'})})),c.pelo,k=>{ c.pelo=k; });
+  op('coEdPc',Object.entries(AV_PELO).map(([n,k])=>({k,t:n,h:A({peloColor:k,gorro:'ninguno',pelo:c.pelo==='ninguno'?'corto':c.pelo})})),c.peloColor,k=>{ c.peloColor=k; if(c.pelo==='ninguno') c.pelo='corto'; });
+  op('coEdGor',AV_GORROS.map(([k,t])=>({k,t,h:A({gorro:k})})),c.gorro,k=>{ c.gorro=k; });
+  op('coEdGc',Object.entries(AV_GORRO).map(([n,k])=>({k,t:n,h:A({gorroColor:k,gorro:c.gorro==='ninguno'?'gorra':c.gorro})})),c.gorro==='ninguno'?null:c.gorroColor,k=>{ c.gorroColor=k; if(c.gorro==='ninguno') c.gorro='gorra'; });
 }
 function toast(html){ const d=document.createElement('div'); d.className='co-toast'; d.innerHTML=html; raiz.appendChild(d); setTimeout(()=>d.remove(),2800); }
 
@@ -462,7 +562,7 @@ function chatPinta(msgs,cambio){
   if(CHAT.profe&&!CHAT.on&&ver){ if(!CHAT.btn){ CHAT.btn=document.createElement('button'); CHAT.btn.id='coChatAbre'; CHAT.btn.type='button'; CHAT.btn.innerHTML='💬 Abrir chat extraordinario';
       CHAT.btn.onclick=async()=>{ CHAT.btn.disabled=true; await cr('chat_on',{p_partida:CHAT.pid,p_on:true}); chatPoll(); }; document.body.appendChild(CHAT.btn); } }
   else if(CHAT.btn){ CHAT.btn.remove(); CHAT.btn=null; }
-  raiz.classList.toggle('con-chat',!!(CHAT.on&&ver&&ST.vista==='sala'));
+  { const antes=raiz.classList.contains('con-chat'), ahora=!!(CHAT.on&&ver&&ST.vista==='sala'); raiz.classList.toggle('con-chat',ahora); if(antes!==ahora) requestAnimationFrame(()=>{ try{ encajaSala(); }catch(e){} }); }
   if(!CHAT.on||!ver){ if(CHAT.caja){ CHAT.caja.hidden=!CHAT.on?true:!ver; if(!CHAT.on){ CHAT.caja.remove(); CHAT.caja=null; } } return; }
   if(!CHAT.caja){ const c=document.createElement('div'); c.id='coChat';
     c.innerHTML='<div class="cab"><span>💬 <b>Chat extraordinario</b> · prueba</span>'+(CHAT.profe?'<button type="button" class="cierra">Cerrar chat</button>':'')+'</div><div class="lista"></div>'+
@@ -492,7 +592,7 @@ function pintaSala(){
   if(ST.dentroAntes){ dentro.forEach(j=>{ if(!ST.dentroAntes.has(j.id)&&!j.yo) llegan.add(j.id); }); }
   ST.dentroAntes=ids;
   if(llegan.size){ const nn=dentro.filter(j=>llegan.has(j.id)).map(j=>j.nombre); campanita();
-    toast(monigoteSVG(colDe([...llegan][0]))+'<b>¡'+esc(listaNombres(nn))+(nn.length>1?' han entrado!':' ha entrado!')+'</b>'); }
+    toast('<span class="tav">'+avDe(jugadorDe([...llegan][0])||{id:[...llegan][0]})+'</span><b>¡'+esc(listaNombres(nn))+(nn.length>1?' han entrado!':' ha entrado!')+'</b>'); }
   const firma=JSON.stringify([p.estado,p.anfitrion_id,p.anfitrion_cancelo,p.soy_anfitrion,fase,!!hostDentro,js.map(j=>j.id+':'+(j.dentro?1:0)+(j.resp||''))]);
   dockSi(); musicaSi();
   if(firma===ST.salaFirma && !llegan.size){ pintaSalaTiempos(); return; }
@@ -508,25 +608,25 @@ function pintaSala(){
   /* monigotes: primero los que están (por orden de llegada), luego los apuntados que faltan */
   const mono=(j,fuera)=>{ const host=j.id===p.anfitrion_id;
     return '<div class="mono'+(fuera?' fuera':'')+(j.yo?' yo':'')+(llegan.has(j.id)?' llega':'')+'" data-id="'+esc(j.id)+'" style="--d:'+((parseInt(String(j.id).slice(-2),16)||0)%9)*0.21+'s">'+
-      (host?'<span class="cor" title="Anfitrión">'+I.cor+'</span>':'')+monigoteSVG(colDe(j.id),fuera)+(fuera?'':'<span class="ok">'+I.ok+'</span>')+
-      '<span class="nm">'+esc(j.nombre)+(j.yo?' <i>(tú)</i>':'')+'</span><span class="gr">'+esc(grupoTxt(j.grupo))+'</span>'+
-      '<span class="est">'+(fuera?'aún no ha llegado':'dentro')+'</span></div>'; };
+      (host?'<span class="cor" title="Anfitrión">'+I.cor+'</span>':'')+'<span class="pg">'+avDe(j)+'</span>'+(fuera?'':'<span class="ok">'+I.ok+'</span>')+
+      '<span class="nm">'+esc(j.nombre)+(j.yo?' <i>(tú)</i>':'')+'</span><span class="gr">'+(j.profe?'profe':esc(grupoTxt(j.grupo)))+'</span>'+
+      (fuera?'<span class="est">por llegar</span>':'')+(j.yo&&!j.profe&&!fuera?'<span class="edit">✏️ Personalizar</span>':'')+'</div>'; };
   const nSi=js.filter(j=>j.resp==='si').length, nSiD=js.filter(j=>j.resp==='si'&&j.dentro).length;
   const resumen=pend.length?nSiD+' de los '+nSi+' apuntados ya están dentro':(nSi?'Están todos los apuntados':'');
   app.innerHTML=banner+
     '<div class="card sala-top"><button class="btn cuad" id="bMus" title="'+(MUS.on?'Quitar la música':'Poner la música')+'">'+(MUS.on?I.spk:'<span class="tach">'+I.spk+'</span>')+'</button>'+
     '<h2>Partida de '+esc(p.creador)+' <span class="muted">('+esc(grupoTxt(p.grupo))+')</span></h2>'+
     '<div class="row" style="justify-content:space-between;align-items:flex-end"><div><div class="muted">'+esc(cuando(p.programada).replace(/^./,c=>c.toUpperCase()))+' · '+(p.anfitrion?I.cor:'')+'<b>'+anfNombre+'</b></div>'+
-    (fase==='antes'?'<div class="reloj"><span class="et">Empieza a las '+hh+' · faltan</span><b class="grande" id="relojN"></b></div><div class="muted nota">A las '+hh+' empieza el tiempo de cortesía (5 minutos): el anfitrión puede empezar cuando quiera y, si no, la partida empieza sola al acabar.</div>'
-      :'<div class="reloj"><span class="et cort">Tiempo de cortesía</span><span class="et">Cuenta atrás</span><b class="grande" id="relojN"></b></div><div class="muted nota">'+(p.soy_anfitrion?'Puedes empezar cuando quieras. Si no, la partida empieza sola cuando la cuenta atrás llegue a cero.':'El anfitrión puede empezarla antes. Si no, empieza sola cuando la cuenta atrás llegue a cero.')+'</div>')+
-    '</div><div class="row">'+(p.soy_anfitrion?(fase==='antes'?'<button class="btn pri" id="bEmpezar" disabled title="Podrás empezar a la hora en punto">'+I.play+'Empezar a las '+hh+'</button>':'<button class="btn pri" id="bEmpezar">'+I.play+'Empezar ya</button>')+'<button class="btn ko" id="bCancelar">Cancelar partida</button>':'')+
-    '<button class="btn" id="bSalir">← Salir</button></div></div></div>'+
+    (fase==='antes'?'<div class="reloj"><span class="et">Empieza a las '+hh+' · faltan</span><b class="grande" id="relojN"></b></div><div class="muted nota">A las '+hh+' empiezan 5 minutos de cortesía: el anfitrión podrá empezar cuando quiera y, si no, la partida empieza sola al acabar. Pon el volumen y no cierres esta pestaña.</div>'
+      :'<div class="reloj"><span class="et cort">Tiempo de cortesía</span><span class="et">Cuenta atrás</span><b class="grande" id="relojN"></b></div><div class="muted nota">'+(p.soy_anfitrion?'Puedes empezar la partida en cualquier momento. 5 minutos de cortesía para los que lleguen los últimos; después, empieza sola.':'El anfitrión puede empezar la partida en cualquier momento. 5 minutos de cortesía para los que lleguen los últimos; después, empieza sola.')+'</div>')+
+    '</div><div class="row">'+(p.soy_anfitrion?(fase==='antes'?'<button class="btn pri" id="bEmpezar" disabled title="Podrás empezar a la hora en punto">'+I.play+'Empezar a las '+hh+'</button>':'<button class="btn pri" id="bEmpezar">'+I.play+'Empezar ya</button>')+'<button type="button" class="nop" id="bCancelar">¿No vas a poder jugar?</button>':'')+
+    '<button class="btn" id="bSalir" title="Salir del lobby">←<span class="tx"> Salir</span></button></div></div></div>'+
     '<div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>Jugadores · '+dentro.length+' dentro</h2><span class="muted resumen'+(pend.length?'':' todos')+'">'+(pend.length?'':I.ok)+esc(resumen)+'</span></div>'+
-    '<div class="plaza">'+(dentro.map(j=>mono(j,false)).join('')+pend.map(j=>mono(j,true)).join('')||'<span class="muted">Nadie todavía.</span>')+'</div>'+
+    '<div class="plaza" id="coPlaza">'+(dentro.map(j=>mono(j,false)).join('')+pend.map(j=>mono(j,true)).join('')||'<span class="muted">Nadie todavía.</span>')+'</div>'+
     (dentro.length<5?'<p class="muted nota" style="margin:14px 0 0">🤖 Si al empezar hay menos de 5 jugadores, se suman bots con nombre de compositor hasta completar 5.</p>':'')+'</div>'+
-    '<p class="muted" style="font-size:13px">Cuando empiece, oirás lo mismo que los demás a la vez. Pon el volumen y no cierres esta pestaña.</p>';
-  /* las frases que seguían en el aire */
-  Object.keys(BOCAS).forEach(id=>{ const b=BOCAS[id]; if(b.hasta<Date.now()){ delete BOCAS[id]; return; } const m=app.querySelector('.mono[data-id="'+id+'"]'); if(m){ const d=document.createElement('div'); d.className='boca quieta'+(b.yo?' yo':''); d.textContent=b.f; m.appendChild(d); setTimeout(()=>d.remove(),b.hasta-Date.now()); } });
+    '';
+  { const mi=app.querySelector('.mono.yo:not(.fuera)'); const yoJ=js.find(j=>j.yo); if(mi&&yoJ&&!yoJ.profe){ mi.classList.toggle('nuevo',!yoJ.av&&!ST.miAv); mi.onclick=()=>abreEd(yoJ); } }
+  encajaSala();
   enlaza();
   const bm=document.getElementById('bMus'); if(bm) bm.onclick=()=>{ MUS.on=!MUS.on; try{ localStorage.setItem('co_musica',MUS.on?'si':'no'); }catch(e){} if(MUS.on) musicaSi(); else musicaNo(); ST.salaFirma=''; pintaSala(); };
   const bh=document.getElementById('bHeredar'); if(bh) bh.onclick=async()=>{ bh.disabled=true; await cr('heredar',{p_partida:ST.partida}); await refrescaSala(); pintaSala(); };
@@ -570,7 +670,7 @@ function avisoSonido(){
 }
 ['pointerdown','keydown','touchstart','touchend','click','pointerup'].forEach(ev=>document.addEventListener(ev,()=>{ try{ audioListo(); }catch(e){} const d=document.getElementById('coSonido'); if(d) d.remove(); },true));
 function empiezaJuego(est){
-  const p=est.p; clearInterval(POLL); clearInterval(TIC); ST.vista='juego'; musicaNo(); dockNo(); chatSi(p.id);   /* el chat sigue vivo (oculto) para el podio */
+  const p=est.p; clearInterval(POLL); clearInterval(TIC); ST.vista='juego'; raiz.classList.remove('en-sala'); musicaNo(); dockNo(); chatSi(p.id);   /* el chat sigue vivo (oculto) para el podio */
   raiz.style.display='none'; raiz.style.visibility='';
   try{ localStorage.setItem('co_partida',p.id); }catch(e){}
   PCOnline.jugar({id:p.id,inicio:new Date(p.inicio).getTime(),semilla:p.semilla,now:sNow,cr:cr,est:est,
@@ -597,9 +697,25 @@ async function muestraActitud(p){
 /* (19-nov 21:05, Iago: «el lobby está muy desaprovechado, todo súper arriba») centrado en vertical y a escala de la pantalla */
 function ajustaLobby(){ const z=Math.max(1,Math.min(1.5,innerWidth/1100,innerHeight/720)); raiz.style.setProperty('--z',z.toFixed(3)); }
 addEventListener('resize',ajustaLobby); ajustaLobby();
+/* (20-nov-2026 20:50, Iago) «que no te deje con móvil, solo tablet u ordenador»: con el móvil no se entra; se avisa de que
+   cambie de dispositivo y, si estaba apuntado a una partida, el servidor lo anota y no pierde actitud (que lo recuerde la próxima vez).
+   Para probarlo en el ordenador: ?movil=1. Deshacer: quitar esMovil()/pantallaMovil() y su llamada en arranca. */
+function esMovil(){ try{ if(QS.get('movil')==='1') return true; if(QS.get('movil')==='0') return false;
+  const ua=navigator.userAgent||''; if(/iPad|Tablet|PlayBook|Silk/i.test(ua)) return false;
+  if(/iPhone|iPod|Windows Phone|IEMobile|Android.+Mobile|Mobile.+Firefox|Opera Mini/i.test(ua)) return true;
+  return matchMedia('(pointer:coarse)').matches && Math.min(screen.width,screen.height)<600; }catch(e){ return false; } }
+async function pantallaMovil(){
+  const pid=QS.get('p')||(()=>{ try{ return localStorage.getItem('co_partida'); }catch(e){ return null; } })();
+  app.innerHTML='<div class="card movil"><div class="ico"><svg viewBox="0 0 64 40" width="96" height="60" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="34" height="24" rx="2.5"/><path d="M1 33h40"/><rect x="45" y="6" width="17" height="28" rx="3"/><path d="M52 30h3"/></svg></div><h2>Con el móvil no se puede jugar</h2>'+
+    '<p>El Carrusel Online solo funciona en un <b>ordenador</b> o una <b>tablet</b>. Entra desde uno de ellos con tu misma cuenta.</p>'+
+    '<p class="muted">Si ahora no tienes otro dispositivo a mano, tranquilo: no pierdes actitud por esta partida. Recuérdalo para la próxima vez.</p></div>';
+  const bs=document.getElementById('bSonido'); if(bs) bs.hidden=true;
+  if(pid&&CUENTA){ try{ await cr('movil',{p_partida:pid}); }catch(e){} }
+}
 window.LobbyOnline={ arranca:async function(){
   document.documentElement.classList.add('co-on');
   if(!CUENTA){ sinCuenta(); return; }
+  if(esMovil()){ await pantallaMovil(); return; }
   if(QS.get('solo')==='1'){ raiz.style.visibility='hidden'; try{ PCOnline.previa(10); }catch(e){} }   /* (19-nov 22:31) la cuenta atrás desde el primer instante */
   { const r0=await cr('lista'); if(r0&&r0.ok){ ST.abierto=r0.abierto; ST.tester=r0.tester; } }
   if(QS.get('solo')==='1'&&!cerrado()){
