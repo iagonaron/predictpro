@@ -1893,7 +1893,7 @@ function coRitmoUI(D,M){
     const slotEn=(x,y)=>{ const n=document.elementFromPoint(x,y); const sl=n&&n.closest&&n.closest('.co-slot'); return sl?slots.findIndex(q=>q.el===sl):-1; };
     b.addEventListener('pointerdown',e=>{ if(bloq) return; ini={x:e.clientX,y:e.clientY}; try{ b.setPointerCapture(e.pointerId); }catch(_){} });
     b.addEventListener('pointermove',e=>{ if(!ini||bloq) return;
-      if(!fan&&Math.hypot(e.clientX-ini.x,e.clientY-ini.y)>8){ fan=el('div','co-arrastre'); coMini(fan,cell,spec.compound); document.body.appendChild(fan); }
+      if(!fan&&Math.hypot(e.clientX-ini.x,e.clientY-ini.y)>8){ fan=el('div','co-arrastre'); coMini(fan,cell,spec.compound); fan.style.setProperty('--fig-h',getComputedStyle(wrap).getPropertyValue('--fig-h')||'90px'); document.body.appendChild(fan); fan.querySelectorAll('.co-mini').forEach(coRecorta); }   /* (20-nov, Iago) la figura que arrastras se ve entera (antes salía diminuta) */
       if(fan){ fan.style.left=e.clientX+'px'; fan.style.top=e.clientY+'px'; fan.style.visibility='hidden'; const k=slotEn(e.clientX,e.clientY); fan.style.visibility='';
         if(k!==sobre){ if(sobre>=0) slots[sobre].el.classList.remove('drop'); sobre=k; if(k>=0) slots[k].el.classList.add('drop'); } } });
     const fin=e=>{ if(!ini) return; const arr=!!fan; if(fan){ fan.remove(); fan=null; } if(sobre>=0) slots[sobre].el.classList.remove('drop');
