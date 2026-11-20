@@ -23,7 +23,7 @@ function cuentaId(){
 }
 const CUENTA=cuentaId();
 /* apertura (19-nov-2026, Iago): elemental desde el viernes 20-nov a las 17:30 (cambiado el 20-nov 08:40; antes 19:00); el servidor también lo impide. Tester/Protester siempre. */
-const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL='';
+const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL=/(^|\.)gp\.lmathome\.es$/i.test(location.hostname)?'':'https://gp.lmathome.es/piel/carrusel/carrusel-online-ge.mp4?v=4';   /* (20-nov-2026 12:58, Iago) el tráiler, con un botón discreto «Ver vídeo» */
   /* (20-nov-2026, Iago) Selector propio de DÍA y HORA para anunciar partidas (el mismo en ordenador, iPad y móvil):
      calendario del mes con los días pasados apagados y HOY marcado; la hora con DOS RUEDAS verticales como en el iPhone
      (horas 8–22 y minutos de 5 en 5), que se arrastran con el dedo o el ratón, giran con la rueda del ratón o se tocan.
@@ -275,7 +275,9 @@ function pintaLobby(){
   if(raiz.style.visibility!=='hidden'){ try{ PCOnline.fondoLobby(true); }catch(e){} }   /* con la cuenta atrás de la individual a la vista, no se toca */
   const act=document.activeElement, enInput=act&&act.id==='hora', valorHora=enInput?act.value:null;
   const lista=ST.lista.map(p=>{
-    const abierta=p.lobby_abierto, mia=p.soy_creador;
+    const abierta=p.lobby_abierto, mia=p.soy_anfitrion===true||(p.soy_anfitrion===undefined&&p.soy_creador&&!p.anfitrion_cancelo), cancelada=p.soy_creador&&p.anfitrion_cancelo&&!mia;
+    /* (20-nov-2026 12:55, Iago) el anfitrión canceló y tú estás apuntado: aviso con «!» y puedes heredarla (tus minutos ×1,5) */
+    const sinAnf=p.yo==='si'&&p.anfitrion_cancelo&&!p.anfitrion&&!p.soy_creador&&!abierta;
     const quien=mia?I.cor+'Tu partida':esc(p.creador)+' <span class="muted">('+esc(grupoTxt(p.grupo))+')</span>';
     /* (19-nov, Iago) cada monigote con el nombre e inicial del primer apellido, siempre a la vista */
     const nom=p.confirmados||[], mons=n=>'<span class="mon">'+Array.from({length:Math.min(n,8)},(_,i)=>'<span class="m">'+I.per+(nom[i]?'<b>'+esc(nom[i])+'</b>':'')+'</span>').join('')+(n>8?'<i>+'+(n-8)+'</i>':'')+'</span>';
@@ -287,12 +289,15 @@ function pintaLobby(){
     const resp=p.yo;
     const botones=abierta
       ? '<button class="btn pri" data-a="entrar" data-id="'+p.id+'">Unirme</button>'
-      : mia ? (p.anfitrion_cancelo?'<span class="muted">La cancelaste</span>':'<button class="btn ko" data-a="cancelar" data-id="'+p.id+'">'+I.x+'Cancelar partida</button>')
+      : cancelada ? '<span class="muted">La cancelaste</span>'
+      : mia ? '<button class="btn ko" data-a="cancelar" data-id="'+p.id+'">'+I.x+'Cancelar partida</button>'
+      : sinAnf ? '<button class="btn pri" data-a="heredar" data-id="'+p.id+'">'+I.cal+'Ser el anfitrión</button><button class="btn peq" data-a="no" data-id="'+p.id+'" title="Quitarme de la partida">'+I.x+'</button>'
       : '<button class="btn pri'+(resp==='si'?' sel':'')+'" data-a="si" data-id="'+p.id+'">'+(resp==='si'?I.ok+'Me apunto':'Me apunto')+'</button>'+
         (resp==='quiza'?'':'<button class="btn peq" data-a="'+(resp==='si'?'no':'quiza')+'" data-id="'+p.id+'" title="'+(resp==='si'?'Quitarme de la partida':'Marcar como visto')+'">'+I.x+'</button>');
     return '<div class="partida'+(mia?' mia':'')+'"><div class="info"><div class="quien">'+quien+cancel+'</div>'+
       '<div class="cuando">'+cabecera+' · <span data-t="'+p.programada+'">'+cuando(p.programada)+'</span></div>'+
-      '<div class="cuando">'+(mia?confTxt:(conf?mons(conf):'nadie apuntado todavía'))+(p.dentro>0?' · '+p.dentro+' en el lobby':'')+'</div></div>'+
+      '<div class="cuando">'+(mia?confTxt:(conf?mons(conf):'nadie apuntado todavía'))+(p.dentro>0?' · '+p.dentro+' en el lobby':'')+'</div>'+
+      (sinAnf?'<div class="alerta"><span class="ex">!</span><span><b>El anfitrión ha cancelado.</b> Si heredas tú la partida y te haces anfitrión, los minutos que practiques contarán ×1,5: es el premio por mantenerla viva.</span></div>':'')+'</div>'+
       '<div class="row">'+botones+'</div></div>';
   }).join('');
   app.innerHTML=
@@ -303,9 +308,10 @@ function pintaLobby(){
     '<div class="cols"><div class="card"><h2>Anunciar partida</h2><p class="muted" style="margin-top:0">Elige día y hora. <b style="color:#fff">Serás el anfitrión</b><span class="meg">'+I.cal+'</span></p><div class="row"><button type="button" class="fh'+(ST.hora?'':' vacio')+'" id="fhBtn"><input type="hidden" id="hora" value="'+esc(ST.hora||'')+'"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="ph">Elige día y hora</span><span class="vl">'+esc(lmfTexto(ST.hora||''))+'</span></button><button class="btn pri" id="bAnunciar"'+(ST.hora?'':' disabled')+'>'+I.cal+'Anunciar</button></div></div>'+
     '<div class="card"><h2>Partida individual</h2><p class="muted" style="margin-top:0">Empieza una partida tú solo, ahora mismo.</p><button class="btn" id="bAhora">'+I.play+'Jugar ahora</button></div></div>'+
     '<div class="card"><h2>Partidas anunciadas</h2>'+(lista||'<p class="muted" style="margin:6px 0">Ahora mismo no hay ninguna. ¡Anuncia tú la primera!</p>')+'</div>')+
-    (ST.solo||cerrado()?'':'<p class="muted" style="font-size:13px">Cada partida dura unos 10 minutos y tiene seis partes, en orden sorpresa. Si la terminas, su tiempo se suma a tu actitud (mismos topes de siempre).</p>');
+    (ST.solo||cerrado()?'':'<p class="muted" style="font-size:13px">Cada partida dura unos 10 minutos y tiene seis partes, en orden sorpresa. Si la terminas, su tiempo se suma a tu actitud (mismos topes de siempre).'+(VIDEO_URL?' <button type="button" class="btn peq vvb" id="bVid">'+I.play+(ST.vid?'Ocultar vídeo':'Ver vídeo')+'</button>':'')+'</p>'+(ST.vid&&VIDEO_URL?'<div class="card">'+videoHTML(VIDEO_URL)+'</div>':''));
   if(enInput){ const h=document.getElementById('hora'); if(h&&valorHora) h.value=valorHora; }
   enlaza();
+  const bv=document.getElementById('bVid'); if(bv) bv.onclick=()=>{ ST.vid=!ST.vid; pintaLobby(); if(ST.vid) setTimeout(()=>{ const v=document.querySelector('#co .vid'); if(v) v.scrollIntoView({behavior:'smooth',block:'center'}); },60); };
 }
 function minHora(){ const d=new Date(Date.now()+11*6e4); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16); }
 function pintaTiempos(){ /* los textos de «cuándo» no cambian cada segundo; reservado */ }
@@ -338,6 +344,10 @@ function enlaza(){
       const pen=tarde(P)&&(P.apuntados||0)>1;
       if(!await confirma(pen?'Cancelar ahora cuenta como no asistir':'¿Cancelar tu partida?',pen?'Hay gente apuntada y faltan menos de 5 minutos: perderás 0,5 de actitud. ¿Cancelar igualmente?':(tarde(P)?'No pierdes actitud porque no hay nadie apuntado.':'No pierdes actitud porque faltan más de 5 minutos.'),'Sí, cancelar','No, la mantengo')) return;
       bt.disabled=true; const r=await cr('cancelar',{p_partida:id}); ST.aviso=r&&r.ok?'Has cancelado la partida.':'No he podido cancelar la partida.'; await refrescaLista(); pintaLobby(); return;
+    }
+    if(a==='heredar'&&P){   /* (20-nov, Iago) heredar la partida cuyo anfitrión canceló: minutos ×1,5 */
+      if(!await confirma('¿Quieres ser el anfitrión?','La partida será tuya: la empiezas tú. Los minutos que practiques en ella contarán ×1,5. Si luego no asistes, perderás 0,5 de actitud.','Sí, seré el anfitrión')) return;
+      bt.disabled=true; const r=await cr('heredar',{p_partida:id}); ST.aviso=r&&r.ok?'Ahora eres el anfitrión. Tus minutos en esta partida contarán ×1,5.':'No he podido hacerte anfitrión (puede que otro se haya adelantado).'; await refrescaLista(); pintaLobby(); return;
     }
     bt.disabled=true;
     if(a==='entrar'){ audioListo(); const r=await cr('entrar',{p_partida:id}); if(r&&r.ok) await entraEnSala(id); else { ST.aviso='No he podido entrar: la partida ya no está abierta.'; await refrescaLista(); pintaLobby(); } return; }
@@ -372,7 +382,7 @@ function pintaSala(){
   const chipsP=pend.map(j=>'<span class="chip pend">'+esc(j.nombre)+' · '+'apuntado'+'</span>').join('');
   let banner='';
   if(p.anfitrion_cancelo && !p.anfitrion){
-    banner='<div class="banner ko"><b>El anfitrión ha cancelado la partida</b><br>Se puede jugar igualmente. <button class="btn pri" id="bHeredar" style="margin-left:6px">¿Quieres ser el anfitrión?</button> <span class="muted">Podrás empezar cuando quieras; si no, empezará sola.</span></div>';
+    banner='<div class="banner ko"><b>El anfitrión ha cancelado la partida</b><br>Se puede jugar igualmente. <button class="btn pri" id="bHeredar" style="margin-left:6px">¿Quieres ser el anfitrión?</button> <span class="muted">Si lo heredas, tus minutos en esta partida contarán ×1,5: es el premio por mantenerla viva. Podrás empezar cuando quieras; si no, empezará sola.</span></div>';
   } else if(!hostDentro && p.anfitrion && new Date(p.programada).getTime()<=sNow()){
     banner='<div class="banner ko"><b>El anfitrión todavía no ha llegado</b><br>La partida empieza sola en <span id="cuentaAuto" class="grande" style="font-size:26px"></span></div>';
   }

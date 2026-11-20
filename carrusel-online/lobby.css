@@ -176,6 +176,12 @@ html.co-on,html.co-on body{overflow:hidden}
 #co button.fh.vacio .ph{display:inline}
 #co button.fh.vacio .vl{display:none}
 #co button.fh:hover{background:rgba(255,210,63,.1)}
+/* (20-nov-2026 12:55, Iago) el anfitrión canceló: aviso con «!» y «Ser el anfitrión» (minutos ×1,5) */
+#co .partida .alerta{display:flex;gap:9px;align-items:flex-start;margin-top:8px;padding:9px 11px;border-radius:10px;background:rgba(255,154,60,.14);border:1.5px solid #ff9a3c;font-size:14px;line-height:1.4}
+#co .partida .alerta .ex{flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:#ff9a3c;color:#1b1406;font-weight:900;font-size:14px}
+/* (20-nov-2026, Iago) botón discreto «Ver vídeo» */
+#co .btn.peq.vvb{width:auto;height:32px;padding:0 12px;gap:6px;margin-left:8px;font-size:13px;vertical-align:middle;opacity:.9}
+#co .btn.peq.vvb svg{width:14px;height:14px}
 
 #co .logo .tt .pro{font-size:30px;align-self:center;font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.05em;margin:0 .22em 0 .18em;background:linear-gradient(180deg,#fff3c2,#f5d061 45%,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:480px){#co .logo .tt .pro{font-size:17px}}
