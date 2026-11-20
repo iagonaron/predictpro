@@ -505,45 +505,16 @@ function encajaSala(){
 addEventListener('resize',()=>{ try{ encajaSala(); }catch(e){} });
 /* ---- editor del avatar: se abre tocando tu pegatina ---- */
 let ED=null;
-function abreEd(j){
-  ED={cfg:Object.assign({peloColor:'#1f1a17',gorroColor:'#111827',cara:'sonrisa',pelo:'ninguno',gorro:'ninguno',gafas:false},avCfg(j)),ins:(j&&AV_INSTR[j.ins])||null};
-  let w=document.getElementById('coEd');
-  if(!w){ w=document.createElement('div'); w.id='coEd'; document.body.appendChild(w);
-    w.innerHTML='<div class="caja" role="dialog" aria-label="Personalizar mi avatar"><div class="prev"><div id="coEdPrev"></div><b>Tú</b><span class="mu">Tu instrumento sale solo, de tu ficha.</span></div><div>'+
-      '<div class="paso"><h3>1 · Color <i>todo lo demás se pinta de este color</i></h3><div class="ops" id="coEdCol"></div></div>'+
-      '<div class="paso"><h3>2 · Cara y gafas</h3><div class="ops" id="coEdCara"></div><div class="ops" id="coEdGaf" style="margin-top:6px"></div></div>'+
-      '<div class="paso"><h3>3 · Peinado</h3><div class="ops" id="coEdPelo"></div></div>'+
-      '<div class="paso"><h3>4 · Color del pelo <i>tu mismo peinado, en cada color</i></h3><div class="ops" id="coEdPc"></div></div>'+
-      '<div class="paso"><h3>5 · Gorro</h3><div class="ops" id="coEdGor"></div></div>'+
-      '<div class="paso"><h3>6 · Color del gorro</h3><div class="ops" id="coEdGc"></div></div></div>'+
-      '<div class="pie"><button type="button" class="b" id="coEdNo">Cancelar</button><button type="button" class="b pri" id="coEdSi">Guardar mi avatar</button></div></div>';
-    w.querySelector('#coEdNo').onclick=()=>{ w.hidden=true; };
-    w.addEventListener('click',ev=>{ if(ev.target===w) w.hidden=true; });
-    w.querySelector('#coEdSi').onclick=async()=>{ const b=w.querySelector('#coEdSi'); b.disabled=true;
-      const cfg={color:ED.cfg.color,cara:ED.cfg.cara,pelo:ED.cfg.pelo,peloColor:ED.cfg.peloColor,gorro:ED.cfg.gorro,gorroColor:ED.cfg.gorroColor,gafas:!!ED.cfg.gafas};
-      let r=null; try{ r=await cr('avatar_guardar',{p_cfg:cfg}); }catch(e){} b.disabled=false;
-      if(r&&r.ok){ ST.miAv=r.cfg; window.__coMiAv=r.cfg; try{ localStorage.setItem('co_avatar',JSON.stringify(r.cfg)); }catch(e){} w.hidden=true; ST.salaFirma=''; pintaSala(); toast('<b>Avatar guardado: así saldrás en todas las partidas</b>'); }
-      else toast('<b>No he podido guardarlo. Prueba otra vez.</b>'); };
-  }
-  pintaEd(); w.hidden=false;
-}
+/* (20-nov 23:10, Iago «Monta los avatares») el editor nuevo (avatares v3): Color, Fondo, Cara base, Peinado, Gorro, Gafas, Ropa
+   y Complementos (uno de cara y uno de cuello); cada opción se ve con el avatar completo */
+function abreEd(j,alCerrar){
+  AV3.editor({cfg:avCfg(j), nombre:(j&&j.nombre)||'', ins:(j&&AV_INSTR[j.ins])||null, onCerrar:alCerrar,
+    onGuardar:async cfg=>{ let r=null; try{ r=await cr('avatar_guardar',{p_cfg:cfg}); }catch(e){}
+      if(r&&r.ok){ ST.miAv=r.cfg; window.__coMiAv=r.cfg; try{ localStorage.setItem('co_avatar',JSON.stringify(r.cfg)); }catch(e){} ST.salaFirma=''; try{ pintaSala(); }catch(e){} toast('<b>Avatar guardado: así saldrás en todas las partidas</b>'); return true; }
+      toast('<b>No he podido guardarlo. Prueba otra vez.</b>'); return false; } }); }
 /* (20-nov 22:10, Iago) en la cuenta atrás de la partida individual: «Personalizar» abre este mismo editor; la cuenta atrás
    se para mientras está abierto y sigue al cerrarlo (guardes o no) */
-window.__coEdAv=function(j,alCerrar){ abreEd(j); const w=document.getElementById('coEd'); if(!w) return;
-  const mo=new MutationObserver(()=>{ if(w.hidden){ mo.disconnect(); try{ alCerrar&&alCerrar(); }catch(e){} } }); mo.observe(w,{attributes:true,attributeFilter:['hidden']}); };
-function pintaEd(){
-  const w=document.getElementById('coEd'), q=id=>w.querySelector('#'+id), c=ED.cfg, A=o=>avatarSVG(Object.assign({},c,{instr:null},o));
-  const op=(id,items,cur,fn)=>{ const el=q(id); el.innerHTML=items.map((it,i)=>'<button type="button" class="op'+(it.k===cur?' sel':'')+'" data-i="'+i+'" title="'+esc(it.t)+'" aria-label="'+esc(it.t)+'">'+it.h+'</button>').join('');
-    el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ fn(items[+b.dataset.i].k); pintaEd(); }); };
-  q('coEdPrev').innerHTML=avatarSVG(Object.assign({},c,{instr:ED.ins}));
-  op('coEdCol',Object.entries(AV_COLS).map(([n,k])=>({k,t:n,h:avatarSVG({color:k,cara:'sonrisa',pelo:'ninguno'})})),c.color,k=>{ c.color=k; });
-  op('coEdCara',AV_CARAS.map(([k,t])=>({k,t,h:A({cara:k,gafas:false})})),c.gafas?null:c.cara,k=>{ c.cara=k; c.gafas=false; });
-  op('coEdGaf',[{k:'sin',t:'Sin gafas',h:A({gafas:false})},{k:'con',t:'Gafas de sol',h:A({gafas:true})}],c.gafas?'con':'sin',k=>{ c.gafas=k==='con'; });
-  op('coEdPelo',AV_PEINADOS.map(([k,t])=>({k,t,h:A({pelo:k,gorro:'ninguno'})})),c.pelo,k=>{ c.pelo=k; });
-  op('coEdPc',Object.entries(AV_PELO).map(([n,k])=>({k,t:n,h:A({peloColor:k,gorro:'ninguno',pelo:c.pelo==='ninguno'?'corto':c.pelo})})),c.peloColor,k=>{ c.peloColor=k; if(c.pelo==='ninguno') c.pelo='corto'; });
-  op('coEdGor',AV_GORROS.map(([k,t])=>({k,t,h:A({gorro:k})})),c.gorro,k=>{ c.gorro=k; });
-  op('coEdGc',Object.entries(AV_GORRO).map(([n,k])=>({k,t:n,h:A({gorroColor:k,gorro:c.gorro==='ninguno'?'gorra':c.gorro})})),c.gorro==='ninguno'?null:c.gorroColor,k=>{ c.gorroColor=k; if(c.gorro==='ninguno') c.gorro='gorra'; });
-}
+window.__coEdAv=function(j,alCerrar){ abreEd(j,alCerrar); };
 function toast(html){ const d=document.createElement('div'); d.className='co-toast'; d.innerHTML=html; raiz.appendChild(d); setTimeout(()=>d.remove(),2800); }
 
 /* (20-nov-2026 19:10, Iago) CHAT EXTRAORDINARIO · prueba. Solo existe si el profe (cuenta Tester) lo abre en una partida.
