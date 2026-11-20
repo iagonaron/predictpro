@@ -772,6 +772,41 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 .co-rx-bar .fr button.f{width:auto;height:46px;padding:0 16px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);font:800 19px/1 "Helvetica Neue",Arial,sans-serif;color:#fff;white-space:nowrap}
 .co-rx-bar .fr button.f:hover{border-color:#ffd23f;background:rgba(255,210,63,.2)}
 
+/* (20-nov-2026 22:15, Iago) clasificación: aprovecha la vertical, caras grandes y TODOS a la vista (dos columnas si sois más de 7).
+   El alto de cada fila (--fh), el tamaño de la cara (--av) y de la letra (--fs) los calcula coRanking según cuántos haya. */
+.co-rank,.pcg-ej.arriba .co-rank{top:228px;height:584px;padding:14px 60px 12px;justify-content:flex-start}
+.co-rank .lista{display:grid;grid-auto-rows:var(--fh,80px);row-gap:8px;flex:1 1 auto;align-content:center}
+.co-rank.dos .lista{grid-auto-flow:column;grid-template-columns:1fr 1fr;column-gap:18px}
+.co-rank .fila,.co-rank:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila,.co-rank:has(.fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila{margin-top:0!important;padding:0 18px!important;height:var(--fh,80px);font-size:var(--fs,33px)!important;border-radius:14px!important;grid-template-columns:62px calc(var(--av,64px) + 10px) 1fr 150px 120px}
+.co-rank .fila .pos,.co-rank:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila .pos,.co-rank:has(.fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila .pos{font-size:calc(var(--fs,33px) + 4px)!important}
+.co-rank .co-avr .av,.co-rank:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .co-avr .av{width:var(--av,64px)!important;height:var(--av,64px)!important}
+.co-rank .fila .nom i,.co-rank:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila .nom i,.co-rank:has(.fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila .nom i{font-size:calc(var(--fs,33px) * .6)!important}
+.co-rank .fila .del,.co-rank:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila .del,.co-rank:has(.fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila .del{font-size:calc(var(--fs,33px) * .85)!important}
+.co-rank.dos .fila,.co-rank.dos:has(.lista .fila ~ .fila ~ .fila ~ .fila ~ .fila ~ .fila) .fila{grid-template-columns:44px calc(var(--av,40px) + 8px) 1fr 66px 84px;padding:0 12px!important}
+.co-rank.dos .fila .nom i{display:none}
+.co-rank .puntos-susp{align-self:center}
+.co-rank .pie-rk{flex:none;margin-top:10px;text-align:center}
+.co-rank .pie-rk .sig{font:700 29px/1.2 "Helvetica Neue",Arial,sans-serif;color:#fff}
+.co-rank .pie-rk .consejo{margin-top:4px;font:600 19px/1.3 "Helvetica Neue",Arial,sans-serif;color:rgba(255,255,255,.66)}
+
+/* (20-nov 22:15, Iago) cuenta atrás de la individual: tu avatar y los compositores que se suman, uno a uno; «Personalizar» bajo el tuyo */
+.pcg-prep .co-llegan{margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.pcg-prep .co-llegan .lb{font:700 22px/1.2 "Helvetica Neue",Arial,sans-serif;color:rgba(255,255,255,.8)}
+.pcg-prep .co-llegan .fichas{display:flex;gap:26px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1300px}
+.pcg-prep .co-llegan .ll{display:flex;flex-direction:column;align-items:center;gap:8px;width:150px;opacity:0;transform:translateY(16px) scale(.7);transition:opacity .4s,transform .45s cubic-bezier(.2,.8,.3,1.5)}
+.pcg-prep .co-llegan .ll.on{opacity:1;transform:none}
+.pcg-prep .co-llegan .ll .co-avr .av{width:112px;height:112px}
+.pcg-prep .co-llegan .ll.yo .co-avr .av{width:132px;height:132px}
+.pcg-prep .co-llegan .ll b{font:800 21px/1.15 "Helvetica Neue",Arial,sans-serif;color:#fff;text-align:center;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcg-prep .co-llegan .ll.yo b{color:#ffd23f}
+.pcg-prep .co-llegan .co-pers{margin-top:2px;border:0;border-radius:10px;background:#fff;color:#14112b;font:800 17px/1 "Helvetica Neue",Arial,sans-serif;padding:9px 13px;cursor:pointer;white-space:nowrap}
+.pcg-prep .co-llegan .co-pers:hover{filter:brightness(.92)}
+
+/* (20-nov 22:15, Iago) «Adelantar» (solo en la individual): junto a «Pausa»; mientras salta, nada se mueve a la vista */
+#pcg.online:not(.co-solo) .pcg-ctrl #coBAdel{display:none}
+#coBAdel[hidden]{display:none!important}
+#pcg.co-rush #pcgStage{visibility:hidden}
+
 /* ===== CARRUSEL PRO ONLINE (grado profesional) · 20-nov-2026 ===== */
 /* «PRO» en mayúsculas y dorado (Iago, 19-nov 23:11) */
 .pcg-marca .pro,.pcg-titulo .pro{font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.06em;

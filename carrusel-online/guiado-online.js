@@ -459,7 +459,7 @@ function hasta(t){ return new Promise((res,rej)=>{ COLA.push({t:t,res:res,rej:re
 function espera(seg){ return hasta(ahora()+S(seg)); }
 function tick(){
   if(!AC) return;
-  const now=AC.currentTime-(AC.outputLatency||0)+0.02;
+  const now=(CO_RUSH_T!=null)?CO_RUSH_T+0.01:AC.currentTime-(AC.outputLatency||0)+0.02;   /* (20-nov 22:15) «Adelantar»: se recorre al instante lo que quedaba */
   if(COLA.length){
     const lista=COLA; COLA=[];
     const quedan=[];
@@ -490,7 +490,7 @@ async function pausa(on){
 async function pianoListo(){
   const ep=EPOCA, t0=performance.now();
   if(PIANO_EST==='nada') cargarPiano();
-  while(PIANO_EST==='cargando' && performance.now()-t0<12000) await new Promise(r=>setTimeout(r,150));
+  while(PIANO_EST==='cargando' && CO_RUSH_T==null && performance.now()-t0<12000) await new Promise(r=>setTimeout(r,150));   /* (20-nov 22:25) al adelantar no se espera al piano */
   if(ep!==EPOCA) throw SALTO;
 }
 
@@ -1925,6 +1925,7 @@ function coRecoloca(t){ try{ const c=ac(), out=FX||c.destination;
 /* (19-nov, Iago) online: la solución se muestra, suena y se pasa enseguida a la clasificación (en clase hay tiempo de libreta; aquí no) */
 /* (19-nov 20:57, Iago) online: 4 s para terminar (se puede cambiar) + 5 s de velo (bloqueado): 9 s en vez de 12+5 */
 async function coFinEjercicio(sub,pieTexto,soloVelo){
+  if(CO&&CO.rush) coFinRush();   /* (20-nov 22:15) «Adelantar»: se llega aquí, a los «Últimos segundos» */
   if(!soloVelo){ sonidoUI('escribe'); await escribir(9,'Termina de completar el ejercicio',sub||'',pieTexto,null,5); }
   /* (19-nov 22:26, Iago) los 5 s finales, SIN oscurecer y sin bloquear: «Solución en 5…1» abajo y se puede seguir cambiando */
   const t0=ahora();
@@ -1984,19 +1985,28 @@ async function coRanking(i,finOff){ const kT=i; i=coPos(i);
   cartel('Clasificación','Tras el '+(['dictado rítmico','dictado melódico','ejercicio de TonCom','ejercicio armónico','ejercicio de cadencias','ejercicio de modos'][kT]));
   requestAnimationFrame(()=>c.classList.add('on')); ESC.hoja.classList.add('co-rk');   /* la hoja vuelve a su tamaño normal (la de cadencias crece) */
   const sig=i<CO.ord.length-1?'Siguiente: '+CO_NOM[CO.ord[i+1]].toUpperCase():'Resultado final';
-  const reloj=setInterval(()=>{ const r=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000));
-    ESC.pie.innerHTML='<div class="pcg-reloj-t" style="font-size:31px;font-weight:700">'+sig+' en '+r+' s</div>'; },500);
-  const N=6, nuevo=coRankDatos(i), antes=i>0?coRankDatos(i-1):[], yoN=nuevo.find(x=>x.yo);
+  /* (20-nov 22:15, Iago) «Siguiente… en N s» y el consejo, dentro del recuadro: así la lista aprovecha toda la altura */
+  const reloj=setInterval(()=>{ const r=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000)), q=c.querySelector('.sig');
+    if(q) q.textContent=sig+' en '+r+' s'; else ESC.pie.innerHTML='<div class="pcg-reloj-t" style="font-size:31px;font-weight:700">'+sig+' en '+r+' s</div>'; },500); ESC.pie.innerHTML='';
+  /* (20-nov 22:15, Iago) se ven TODOS (hasta 20; si sois más, los 19 primeros y tú) */
+  const nuevo=coRankDatos(i), N=nuevo.length<=20?20:19, antes=i>0?coRankDatos(i-1):[], yoN=nuevo.find(x=>x.yo);
   const ver=nuevo.slice(0,N); if(yoN&&ver.indexOf(yoN)<0) ver.push(yoN);
   if(!ver.length){ c.innerHTML='<div class="vacio">Esperando las respuestas…</div>'; }
   else {
     const pa={}, posA={}; antes.forEach(x=>{ pa[x.id]=x.pts; posA[x.id]=x.pos; });
     const ini=ver.map(x=>({f:x,p0:pa[x.id]||0})).sort((a,b)=>b.p0-a.p0||(posA[a.f.id]||99)-(posA[b.f.id]||99)||String(a.f.nombre).localeCompare(String(b.f.nombre)));
-    c.innerHTML='<div class="cab"><span>Puesto</span><span>Jugador</span><span>Este ejercicio</span><span>Total</span></div><div class="lista"></div>';
+    c.innerHTML='<div class="lista"></div><div class="pie-rk"><div class="sig"></div><div class="consejo">💡 Lo más importante es acertar. Si empatas a puntos con alguien, queda delante quien contestó antes.</div></div>';
     const L=$('.lista',c), filas={};
     const nTot=nuevo.length;
     ini.forEach((q,k)=>{ const f=q.f, d=el('div','fila'+(f.yo?' yo':''),'<span class="pos">'+(k+1)+'</span><span class="co-avr" data-avid="'+coEsc(f.id)+'">'+coAvHTML(f,posA[f.id]?avatarAnimo(posA[f.id],null,nTot):{cara:'sonrisa',gafas:false})+'</span><span class="nom">'+coEsc(f.nombre)+' <i>'+coEsc(coGrupo(f.grupo))+'</i></span><span class="del">–</span><span class="pts">'+q.p0+'</span>');
       L.appendChild(d); filas[f.id]={d,f,p0:q.p0}; });
+    /* (20-nov 22:15, Iago) caras grandes: el alto de cada fila sale del sitio que hay; con más de 7, en dos columnas */
+    { const sg=c.querySelector('.sig'); if(sg) sg.textContent=sig+' en '+Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000))+' s';
+      const nf=ver.length+((yoN&&yoN.pos>N)?1:0), dos=nf>7, R=dos?Math.ceil(nf/2):nf, pie=c.querySelector('.pie-rk');
+      c.classList.toggle('dos',dos); const disp=c.clientHeight-26-(pie?pie.offsetHeight+10:0);
+      const fh=Math.max(34,Math.min(dos?92:96,Math.floor((disp-8*(R-1))/R)));
+      c.style.setProperty('--fh',fh+'px'); c.style.setProperty('--av',Math.round(fh*0.86)+'px'); c.style.setProperty('--fs',Math.max(18,Math.min(34,Math.round(fh*0.38)))+'px');
+      L.style.gridTemplateRows=dos?'repeat('+R+',var(--fh))':''; }
     await new Promise(r=>setTimeout(r,900));
     /* 1) los puntos suben contando */
     const dur=1.9, t0=performance.now(), maxD=Math.max(1,...ver.map(f=>f.delta||0)); let ult=-1;
@@ -2007,11 +2017,11 @@ async function coRanking(i,finOff){ const kT=i; i=coPos(i);
     coBlip(1046,ahora()+0.02,0.25,0.07,'sine');
     await new Promise(r=>setTimeout(r,500));
     /* 2) se reordenan deslizándose (FLIP) */
-    const y0={}; Object.values(filas).forEach(o=>{ y0[o.f.id]=o.d.getBoundingClientRect().top; });
+    const y0={}, x0={}; Object.values(filas).forEach(o=>{ const q=o.d.getBoundingClientRect(); y0[o.f.id]=q.top; x0[o.f.id]=q.left; });
     const orden=ver.slice().sort((a,b)=>a.pos-b.pos);
     const susp=yoN&&yoN.pos>N; orden.forEach((f,k)=>{ if(susp&&f.yo) L.appendChild(el('div','puntos-susp','…')); const o=filas[f.id]; L.appendChild(o.d); o.d.querySelector('.pos').textContent=f.pos; });
-    let mov=false; Object.values(filas).forEach(o=>{ const dy=y0[o.f.id]-o.d.getBoundingClientRect().top; if(Math.abs(dy)>2){ mov=true;
-      o.d.style.transition='none'; o.d.style.transform='translateY('+dy+'px)'; o.d.getBoundingClientRect(); o.d.style.transition='transform 1.1s cubic-bezier(.25,.8,.25,1)'; o.d.style.transform=''; } });
+    let mov=false; Object.values(filas).forEach(o=>{ const q=o.d.getBoundingClientRect(), dy=y0[o.f.id]-q.top, dx=x0[o.f.id]-q.left; if(Math.abs(dy)>2||Math.abs(dx)>2){ mov=true;
+      o.d.style.transition='none'; o.d.style.transform='translate('+dx/K+'px,'+dy/K+'px)'; o.d.getBoundingClientRect(); o.d.style.transition='transform 1.1s cubic-bezier(.25,.8,.25,1)'; o.d.style.transform=''; } });
     if(mov){ coRecoloca(ahora()+0.01); }
     /* caras: el que sube se alegra, el que baja llora; los demás, la cara de su sitio (1.º con gafas de sol) */
     orden.forEach(f=>{ const o=filas[f.id], a=posA[f.id]||null, av=o.d.querySelector('.co-avr'); if(av) av.innerHTML=coAvHTML(f,avatarAnimo(f.pos,a,nTot));
@@ -2681,10 +2691,21 @@ async function coPrep(finOff){
     p.innerHTML='<div class="t">El carrusel empezará en…</div><div class="reloj">10</div><div class="sub">Sube el volumen: vas a necesitar el oído</div>';
     STAGE.appendChild(p); }
   p.classList.remove('co-previa'); const r=$('.reloj',p);
-  if(CO.bots&&CO.bots.length&&!p.querySelector('.co-bots')){ const nb=CO.bots.map(b=>b.nombre), lst=nb.length<2?nb[0]:nb.slice(0,-1).join(', ')+' y '+nb[nb.length-1];
-    const d=el('div','co-bots','<span>🤖</span><span>'+(nb.length===1?'Se suma 1 bot: ':'Se suman '+nb.length+' bots: ')+nb.map((n,k)=>'<b class="bn">'+(k&&k===nb.length-1?'y ':'')+coEsc(n)+(k<nb.length-2?',':'')+'</b>').join(' ')+'</span>');
-    p.appendChild(d); d.querySelectorAll('.bn').forEach((b,k)=>setTimeout(()=>b.classList.add('on'),600+k*900)); }   /* (20-nov 18:14 / 18:35) se van sumando uno a uno */
-  const tic=()=>{ const s=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000)); r.textContent=s<60?String(s):Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };   /* (20-nov 18:35) 10, 9, 8… */
+  /* (20-nov 22:15, Iago) en vez de la lista de nombres: tu avatar y los de los compositores (bots), que van llegando uno a uno;
+     en la individual, «Personalizar» bajo el tuyo (la cuenta atrás se para mientras te personalizas) */
+  if(!p.querySelector('.co-llegan')){ const js=((CO.est&&CO.est.jugadores)||[]).filter(j=>j.dentro), yoJ=js.find(j=>j.yo)||null;
+    const gente=(yoJ?[yoJ]:[]).concat(js.length<=6?js.filter(j=>!j.yo):[]), bots=CO.bots||[];
+    const ficha=(f,cls)=>'<div class="ll '+cls+'"><span class="co-avr" data-avid="'+coEsc(f.id)+'">'+coAvHTML(f,{cara:'sonrisa'})+'</span><b>'+coEsc(f.yo?'Tú':f.nombre)+'</b></div>';
+    const d=el('div','co-llegan',(bots.length?'<div class="lb">🤖 '+(bots.length===1?'Se suma 1 compositor':'Se suman '+bots.length+' compositores')+'</div>':'')+
+      '<div class="fichas">'+gente.map(f=>ficha(f,'on'+(f.yo?' yo':''))).join('')+bots.map(f=>ficha(f,'bot')).join('')+'</div>');
+    p.appendChild(d);
+    d.querySelectorAll('.ll.bot').forEach((b,k)=>setTimeout(()=>{ b.classList.add('on'); try{ coBlip(587+k*98,ahora()+0.01,0.14,0.05,'triangle'); }catch(e){} },900+k*1300));
+    const mi=d.querySelector('.ll.yo');
+    if(CO.solo&&mi&&yoJ&&!yoJ.profe&&window.__coEdAv){ const bt=el('button','co-pers','✏️ Personalizar'); bt.type='button'; mi.appendChild(bt);
+      bt.onclick=()=>{ if(!CO||CO.rush) return; if(!CO.pausaT) coPausa();
+        window.__coEdAv(yoJ,()=>{ const a=mi.querySelector('.co-avr'); if(a) a.innerHTML=coAvHTML(yoJ,{cara:'sonrisa'}); if(CO&&CO.pausaT) coPausa(); }); }; } }
+  const tic=()=>{ if(CO.pausaT) return;   /* (20-nov 22:25) en pausa (p. ej. personalizándote), el número se queda quieto */
+    const s=Math.max(0,Math.ceil((CO.inicio+finOff*1000-CO.now())/1000)); r.textContent=s<60?String(s):Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };   /* (20-nov 18:35) 10, 9, 8… */
   tic(); const iv=setInterval(tic,200);   /* (19-nov 22:31, Iago) sin el «0:00» de un instante */
   /* (19-nov, Iago) la música de la previa, como en clase: suena el final de su crescendo, a tempo con el reloj */
   let mus=true;
@@ -2770,9 +2791,43 @@ function coDesbloquea(){
 function coVigilaAudio(){
   let capa=null;
   return setInterval(()=>{ let mudo=true; try{ mudo=ac().state!=='running'; }catch(e){}
-    if(mudo&&CO&&!capa&&!CO.pausaT){ capa=el('div','co-tapa','<div><b>Toca la pantalla</b><span>para activar el sonido y seguir jugando</span></div>');
+    if(mudo&&CO&&!capa&&!CO.pausaT&&!CO.rush){ capa=el('div','co-tapa','<div><b>Toca la pantalla</b><span>para activar el sonido y seguir jugando</span></div>');
       document.body.appendChild(capa); }
-    if((!mudo||(CO&&CO.pausaT))&&capa){ capa.remove(); capa=null; } },400);
+    if((!mudo||(CO&&(CO.pausaT||CO.rush)))&&capa){ capa.remove(); capa=null; } },400);
+}
+/* (20-nov-2026 22:15, Iago) «Adelantar» en la partida individual: «hay gente que lo ha puesto todo a la primera y le sobra la
+   repetición». Salta lo que queda del ejercicio hasta los «Últimos segundos» (5 s, aún se puede cambiar) y la solución.
+   Cómo: se calla todo, se para el audio y se recorre al instante lo que quedaba (sin sonar); al llegar, el reloj de la partida
+   se adelanta esos segundos (también en el servidor: suite_cr_adelanta, que NO los cuenta como tiempo de actitud). */
+var CO_RUSH_T=null; const CO_SRC=[];
+(function(){ try{ const P=window.AudioScheduledSourceNode&&AudioScheduledSourceNode.prototype; if(!P||P.__coSrc) return; const st=P.start; P.__coSrc=true;
+  P.start=function(w){ try{ if(CO&&CO.solo){ CO_SRC.push(this); if(CO_SRC.length>600) CO_SRC.splice(0,200); } }catch(e){} return st.apply(this,arguments); }; }catch(e){} })();
+function coCallaTodo(){ CO_SRC.splice(0).forEach(n=>{ try{ n.stop(0); }catch(e){} }); try{ if(PIANO) PIANO.stop(); }catch(e){} }
+function coAdelD(){ if(!CO||!CO.solo||CO.iAct==null||!CO.sch||!CO.base) return -1; const i=CO.iAct, k=CO.ord?CO.ord[i]:i, sc=CO.sch[k];
+  return (sc&&sc.velo!=null)?(CO.inicio+(CO.base[i]+sc.velo)*1000-CO.now())/1000:-1; }
+async function coAdelanta(){
+  if(!CO||!CO.solo||MODO!=='online'||CO.rush||CO.pausaT) return;
+  const D=Math.floor(coAdelD()-0.3); if(!(D>=3)) return;
+  CO.rush={D}; ROOT&&ROOT.classList.add('co-rush'); coBotonAdel();
+  coCallaTodo(); try{ await AC.suspend(); }catch(e){}
+  if(!CO||!CO.rush) return; CO_RUSH_T=ahora()+D;
+  let quietos=0; CO.rush.iv=setInterval(()=>{ if(!CO||!CO.rush) return; const hay=COLA.some(q=>q.ep===EPOCA&&q.t<=CO_RUSH_T+0.011); quietos=hay?0:quietos+1; if(quietos>=8) coFinRush(); },60);
+}
+function coFinRush(){
+  if(!CO||!CO.rush) return; const R=CO.rush; CO.rush=null; clearInterval(R.iv); CO_RUSH_T=null;
+  coCallaTodo(); COLA.forEach(q=>{ q.t-=R.D; });
+  CO.inicio-=R.D*1000; if(CO.tUlt) CO.tUlt-=R.D*1000;
+  ROOT&&ROOT.classList.remove('co-rush'); try{ AC.resume(); }catch(e){}
+  try{ CO.cr('adelanta',{p_partida:CO.id,p_seg:R.D}).then(r=>console.log('[online] adelanta',R.D,JSON.stringify(r))).catch(()=>{}); }catch(e){}
+  coBotonAdel();
+}
+function coBotonAdel(){
+  const bp=document.getElementById('pcgBPausa'); if(!bp) return; let b=document.getElementById('coBAdel');
+  if(!b){ b=document.createElement('button'); b.type='button'; b.id='coBAdel'; b.className=bp.className; b.title='Adelantar: ir ya a la solución (→)';
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6.2v11.6L11.4 12zM12.2 6.2v11.6L20.6 12z"/></svg><span>Adelantar</span>';
+    b.onclick=e=>{ e.currentTarget.blur(); coAdelanta(); }; bp.after(b); }
+  if(!window.__coAdelIv) window.__coAdelIv=setInterval(coBotonAdel,400);
+  b.hidden=!(CO&&CO.solo&&MODO==='online'&&!CO.rush&&!CO.pausaT&&coAdelD()-0.3>=3);
 }
 async function coPausa(){
   if(!CO||!CO.solo||MODO!=='online') return;
@@ -2785,14 +2840,16 @@ async function coJugar(cfg){
   if(CO) return;
   CO={id:cfg.id,inicio:cfg.inicio,now:cfg.now,cr:cfg.cr,onFin:cfg.onFin,est:cfg.est||null,mias:{}};
   /* (19-nov 20:55, Iago) en la partida individual, cuenta atrás de 10 s en total (6 del servidor + 4); con más gente, 15 */
-  CO.prep=4;   /* (20-nov 18:35, Iago) siempre cuenta atrás de 10: 6 s del servidor + 4 */
+  CO.prep=cfg.solo?9:4;   /* (20-nov 18:35, Iago) cuenta atrás de 10: 6 s del servidor + 4 · (20-nov 22:15) en la individual, 15: da tiempo a ver llegar a los compositores y a personalizarte */
   CO.vigila=coVigilaAudio();
   /* (19-nov 21:48, Iago) en la partida individual se puede pausar (botón «Pausa» o barra espaciadora): se para todo y, al
      seguir, la partida se corre lo que duró la pausa (también en el servidor: no cuenta para la actitud) */
   ROOT&&ROOT.classList.toggle('co-solo',!!cfg.solo);
   if(cfg.solo){ CO.solo=true; if(!window.__coTeclaPausa){ window.__coTeclaPausa=true;
+      document.addEventListener('keydown',e=>{ if(CO&&CO.solo&&MODO==='online'&&e.key==='ArrowRight'&&!/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')){ e.preventDefault(); coAdelanta(); } },true);
       document.addEventListener('keydown',e=>{ if(CO&&CO.solo&&MODO==='online'&&(e.key===' '||e.code==='Space')&&!/INPUT|TEXTAREA|BUTTON/.test((document.activeElement||{}).tagName||'')){ e.preventDefault(); coPausa(); } },true); } }
   CO.bots=cfg.bots?coBots(cfg.bots,Number(cfg.semilla)||1,cfg.est):[];
+  if(cfg.solo) coBotonAdel();
   const run=++RUN; MODO='online';
   document.documentElement.classList.add('co-jugando');
   if(!ROOT) montar(); ROOT.classList.add('online'); ROOT.classList.remove('lobby'); ROOT.classList.remove('en-portada'); ROOT.classList.remove('quieto');
@@ -2822,7 +2879,7 @@ async function coJugar(cfg){
     else if(i0<NE){ await coPrep(CO.base[i0]-2.7); }
     for(let i=i0;i<NE&&run===RUN;i++){
       await coEn(CO.base[i]-0.05);
-      await transicion(i);
+      await transicion(i); CO.iAct=i;
       CO.tUlt=null; await FL[CO.ord[i]](CO.base[i]);
     }
     if(run===RUN){ await coEn(CO.fin); coFinal(); }

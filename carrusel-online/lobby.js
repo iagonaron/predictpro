@@ -321,7 +321,7 @@ function pintaTiempos(){ /* los textos de «cuándo» no cambian cada segundo; r
 
 function enlaza(){
   pintaPiano();
-  const solo=async(bt)=>{ audioListo(); bt.disabled=true; raiz.style.visibility='hidden'; try{ PCOnline.previa(10); }catch(e){} const r=await cr('crear');
+  const solo=async(bt)=>{ audioListo(); bt.disabled=true; raiz.style.visibility='hidden'; try{ PCOnline.previa(15); }catch(e){} const r=await cr('crear');
     if(r&&r.ok){ ST.soloId=r.id; if(ST.tester) ST.bots=r.id; await cr('empezar',{p_partida:r.id,p_duracion:700}); ST.solo=false; await entraEnSala(r.id); }
     else { raiz.style.visibility=''; try{ PCOnline.fondoLobby(true); }catch(e){} ST.aviso=r&&r.error==='aun_no'?'El carrusel online se abre '+ABRE_TXT+'.':r&&r.error==='ya_tienes_una'?'Ya tienes una partida abierta: espera a que termine.':'No he podido empezar la partida.'; bt.disabled=false; pintaLobby(); } };
   const ah=document.getElementById('bAhora'); if(ah) ah.onclick=()=>solo(ah);
@@ -527,6 +527,10 @@ function abreEd(j){
   }
   pintaEd(); w.hidden=false;
 }
+/* (20-nov 22:10, Iago) en la cuenta atrás de la partida individual: «Personalizar» abre este mismo editor; la cuenta atrás
+   se para mientras está abierto y sigue al cerrarlo (guardes o no) */
+window.__coEdAv=function(j,alCerrar){ abreEd(j); const w=document.getElementById('coEd'); if(!w) return;
+  const mo=new MutationObserver(()=>{ if(w.hidden){ mo.disconnect(); try{ alCerrar&&alCerrar(); }catch(e){} } }); mo.observe(w,{attributes:true,attributeFilter:['hidden']}); };
 function pintaEd(){
   const w=document.getElementById('coEd'), q=id=>w.querySelector('#'+id), c=ED.cfg, A=o=>avatarSVG(Object.assign({},c,{instr:null},o));
   const op=(id,items,cur,fn)=>{ const el=q(id); el.innerHTML=items.map((it,i)=>'<button type="button" class="op'+(it.k===cur?' sel':'')+'" data-i="'+i+'" title="'+esc(it.t)+'" aria-label="'+esc(it.t)+'">'+it.h+'</button>').join('');
@@ -675,7 +679,7 @@ function empiezaJuego(est){
   try{ localStorage.setItem('co_partida',p.id); }catch(e){}
   PCOnline.jugar({id:p.id,inicio:new Date(p.inicio).getTime(),semilla:p.semilla,now:sNow,cr:cr,est:est,
     /* (20-nov 18:14, Iago) bots hasta completar 5 jugadores (el número lo fija el servidor al empezar); el Tester, en su individual, 8 */
-    bots:(ST.tester&&ST.bots===p.id)?8:(p.bots!=null?Number(p.bots):Math.max(0,5-(est.jugadores||[]).filter(j=>j.dentro).length)), solo:ST.soloId===p.id,
+    bots:(p.bots!=null?Number(p.bots):Math.max(0,5-(est.jugadores||[]).filter(j=>j.dentro).length)), solo:ST.soloId===p.id,
     /* (19-nov) sin pings: la actitud se apunta al terminar la partida (suite_cr_actividad) */
     onFin:(act)=>{ try{ localStorage.removeItem('co_partida'); }catch(e){} raiz.style.display=''; arrancaLobby(); muestraActitud(act); }});
   avisoSonido();
@@ -716,7 +720,7 @@ window.LobbyOnline={ arranca:async function(){
   document.documentElement.classList.add('co-on');
   if(!CUENTA){ sinCuenta(); return; }
   if(esMovil()){ await pantallaMovil(); return; }
-  if(QS.get('solo')==='1'){ raiz.style.visibility='hidden'; try{ PCOnline.previa(10); }catch(e){} }   /* (19-nov 22:31) la cuenta atrás desde el primer instante */
+  if(QS.get('solo')==='1'){ raiz.style.visibility='hidden'; try{ PCOnline.previa(15); }catch(e){} }   /* (19-nov 22:31) la cuenta atrás desde el primer instante */
   { const r0=await cr('lista'); if(r0&&r0.ok){ ST.abierto=r0.abierto; ST.tester=r0.tester; } }
   if(QS.get('solo')==='1'&&!cerrado()){
     try{ history.replaceState(null,'',location.pathname); }catch(e){}
