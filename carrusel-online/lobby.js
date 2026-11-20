@@ -288,7 +288,7 @@ function pintaLobby(){
     const cancel=p.anfitrion_cancelo?' <span class="chip">sin anfitrión</span>':'';
     const resp=p.yo;
     const botones=abierta
-      ? '<button class="btn pri" data-a="entrar" data-id="'+p.id+'">Unirme</button>'
+      ? '<button class="btn pri" data-a="entrar" data-id="'+p.id+'">Entrar al lobby</button>'
       : cancelada ? '<span class="muted">La cancelaste</span>'
       : mia ? '<button class="btn ko" data-a="cancelar" data-id="'+p.id+'">'+I.x+'Cancelar partida</button>'
       : sinAnf ? '<button class="btn pri" data-a="heredar" data-id="'+p.id+'">'+I.cal+'Ser el anfitrión</button><button class="btn peq" data-a="no" data-id="'+p.id+'" title="Quitarme de la partida">'+I.x+'</button>'
