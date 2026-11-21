@@ -821,6 +821,10 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 /* (21-nov 07:29, Iago) «se ve la clasificación mientras se corrige»: al salir la clasificación, el ejercicio se funde y desaparece */
 .pcg-hoja.co-rk{opacity:0;transition:opacity .35s ease;pointer-events:none}
 .pcg-ej:has(.co-rank.on) .pcg-velo,.pcg-ej:has(.co-rank.on) .pcg-lado{opacity:0;transition:opacity .35s ease}
+/* (21-nov-2026 16:14, Iago) en el podio, «Volver al lobby» quedaba tapado por la barra de frases y emojis: arriba a la izquierda,
+   y el aviso de cierre («La partida se cierra en…» / «Chat abierto…») arriba a la derecha; nada lo tapa */
+.co-fin .pcg-volver{position:absolute;top:24px;left:28px;margin:0;z-index:62}
+.co-fin .co-cierre{position:absolute;top:30px;right:32px;margin:0;max-width:560px;text-align:right;z-index:62}
 
 /* ===== CARRUSEL PRO ONLINE (grado profesional) · 20-nov-2026 ===== */
 /* «PRO» en mayúsculas y dorado (Iago, 19-nov 23:11) */

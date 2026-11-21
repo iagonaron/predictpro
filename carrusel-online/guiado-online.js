@@ -2893,6 +2893,13 @@ function coArmUI(A,a,bb){
   const sol={tipo:a.quality,tiple:{l:bb.notes[2].letter,a:bb.notes[2].acc},bajo:{l:bb.notes[0].letter,a:bb.notes[0].acc},inv:bb.inv};
   const resp={tipo:null,tiple:{l:null,a:0},bajo:{l:null,a:0},inv:null};
   let b1=false, b2=false, selV='tiple';
+  let ARALT=null, EVAL=null;   /* (21-nov) respuesta enarmónica aceptada (aumentados) y resultado, para la corrección */
+  const AR_PC={C:0,D:2,E:4,F:5,G:7,A:9,B:11}, AR_L='CDEFGAB', arPc=n=>(((AR_PC[n.l]+(n.a||0))%12)+12)%12;
+  /* inversión de una tríada aumentada bien escrita (letras por terceras: fundamental, tercera mayor y quinta aumentada); si no lo es, null */
+  const arInvAum=(b,m,t)=>{ const N=[b,m,t]; for(let r=0;r<3;r++){ const R=N[r], li=AR_L.indexOf(R.l);
+      const th=N.find((x,k)=>k!==r&&AR_L.indexOf(x.l)===(li+2)%7), fi=N.find((x,k)=>k!==r&&AR_L.indexOf(x.l)===(li+4)%7);
+      if(th&&fi&&th!==fi&&(arPc(th)-arPc(R)+12)%12===4&&(arPc(fi)-arPc(R)+12)%12===8) return b===R?0:(b===th?1:2); }
+    return null; };
   const nom=n=>n.l?coNomNota[n.l]+(coAlt[String(n.a)]||''):'—';
   // tipo e inversión: los botones del aula
   A.ops1.querySelectorAll('span').forEach(s=>{ s.classList.add('co-clic'); s.onclick=()=>{ if(b1) return; resp.tipo=s.dataset.q; A.ops1.querySelectorAll('span').forEach(x=>x.classList.toggle('sel',x===s)); coTic(); }; });
@@ -2958,12 +2965,18 @@ function coArmUI(A,a,bb){
     cierra(){
       let p=0; if(resp.tipo===sol.tipo) p+=400;
       /* (19-nov 23:03, Iago) acorde 2: el acorde escrito (tiple Y bajo, los dos bien) es la mitad; el estado, la otra mitad */
-      if(resp.tiple.l===sol.tiple.l&&resp.tiple.a===sol.tiple.a&&resp.bajo.l===sol.bajo.l&&resp.bajo.a===sol.bajo.a) p+=300;
-      if(resp.inv===sol.inv) p+=300;
-      return {puntos:p,detalle:{resp,sol}}; },
-    marcaInv(){ const s=A.ops2.querySelector('[data-i="'+resp.inv+'"]'); if(s&&resp.inv!==sol.inv) s.classList.add('ko'); },
-    revelaVoces(){ gA.innerHTML=''; gO.innerHTML=''; keys.classList.remove('off'); keys.innerHTML=['tiple','bajo'].map(k=>{ const ok=resp[k].l===sol[k].l&&resp[k].a===sol[k].a;
-      return '<div class="co-res '+(ok?'ok':'ko')+'">'+(k==='tiple'?'Tiple':'Bajo')+': '+(ok?CO_OK+nom(sol[k]):CO_KO+'tú '+nom(resp[k])+' → '+nom(sol[k]))+'</div>'; }).join(''); }
+      let okV=resp.tiple.l===sol.tiple.l&&resp.tiple.a===sol.tiple.a&&resp.bajo.l===sol.bajo.l&&resp.bajo.a===sol.bajo.a;
+      /* (21-nov 16:10, Iago) acorde aumentado: también vale su escritura enarmónica, con la inversión que le corresponde a ESA escritura
+         (Mi–Sol♯–Si♯ en E.F. = Mi–Sol♯–Do, Do aumentado en 1.ª inversión). Los aumentados son simétricos: suenan igual. */
+      if(!okV&&bb.quality==='Aum'&&resp.tiple.l&&resp.bajo.l&&arPc(resp.tiple)===arPc(sol.tiple)&&arPc(resp.bajo)===arPc(sol.bajo)){
+        const iv=arInvAum(resp.bajo,{l:mid.letter,a:mid.acc},resp.tiple); if(iv!==null){ okV=true; ARALT={inv:iv}; } }
+      const okI=resp.inv===(ARALT?ARALT.inv:sol.inv); EVAL={okV,okI};
+      if(okV) p+=300;
+      if(okI) p+=300;
+      return {puntos:p,detalle:{resp,sol,alt:ARALT}}; },
+    marcaInv(){ const s=A.ops2.querySelector('[data-i="'+resp.inv+'"]'); if(s&&!(EVAL?EVAL.okI:resp.inv===sol.inv)) s.classList.add('ko'); },
+    revelaVoces(){ gA.innerHTML=''; gO.innerHTML=''; keys.classList.remove('off'); keys.innerHTML=['tiple','bajo'].map(k=>{ const ok=resp[k].l===sol[k].l&&resp[k].a===sol[k].a, alt=!ok&&ARALT&&EVAL&&EVAL.okV;
+      return '<div class="co-res '+(ok||alt?'ok':'ko')+'">'+(k==='tiple'?'Tiple':'Bajo')+': '+(ok?CO_OK+nom(sol[k]):alt?CO_OK+nom(resp[k])+' (= '+nom(sol[k])+')':CO_KO+'tú '+nom(resp[k])+' → '+nom(sol[k]))+'</div>'; }).join(''); }
   };
 }
 async function coArm(b){

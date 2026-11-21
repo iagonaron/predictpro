@@ -205,8 +205,8 @@
   }
 </style>
 <!-- (30-sep-2026, Iago) modo guiado en la pantalla de clase (?pantalla=1): portada, ejercicios guiados y créditos -->
-<link rel="stylesheet" href="guiado-online.css?v=20261121155628">
-<link rel="stylesheet" href="lobby.css?v=20261121155628">
+<link rel="stylesheet" href="guiado-online.css?v=20261121162609">
+<link rel="stylesheet" href="lobby.css?v=20261121162609">
 <style>html,body{background:#0e0a2a}body>.wrap{position:fixed!important;left:-12000px!important;top:0!important;visibility:hidden!important}</style>
 </head>
 <body>
@@ -344,7 +344,7 @@ function genPentagramaSimple(pulsos){
   // pulsos por pentagrama: 3 compases completos + último compás (figura+silencio fija)
   const pulsosLibres = pulsos*3 + (pulsos-2); // huecos donde podemos colocar medias
   // decidir cuántas medias (0,1,2) y cuáles (distintas)
-  const nMedias = rint(3); // 0,1,2
+  const nMedias = 1 + rint(2); // (21-nov-2026, Iago) online: 1 o 2 (antes 0–2): nunca un rítmico solo de figuras fáciles; lo más difícil, igual que en clase
   const mediasElegidas = shuffle(CELLS_SIMPLE.medio).slice(0,nMedias);
   // posiciones lineales disponibles (índice de pulso global, excluyendo las 2 fijas del final)
   const posiciones = shuffle(Array.from({length:pulsosLibres},(_,i)=>i)).slice(0,nMedias);
@@ -354,12 +354,15 @@ function genPentagramaSimple(pulsos){
   const compases=[];
   let pg=0; // contador de pulso global libre
   let silenciosExtra=0; // silencios de pulso (sil_negra) aparte del final
+  let negrasSueltas=0;
   function pickFacil(){
     // limita a 1 el silencio de pulso adicional
     let pool=CELLS_SIMPLE.facil;
-    if(silenciosExtra>=1) pool=CELLS_SIMPLE.facil.filter(c=>c.id!=='sil_negra');
+    if(silenciosExtra>=1) pool=pool.filter(c=>c.id!=='sil_negra');
+    if(negrasSueltas>=2) pool=pool.filter(c=>c.id!=='negra');   /* (21-nov) como mucho 2 negras sueltas: que haya corcheas y semicorcheas */
     const c=pick(pool);
     if(c.id==='sil_negra') silenciosExtra++;
+    if(c.id==='negra') negrasSueltas++;
     return c;
   }
   for(let c=0;c<3;c++){
@@ -1183,8 +1186,8 @@ function generarTodo(){
 // (19-nov-2026) carrusel ONLINE: al cargar se abre el lobby (lobby.js); la partida la lleva guiado-online.js
 (function(){ const go=()=>{ try{ window.LobbyOnline.arranca(); }catch(e){ console.error(e); } }; if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go(); })();   /* (19-nov 22:24, Iago) sin esperar a que cargue todo: no se ve la página de clase */
 </script>
-<script src="gp.js?v=20261121155628"></script>
-<script src="guiado-online.js?v=20261121155628"></script>
-<script src="lobby.js?v=20261121155628"></script>
+<script src="gp.js?v=20261121162609"></script>
+<script src="guiado-online.js?v=20261121162609"></script>
+<script src="lobby.js?v=20261121162609"></script>
 </body>
 </html>
