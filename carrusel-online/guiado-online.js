@@ -2307,6 +2307,12 @@ function coRecoloca(t){ try{ const c=ac(), out=FX||c.destination;
 /* (19-nov 20:57, Iago) online: 4 s para terminar (se puede cambiar) + 5 s de velo (bloqueado): 9 s en vez de 12+5 */
 async function coFinEjercicio(sub,pieTexto,soloVelo){
   if(CO&&CO.rush) coFinRush();   /* (20-nov 22:15) «Adelantar»: se llega aquí, a los «Últimos segundos» */
+  if(CO&&CO.adelSalto){ CO.adelSalto=false;
+    /* (21-nov 13:42, Iago) «Adelantar» va DIRECTO a la corrección: también se saltan los 5 s de «Últimos segundos»
+       (el reloj de la partida y el del servidor se adelantan esos 5 s más, como el resto del salto) */
+    COLA.forEach(q=>{ q.t-=5; }); CO.inicio-=5000; if(CO.tUlt) CO.tUlt-=5000;
+    try{ CO.cr('adelanta',{p_partida:CO.id,p_seg:5}).then(r=>console.log('[online] adelanta +5 (sin «Últimos segundos»)',JSON.stringify(r))).catch(()=>{}); }catch(e){}
+    coBotonAdel(); return; }
   if(!soloVelo){ sonidoUI('escribe'); await escribir(9,'Termina de completar el ejercicio',sub||'',pieTexto,null,5); }
   /* (19-nov 22:26, Iago) los 5 s finales, SIN oscurecer y sin bloquear: «Solución en 5…1» abajo y se puede seguir cambiando */
   const t0=ahora();
@@ -3203,7 +3209,7 @@ function coVigilaAudio(){
     if((!mudo||(CO&&(CO.pausaT||CO.rush)))&&capa){ capa.remove(); capa=null; } },400);
 }
 /* (20-nov-2026 22:15, Iago) «Adelantar» en la partida individual: «hay gente que lo ha puesto todo a la primera y le sobra la
-   repetición». Salta lo que queda del ejercicio hasta los «Últimos segundos» (5 s, aún se puede cambiar) y la solución.
+   repetición». Salta lo que queda del ejercicio y va directo a la solución (21-nov 13:42: sin los 5 s de «Últimos segundos»).
    Cómo: se calla todo, se para el audio y se recorre al instante lo que quedaba (sin sonar); al llegar, el reloj de la partida
    se adelanta esos segundos (también en el servidor: suite_cr_adelanta, que NO los cuenta como tiempo de actitud). */
 var CO_RUSH_T=null; const CO_SRC=[];
@@ -3215,7 +3221,7 @@ function coAdelD(){ if(!CO||!CO.solo||CO.iAct==null||!CO.sch||!CO.base) return -
 async function coAdelanta(){
   if(!CO||!CO.solo||MODO!=='online'||CO.rush||CO.pausaT) return;
   const D=Math.floor(coAdelD()-0.3); if(!(D>=3)) return;
-  CO.rush={D}; ROOT&&ROOT.classList.add('co-rush'); coBotonAdel();
+  CO.rush={D}; CO.adelSalto=true; ROOT&&ROOT.classList.add('co-rush'); coBotonAdel();   /* (21-nov 13:42) y al llegar, sin «Últimos segundos» */
   coCallaTodo(); try{ await AC.suspend(); }catch(e){}
   if(!CO||!CO.rush) return; CO_RUSH_T=ahora()+D;
   let quietos=0; CO.rush.iv=setInterval(()=>{ if(!CO||!CO.rush) return; const hay=COLA.some(q=>q.ep===EPOCA&&q.t<=CO_RUSH_T+0.011); quietos=hay?0:quietos+1; if(quietos>=8) coFinRush(); },60);
