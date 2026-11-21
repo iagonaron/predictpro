@@ -825,6 +825,10 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
    y el aviso de cierre («La partida se cierra en…» / «Chat abierto…») arriba a la derecha; nada lo tapa */
 .co-fin .pcg-volver{position:absolute;top:24px;left:28px;margin:0;z-index:62}
 .co-fin .co-cierre{position:absolute;top:30px;right:32px;margin:0;max-width:560px;text-align:right;z-index:62}
+/* (21-nov-2026 16:34, Iago) armónico: la versión equivalente de un aumentado, marcada como buena y con «también vale» */
+.arm-ops>span.co-tv{position:relative}
+.arm-ops>span.co-tv::after{content:"también vale";position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:6px;font:800 12px/1 "Helvetica Neue",Arial,sans-serif;color:#16a34a;white-space:nowrap}
+.co-keys .co-res.co-tv{flex-basis:100%;font-weight:600;line-height:1.35}
 
 /* ===== CARRUSEL PRO ONLINE (grado profesional) · 20-nov-2026 ===== */
 /* «PRO» en mayúsculas y dorado (Iago, 19-nov 23:11) */

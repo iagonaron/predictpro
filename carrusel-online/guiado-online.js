@@ -2896,10 +2896,13 @@ function coArmUI(A,a,bb){
   let ARALT=null, EVAL=null;   /* (21-nov) respuesta enarmónica aceptada (aumentados) y resultado, para la corrección */
   const AR_PC={C:0,D:2,E:4,F:5,G:7,A:9,B:11}, AR_L='CDEFGAB', arPc=n=>(((AR_PC[n.l]+(n.a||0))%12)+12)%12;
   /* inversión de una tríada aumentada bien escrita (letras por terceras: fundamental, tercera mayor y quinta aumentada); si no lo es, null */
-  const arInvAum=(b,m,t)=>{ const N=[b,m,t]; for(let r=0;r<3;r++){ const R=N[r], li=AR_L.indexOf(R.l);
+  const arAum=(b,m,t)=>{ const N=[b,m,t]; for(let r=0;r<3;r++){ const R=N[r], li=AR_L.indexOf(R.l);
       const th=N.find((x,k)=>k!==r&&AR_L.indexOf(x.l)===(li+2)%7), fi=N.find((x,k)=>k!==r&&AR_L.indexOf(x.l)===(li+4)%7);
-      if(th&&fi&&th!==fi&&(arPc(th)-arPc(R)+12)%12===4&&(arPc(fi)-arPc(R)+12)%12===8) return b===R?0:(b===th?1:2); }
+      if(th&&fi&&th!==fi&&(arPc(th)-arPc(R)+12)%12===4&&(arPc(fi)-arPc(R)+12)%12===8) return {inv:b===R?0:(b===th?1:2),root:R}; }
     return null; };
+  /* (21-nov 16:34, Iago) «también vale»: textos para que quien escribió la versión equivalente no se lleve el chasco */
+  const AR_ALT={'-2':'𝄫','-1':'♭','0':'','1':'♯','2':'𝄪'}, arNom=n=>((typeof ARM_NOM_ES!=='undefined'&&ARM_NOM_ES[n.l])||n.l)+(AR_ALT[n.a||0]||''),
+        AR_INV=['estado fundamental','1.ª inversión','2.ª inversión'];
   const nom=n=>n.l?coNomNota[n.l]+(coAlt[String(n.a)]||''):'—';
   // tipo e inversión: los botones del aula
   A.ops1.querySelectorAll('span').forEach(s=>{ s.classList.add('co-clic'); s.onclick=()=>{ if(b1) return; resp.tipo=s.dataset.q; A.ops1.querySelectorAll('span').forEach(x=>x.classList.toggle('sel',x===s)); coTic(); }; });
@@ -2969,14 +2972,19 @@ function coArmUI(A,a,bb){
       /* (21-nov 16:10, Iago) acorde aumentado: también vale su escritura enarmónica, con la inversión que le corresponde a ESA escritura
          (Mi–Sol♯–Si♯ en E.F. = Mi–Sol♯–Do, Do aumentado en 1.ª inversión). Los aumentados son simétricos: suenan igual. */
       if(!okV&&bb.quality==='Aum'&&resp.tiple.l&&resp.bajo.l&&arPc(resp.tiple)===arPc(sol.tiple)&&arPc(resp.bajo)===arPc(sol.bajo)){
-        const iv=arInvAum(resp.bajo,{l:mid.letter,a:mid.acc},resp.tiple); if(iv!==null){ okV=true; ARALT={inv:iv}; } }
+        const ra=arAum(resp.bajo,{l:mid.letter,a:mid.acc},resp.tiple); if(ra){ okV=true; ARALT={inv:ra.inv,root:ra.root}; } }
       const okI=resp.inv===(ARALT?ARALT.inv:sol.inv); EVAL={okV,okI};
       if(okV) p+=300;
       if(okI) p+=300;
-      return {puntos:p,detalle:{resp,sol,alt:ARALT}}; },
+      return {puntos:p,detalle:{resp,sol,alt:ARALT,okI}}; },
     marcaInv(){ const s=A.ops2.querySelector('[data-i="'+resp.inv+'"]'); if(s&&!(EVAL?EVAL.okI:resp.inv===sol.inv)) s.classList.add('ko'); },
     revelaVoces(){ gA.innerHTML=''; gO.innerHTML=''; keys.classList.remove('off'); keys.innerHTML=['tiple','bajo'].map(k=>{ const ok=resp[k].l===sol[k].l&&resp[k].a===sol[k].a, alt=!ok&&ARALT&&EVAL&&EVAL.okV;
-      return '<div class="co-res '+(ok||alt?'ok':'ko')+'">'+(k==='tiple'?'Tiple':'Bajo')+': '+(ok?CO_OK+nom(sol[k]):alt?CO_OK+nom(resp[k])+' (= '+nom(sol[k])+')':CO_KO+'tú '+nom(resp[k])+' → '+nom(sol[k]))+'</div>'; }).join(''); }
+      return '<div class="co-res '+(ok||alt?'ok':'ko')+'">'+(k==='tiple'?'Tiple':'Bajo')+': '+(ok?CO_OK+nom(sol[k]):alt?CO_OK+nom(resp[k])+' (= '+nom(sol[k])+')':CO_KO+'tú '+nom(resp[k])+' → '+nom(sol[k]))+'</div>'; }).join('')
+      + (ARALT&&EVAL&&EVAL.okV ? (()=>{ const t=this.altTexto(); return '<div class="co-res ok co-tv">'+CO_OK+'También vale: <b>'+t.tuyo+'</b> es <b>'+t.raiz+' aumentado en '+t.inv+'</b>; suena igual que '+t.oficial+' ('+t.raizOf+' aumentado en '+t.invOf+').</div>'; })() : ''); },
+    altTexto(){ if(!ARALT) return null; const m0={l:mid.letter,a:mid.acc}, of=arAum(sol.bajo,m0,sol.tiple);
+      return { tuyo:[resp.bajo,m0,resp.tiple].map(arNom).join('–'), raiz:arNom(ARALT.root), inv:AR_INV[ARALT.inv],
+               oficial:[sol.bajo,m0,sol.tiple].map(arNom).join('–'), raizOf:of?arNom(of.root):'', invOf:AR_INV[sol.inv] }; },
+    marcaAlt(){ if(!ARALT||!(EVAL&&EVAL.okV&&EVAL.okI)) return; const s=A.ops2.querySelector('[data-i="'+ARALT.inv+'"]'); if(s){ s.classList.remove('ko'); s.classList.add('ok','co-tv'); } }
   };
 }
 async function coArm(b){
@@ -3024,11 +3032,11 @@ async function coArm(b){
   enTiempo(coT(b+corr-0.15),()=>I.bloquea());
   { const q=coHasta(b+corr), t0=ahora()+S(Math.max(0,q-5)); for(let k=0;k<5;k++) sonidoUI(k%2?'tac':'tic',t0+S(k)+0.01);
     await escribir(q,'','','Solución en'); }
-  const res=I.cierra(); coEnvia(3,res);
+  const res=I.cierra(); coEnvia(3,res); const ALTv=!!(res.detalle&&res.detalle.alt), ALTt=ALTv?I.altTexto():null;
   await coEn(b+corr);
   const INV=['Estado fundamental','1ª inversión','2ª inversión'], ROLN=['la fundamental','la tercera','la quinta'];
-  I.cierra2(); I.marcaInv(); A.slots(false);
-  await coCorreccion(()=>{ const t0=ahora(); cartel('Solución',res.puntos+' puntos'); A.verOriginal(); I.revelaVoces(); bloque(t0+0.05,m2,2.0);
+  I.cierra2(); I.marcaInv(); if(ALTv) I.marcaAlt(); A.slots(false);
+  await coCorreccion(()=>{ const t0=ahora(); cartel(ALTv?'¡Tu acorde también vale!':'Solución',res.puntos+' puntos'); A.verOriginal(); I.revelaVoces(); bloque(t0+0.05,m2,2.0);
     enTiempo(t0+S(2.3),()=>{ A.explicaBajo(); cartel('Esta es la nota del bajo',bb.bajo); });
     nota(t0+S(2.35),m2[0],0.85,S(1.4));
     enTiempo(t0+S(4.6),()=>{ A.verOrdenado(); A.explicaRoles(); cartel('El acorde ordenado','Por terceras: fundamental, tercera y quinta'); });
@@ -3037,7 +3045,7 @@ async function coArm(b){
     nota(t0+S(10.25),m2[0],0.85,S(1.2));
     enTiempo(t0+S(10.3),()=>{ A.llega(); cartel('El bajo es '+ROLN[bb.inv]+' del acorde ordenado','Tiple: '+bb.tiple+' · Bajo: '+bb.bajo); });
     enTiempo(t0+S(13.2),()=>{ cartel('Por lo tanto, el acorde está en…',''); });
-    enTiempo(t0+S(15.4),()=>{ A.ok2(); cartel(INV[bb.inv],'Como el bajo ('+bb.bajo+') es '+ROLN[bb.inv]+' del acorde ordenado'); bloque(ahora()+0.05,m2,1.8); });
+    enTiempo(t0+S(15.4),()=>{ A.ok2(); if(ALTv) I.marcaAlt(); cartel(INV[bb.inv],'Como el bajo ('+bb.bajo+') es '+ROLN[bb.inv]+' del acorde ordenado'+(ALTt&&res.detalle.okI?' · Tu respuesta, '+ALTt.raiz+' aumentado en '+ALTt.inv+', también es correcta':'')); bloque(ahora()+0.05,m2,1.8); });
     return 16.2; },20,3.8);
   ESC.sc.classList.remove('arriba'); ESC.lado=null;
   await coRanking(3,b+CO.slot[3]);
