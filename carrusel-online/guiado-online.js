@@ -2110,6 +2110,8 @@ function siguiente(){ if(MODO!=='carrusel') return; SIG=EJ_ACT+1; if(PAUSA) paus
 function repetir(){ if(MODO!=='carrusel') return; SIG=EJ_ACT; if(PAUSA) pausa(false); cortar(); }
 function aPortada(){ RUN++; SIG=null; if(PAUSA) pausa(false); cortar(); portada(); }
 function teclas(e){
+  /* (21-nov-2026 15:55, Iago) al escribir en el chat del lobby, el espacio y la «f» son letras: no pausan ni ponen pantalla completa */
+  const a=e.target||document.activeElement; if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)) return;
   const k=e.key;
   if(k===' '||e.code==='Space'){ e.preventDefault(); if(MODO==='carrusel') pausa(); else if(MODO==='portada') empezar(); }
   else if(k==='ArrowRight'||k==='PageDown'){ if(MODO==='carrusel'){ e.preventDefault(); siguiente(); } }
