@@ -462,20 +462,47 @@ function sonidoRx(mio,emo){ try{ const ac=musAC(); if(!ac||ac.state!=='running')
   (mio?[784,1175]:(emo?[988,1319]:[659,880])).forEach((f,i)=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=f*(1+(Math.random()-.5)*0.04);
     g.gain.setValueAtTime(0,t+i*0.06); g.gain.linearRampToValueAtTime(mio?0.09:0.06,t+i*0.06+0.008); g.gain.exponentialRampToValueAtTime(0.0005,t+i*0.06+0.28); o.connect(g); g.connect(ac.destination); o.start(t+i*0.06); o.stop(t+i*0.06+0.3); }); }catch(e){} }
 const vivos=()=>app.querySelectorAll('.mono:not(.fuera)');
-function reaccionan(m){
+/* (21-nov 08:41, Iago) «movimientos fluidos, con físicas»: en la sala, cada avatar es un títere vivo (AV3.vivo). Parpadea, mira,
+   gira la cabeza hacia quien reacciona y responde con un gesto (aplaude, se ríe, baila, celebra…). En reposo no gasta nada y al
+   empezar la partida desaparecen, así que no tocan la fluidez del juego. */
+const VIVOS_L={};
+function rigDe(o){ const v=o&&VIVOS_L[o.dataset.id]; return v&&v.rig&&!v.rig.muerto&&v.el.isConnected?v.rig:null; }
+function montaVivos(lista,llegan){ if(!window.AV3||!AV3.vivo) return;
+  lista.forEach(j=>{ const m=[].find.call(app.querySelectorAll('.mono:not(.fuera)'),x=>x.dataset.id===String(j.id)); if(!m) return;
+    const ph=m.querySelector('.pg > .av'); if(!ph) return;
+    const cfg=j.profe?AV3.PROFE:avCfg(j), op=j.profe?{profe:true,anillo:'#ffd23f',lite:true}:{ins:(j&&AV_INSTR[j.ins])||null,lite:true};
+    const k=JSON.stringify([cfg,j.profe?'':(j.ins||''),!!j.profe]); let v=VIVOS_L[j.id];
+    if(!v||!v.rig||v.rig.muerto||v.k!==k){ if(v&&v.rig) v.rig.destruye(); const el=document.createElement('div'); el.className='av av3vh'; ph.parentNode.replaceChild(el,ph);
+      v=VIVOS_L[j.id]={el,k,rig:AV3.vivo(el,cfg,op)}; if(llegan&&llegan.has(j.id)) setTimeout(()=>v.rig.gesto('saludar'),450); }
+    else ph.parentNode.replaceChild(v.el,ph); }); }
+const GESTO_RX={'😊':'asentir','😎':'guino','😂':'reir','❤️':'saludar','💪':'celebrar','👏':'aplaudir','🔥':'bailar','😮':'sorpresa','😱':'sorpresa','😢':'llorar'};
+function gestoRx(f){ if(GESTO_RX[f]) return GESTO_RX[f];
+  if(/arras|pulir|gano yo|podio|GOAT|\+1000|GTA|prime|ni una|MVP|fino/i.test(f)) return 'celebrar';
+  if(/tryhard|empiece|deseando|tardones/i.test(f)) return 'estirarse';
+  if(/pan comido|aura|flipar/i.test(f)) return 'guino';
+  if(/qué acaba|presión|−1000|issue/i.test(f)) return 'sospechar';
+  let h=0; String(f).split('').forEach(c=>h=(h*31+c.charCodeAt(0))>>>0); return ['saludar','reir','bailar','asentir','aplaudir'][h%5]; }
+function reaccionan(m,f){
   m.classList.remove('agita'); void m.offsetWidth; m.classList.add('agita');
+  const yo=rigDe(m); if(yo) yo.gesto(gestoRx(f||''));
   const r=m.getBoundingClientRect(), cx=r.left+r.width/2;
   vivos().forEach(o=>{ if(o===m) return; const q=o.getBoundingClientRect();   /* (21-nov 07:32, Iago) TODOS miran hacia quien reacciona */
-    const c=(q.left+q.width/2)>cx?'mira-i':'mira-d'; o.classList.remove('mira-i','mira-d','mira-a'); o.dataset.fija='1'; o.classList.add(c);
+    const izq=(q.left+q.width/2)>cx, rg=rigDe(o);
+    if(rg){ setTimeout(()=>{ if(!rg.ocupado()) rg.miraA(izq?-1:1,-.05,1700); },60+Math.random()*260); return; }
+    const c=izq?'mira-i':'mira-d'; o.classList.remove('mira-i','mira-d','mira-a'); o.dataset.fija='1'; o.classList.add(c);
     setTimeout(()=>{ o.classList.remove(c); delete o.dataset.fija; },1700); });
 }
-(function vida(){ setInterval(()=>{ if(ST.vista!=='sala'||document.hidden) return; vivos().forEach(m=>{ if(Math.random()<.22){ m.classList.add('parpadea'); setTimeout(()=>m.classList.remove('parpadea'),140); } }); },900);
+(function vida(){
+  /* de vez en cuando alguien de la sala hace algo (bosteza, se rasca, tararea, se estira…): uno cada vez, para no cargar */
+  setInterval(()=>{ if(ST.vista!=='sala'||document.hidden||Math.random()>.45) return; const L=[].map.call(vivos(),rigDe).filter(x=>x&&!x.ocupado()); if(!L.length) return;
+    const g=['bostezar','rascar','mirar','tararear','guino','pensar','asentir','estirarse','bailar','reir','noSe'][Math.floor(Math.random()*11)]; L[Math.floor(Math.random()*L.length)].gesto(g); },3800);
+  setInterval(()=>{ if(ST.vista!=='sala'||document.hidden) return; vivos().forEach(m=>{ if(Math.random()<.22){ m.classList.add('parpadea'); setTimeout(()=>m.classList.remove('parpadea'),140); } }); },900);
   setInterval(()=>{ if(ST.vista!=='sala'||document.hidden) return; vivos().forEach(m=>{ if(Math.random()<.12&&!m.dataset.fija){ const c=['mira-i','mira-d','mira-a'][Math.floor(Math.random()*3)]; m.classList.add(c); setTimeout(()=>m.classList.remove(c),900+Math.random()*900); } }); },1100); })();
 function rxPinta(id,nombre,f,yo){
   const esEmo=CO_EMOS.indexOf(f)>=0, m=id&&app.querySelector('.mono[data-id="'+id+'"]'); sonidoRx(!!yo,esEmo);
   if(!m){ const d=document.createElement('div'); d.className='rx-suelto'+(esEmo?' emo':''); d.innerHTML=(esEmo?'<span class="e">'+f+'</span>':'<span class="f">'+esc(f)+'</span>')+'<span class="n">'+esc(nombre||'')+'</span>';
     d.style.left=(10+Math.random()*80)+'%'; raiz.appendChild(d); setTimeout(()=>d.remove(),3600); return; }
-  reaccionan(m);
+  reaccionan(m,f);
   const pg=m.querySelector('.pg')||m, r=pg.getBoundingClientRect(), x0=r.left+r.width/2, y0=r.top+6, cx=innerWidth/2;
   const d=document.createElement('div'); d.className='co-flota'+(esEmo?' emo':''); if(!esEmo) d.style.background=avColor(jugadorDe(id));
   d.innerHTML=esc(f)+(esEmo?'':'<small>'+esc(yo?'Tú':(nombre||''))+'</small>'); d.style.left=x0+'px'; d.style.top=y0+'px'; capaRx().appendChild(d);
@@ -601,6 +628,7 @@ function pintaSala(){
     (dentro.length<5?'<p class="muted nota" style="margin:14px 0 0">🤖 Si al empezar hay menos de 5 jugadores, se suman bots con nombre de compositor hasta completar 5.</p>':'')+'</div>'+
     '';
   { const mi=app.querySelector('.mono.yo:not(.fuera)'); const yoJ=js.find(j=>j.yo); if(mi&&yoJ&&!yoJ.profe){ mi.classList.toggle('nuevo',!yoJ.av&&!ST.miAv); mi.onclick=()=>abreEd(yoJ); } }
+  montaVivos(dentro,llegan);
   encajaSala();
   enlaza();
   const bm=document.getElementById('bMus'); if(bm) bm.onclick=()=>{ MUS.on=!MUS.on; try{ localStorage.setItem('co_musica',MUS.on?'si':'no'); }catch(e){} if(MUS.on) musicaSi(); else musicaNo(); ST.salaFirma=''; pintaSala(); };
