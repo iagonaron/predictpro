@@ -1229,7 +1229,7 @@ function dibujaArmonico(host,a,b){
   const VF=Vex.Flow, morado='#7c3aed';
   host.innerHTML='<div class="pcg-arm">'+
     '<div class="arm-p" id="pcgA1"><div class="cap">Acorde 1 · tipo</div><div class="penta"></div><div class="arm-ops gp10">'+
-      ['PM','Pm','Aum','Dis','Sus4','D7','m7','M7','Dis7','Sd7'].map(q=>'<span data-q="'+q+'">'+({D7:'7D',Sus4:'sus4',M7:'7M',Dis7:'7dis',Sd7:'ø7'}[q]||q)+'</span>').join('')+'</div></div>'+
+      ['PM','Pm','Aum','Dis','Sus4','D7','m7','M7','Sd7','Dis7'].map(q=>'<span data-q="'+q+'">'+gpBoton(q)+'</span>').join('')+'</div></div>'+
     '<div class="arm-p" id="pcgA2"><div class="cap">Acorde 2 · tiple · bajo · inversión</div><div class="penta"></div><div class="arm-ops">'+
       ARM_INV_G.map((t,i)=>'<span data-i="'+i+'">'+t+'</span>').join('')+'</div></div></div>';
   const p1=$('#pcgA1',host), p2=$('#pcgA2',host);
@@ -1404,7 +1404,7 @@ async function ejArmonico(){
   // (30-sep-2026, Iago) solución: «Tipo de acorde» en pequeño y el nombre en grande; abajo, destacada solo la opción buena.
   // Suena el acorde iluminado en morado y después se arpegia, iluminando cada nota
   A.ok1(); A.luz1('todo'); bloque(ahora()+0.05,m1,2.0);
-  A.texto(TIPO_NOMBRE[a.quality]||a.label,'',{pre:'Tipo de acorde',titulo:true});
+  A.texto(gpAcordeTxt(a),'',{pre:'Tipo de acorde',titulo:true});
   await espera(2.0); A.luz1(null);
   { const arr=m1.slice().sort((p,q)=>p-q); await hasta(arpegio(ahora()+0.1,arr,0.7,1.2,0.7,i=>A.luz1(i))+S(0.3)); }
   A.luz1(null); await espera(0.3);
@@ -2713,7 +2713,7 @@ async function coArm(b){
   sonidoUI('escribe'); await escribir(6,'¿Qué tipo de acorde es?','Elígelo debajo');
   A.parpadea(1,false); I.cierra1();
   A.ok1(); A.luz1('todo'); bloque(ahora()+0.05,m1,2.0);
-  A.texto(TIPO_NOMBRE[a.quality]||a.label,'',{pre:'Tipo de acorde',titulo:true});
+  A.texto(gpAcordeTxt(a),'',{pre:'Tipo de acorde',titulo:true});
   await espera(2.0); A.luz1(null);
   { const arr=m1.slice().sort((p,q)=>p-q); await hasta(arpegio(ahora()+0.1,arr,0.7,1.2,0.7,i=>A.luz1(i))+S(0.3)); }
   A.luz1(null); await espera(1.5);

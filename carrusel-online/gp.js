@@ -137,3 +137,15 @@ function renderConSemilla(seed){
   RND=mulberry32(seed);
   renderRitmico(seed); renderMelodico(seed); renderToncom(seed); renderArmonico(seed);
 }
+
+/* ---------- (21-nov-2026, Iago) grafía de los acordes, opción A: símbolo + nombre (símbolos de Teoría at home PRO, nombres de los Apuntes 2GP) ---------- */
+const GP_T7='<span class="gp-t7">7<svg viewBox="0 0 20 30" aria-hidden="true"><line x1="2" y1="24" x2="18" y2="6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>';
+const GP_SIM={PM:'M',Pm:'−',Aum:'+',Dis:'°',Sus4:'sus4',D7:'7',m7:'−7',M7:'Δ',Dis7:GP_T7,Sd7:'∅'};
+const GP_CIF={PM:'',Pm:'−',Aum:'+',Dis:'°',Sus4:'sus4',D7:'7',m7:'−7',M7:'Δ',Dis7:GP_T7,Sd7:'∅'};
+const GP_NOMA={PM:'Mayor',Pm:'menor',Aum:'Aumentado',Dis:'Disminuido',Sus4:'4ª suspendida',D7:'Séptima de dominante',m7:'menor séptima',M7:'Mayor séptima',Dis7:'Séptima disminuida',Sd7:'Semidisminuido'};
+const GP_NOMF={PM:'Mayor',Pm:'menor',Aum:'aumentado',Dis:'disminuido',Sus4:'cuarta suspendida',D7:'séptima de dominante',m7:'menor séptima',M7:'Mayor séptima',Dis7:'séptima disminuida',Sd7:'semidisminuido'};
+function gpBoton(q){ return '<b>'+GP_SIM[q]+'</b><i>'+GP_NOMA[q]+'</i>'; }
+function gpAcordeTxt(a){   /* «D−7 · Re menor séptima» */
+  const r=(a.notes||[]).find(n=>n.member===0)||a.notes[0], L=r.letter, ac=r.acc>0?'♯':(r.acc<0?'♭':'');
+  const ES={C:'Do',D:'Re',E:'Mi',F:'Fa',G:'Sol',A:'La',B:'Si'}[L];
+  return '<span class="gp-cif">'+L+ac+GP_CIF[a.quality]+'</span> · '+ES+ac+' '+GP_NOMF[a.quality]; }

@@ -871,3 +871,11 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 #pcg .co-opts.co-com{grid-template-columns:repeat(2,1fr)}
 /* (20-nov) con dos filas de opciones, que la cuenta de «Solución en» no pise los botones */
 .pcg-hoja:has(.bon-ops.gp6),.pcg-hoja:has(.pcg-mod){height:525px}
+
+/* (21-nov-2026, Iago) grafía A: símbolo grande y nombre del libro debajo */
+.arm-ops.gp10>span{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:84px;padding:5px 6px 6px!important;line-height:1}
+.arm-ops.gp10>span b{font-size:24px;font-weight:900;line-height:1.05}
+.arm-ops.gp10>span i{font-style:normal;font-size:10.5px;font-weight:800;line-height:1.1;margin-top:3px;color:#7c6fb0;max-width:92px;text-align:center}
+.arm-ops.gp10>span.sel i{color:#fff}.arm-ops.gp10>span.ko i{color:#b91c1c}
+.gp-t7{position:relative;display:inline-block}.gp-t7 svg{position:absolute;left:50%;top:50%;width:.75em;height:1.1em;transform:translate(-50%,-50%)}
+.gp-cif{font-weight:900}
