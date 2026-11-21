@@ -171,7 +171,9 @@ function insBadge(k,c,f,b){ const A=(typeof AV_INS_ARTE!=='undefined')&&AV_INS_A
   return '<defs><clipPath id="v3i'+id+'"><circle cx="183" cy="183" r="30"/></clipPath></defs><g clip-path="url(#v3i'+id+')"><g transform="translate(153 153) scale(.3)">'+fondo(f,b,c,'i'+id)+'</g></g>'+
     '<circle cx="183" cy="183" r="30" fill="none" stroke="'+c+'" stroke-width="6"/><svg x="162" y="162" width="42" height="42" viewBox="0 0 '+A.w+' '+A.h+'">'+A.b+'</svg>'; }
 const BADGE_PROFE='<rect x="138" y="168" width="72" height="32" rx="7" fill="#0b0b10" stroke="#ffd23f" stroke-width="5"/><text x="174" y="191" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-weight="900" font-size="17" letter-spacing="1.2" fill="#ffd23f">PROFE</text>';
-const badgeBot=c=>'<circle cx="183" cy="183" r="24" fill="#0b0b10" stroke="'+c+'" stroke-width="5"/><text x="183" y="192" text-anchor="middle" font-size="24">🤖</text>';
+/* (21-nov 10:10, Iago) nada de robot: un cartelito «BOT» como el de «PROFE», con el fondo del propio compositor */
+const badgeBot=(c,f,b,col)=>{ const id=++UID; return '<defs><clipPath id="v3k'+id+'"><rect x="140" y="170" width="68" height="28" rx="6"/></clipPath></defs><g clip-path="url(#v3k'+id+')"><g transform="translate(140 150) scale(.34)">'+fondo(f||'liso',b||'#1b2038',col||c,'k'+id)+'</g><rect x="140" y="170" width="68" height="28" fill="rgba(0,0,0,.3)"/></g>'+
+  '<rect x="138" y="168" width="72" height="32" rx="7" fill="none" stroke="'+c+'" stroke-width="5"/><text x="174" y="191" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-weight="900" font-size="17" letter-spacing="1.6" fill="#fff">BOT</text>'; };
 /* ---------------- configuración: de lo guardado (v1 o v3) a una completa ---------------- */
 const BASE={color:'#ffd23f',fondo:'liso',fondoC:'#1b2038',cara:'sonrisa',pelo:'ninguno',peloC:'#1f1a17',gorro:'ninguno',gorroC:'#ef4444',gafas:'ninguna',prenda:'camiseta',ropa:'#2563eb',compCara:'nada',compCuello:'nada'};
 const OK=(lista,v,def)=>lista.some(x=>x[0]===v)?v:def;
@@ -206,7 +208,7 @@ function render(cfg,op){ op=op||{}; const o=Object.assign(norm(cfg),cfg&&cfg.__r
   const rp=ropa(o.prenda,R,o.compCuello);
   const cabeza='<circle cx="100" cy="94" r="46" fill="'+o.color+'"/>'+(op.profe?'<ellipse cx="84" cy="62" rx="12" ry="6" fill="#fff" opacity=".35" transform="rotate(-24 84 62)"/>':'');
   const esc='<g transform="translate(100 90.5) scale(1.08) translate(-100 -94)">';
-  const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
+  const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c,o.fondo,o.fondoC,o.color):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
   return '<svg class="av av3 '+(op.entra?'entra ':'')+(op.quieto?'quieto ':'')+(op.vivoFondo?'mueve ':'')+g0+(op.dir<0?' izq':'')+'" viewBox="-16 -16 232 232"><defs><clipPath id="v3c'+id+'"><circle cx="100" cy="100" r="96"/></clipPath></defs>'+
     '<g clip-path="url(#v3c'+id+')">'+fondo(o.fondo,o.fondoC,o.color,id)+'<g class="resp"><g class="cab">'+esc+peloAt+gr.at+'</g>'+cp.at+'</g>'+rp.at+rp.de+cp.cu+
     '<g class="cab">'+cabeza+cp.de+(o.compCara==='barba'?(op.profe?BARBA_PROFE(o.peloC):BARBA(o.peloC))+(op.profe?CEJAS_PROFE(o.peloC,o.cara,g0):''):'')+cara(o.cara,g0,op.dir)+gafas(o.gafas)+esc+peloDe+gr.de+'</g></g>'+(g0==='llorar'?'':'<g class="brz">'+brazos(g0,R,o.color)+'</g>')+'</g></g>'+
@@ -385,7 +387,7 @@ function vivo(host,cfg,op){ css(); op=op||{}; let o,cej0; const E={}, UL={};
   const brazo=k=>'<g data-r="b'+k+'" visibility="hidden"><path data-r="bp'+k+'" stroke="'+R+'" stroke-width="17" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle data-r="bm'+k+'" r="11.5" fill="'+osc(o.color,.14)+'"/></g>';
   const nota='<g fill="'+c+'"><ellipse cx="0" cy="0" rx="4.4" ry="3.3" transform="rotate(-22)"/><path d="M3.6 -1.2 V-15 q5.5 1.5 6.5 6.5" stroke="'+c+'" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>';
   const chispa='<path d="M0 -8 Q1.2 -1.2 8 0 Q1.2 1.2 0 8 Q-1.2 1.2 -8 0 Q-1.2 -1.2 0 -8Z" fill="#ffd23f"/>';
-  const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
+  const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c,o.fondo,o.fondoC,o.color):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
   const F='<div class="av3v-fw"><svg class="av3v-f av3 quieto" '+vb+' aria-hidden="true" style="animation-delay:-'+(hash(String(cfg&&cfg.color)+o.fondo+id)%40)+'s">'+fondo(o.fondo,o.fondoC,o.color,id)+'</svg></div>';
   const P='<svg class="av3v-p" '+vb+' aria-hidden="true"><defs><clipPath id="v3p'+id+'"><circle cx="100" cy="100" r="96"/></clipPath><clipPath id="v3b'+id+'"><path data-r="bocaC"/></clipPath></defs>'+
     '<g clip-path="url(#v3p'+id+')"><g data-r="cuerpo">'+
@@ -2238,6 +2240,22 @@ function coAvHTML(f,extra){ try{
 }catch(e){ return ''; } }
 /* (21-nov 08:41, Iago) en el podio, los tres primeros cobran vida con física (AV3.vivo): el 1.º celebra y baila, los demás aplauden.
    La partida ya ha terminado, así que no resta fluidez; y en reposo no gastan nada. */
+/* (21-nov 10:10, Iago) «en cada momento en que haya avatares, que estén animados: que lloren, que hagan gestos». En la
+   clasificación, al reordenarse, cada uno reacciona a su puesto: el que sube celebra, el que baja llora, el 1.º baila. Solo
+   mientras se ve la clasificación (entre ejercicio y ejercicio): durante los ejercicios no hay ninguno animado. */
+function coAvCfg(f){ if(f.grupo==='bot') return [AV_BOTS[f.nombre]||avatarPorDefecto(f.nombre),{bot:true}];
+  const j=((CO&&CO.est&&CO.est.jugadores)||[]).find(x=>x.id===f.id)||{id:f.id};
+  if(j.profe) return [AV3.PROFE,{profe:true,anillo:'#ffd23f'}];
+  return [(j.yo&&window.__coMiAv)||j.av||avatarPorDefecto(j.id),{ins:AV_INSTR[j.ins]||null}]; }
+function coRankVivo(av,f,a,nTot){ const e=avatarAnimo(f.pos,a,nTot);
+  if(!window.AV3||!AV3.vivo){ av.innerHTML=coAvHTML(f,e); return; }
+  try{ const q=coAvCfg(f), cfg=q[0], op=Object.assign({lite:true},q[1]), cara=(e.cara==='llora'||e.cara==='triste')?'serio':e.cara;
+    if(cara) op.cara=cara; if(e.gafas&&!op.profe) op.gafas='sol';
+    av.innerHTML=''; const h=document.createElement('div'); h.className='av'; av.appendChild(h); const r=AV3.vivo(h,cfg,op);
+    const g=(a&&f.pos<a)?'celebrar':(a&&f.pos>a)?'llorar':(f.pos===1?'bailar':['asentir','mirar','guino','tararear','reir'][(f.pos+(a||0))%5]);
+    setTimeout(()=>{ if(!r.muerto) r.gesto(g); },200+Math.random()*450);
+    setTimeout(()=>{ if(!r.muerto&&!r.ocupado()) r.gesto(f.pos===1?'celebrar':(a&&f.pos>a)?'triste':['saludar','asentir','mirar','reir'][f.pos%4]); },3300+Math.random()*900);
+  }catch(x){ av.innerHTML=coAvHTML(f,e); } }
 function coPodioVivo(top){ try{ if(!window.AV3||!AV3.vivo) return; const R=[];
   top.forEach(x=>{ const sp=[].find.call(STAGE.querySelectorAll('.co-avr.podio'),q=>q.dataset.avid===String(x.id)), sv=sp&&sp.querySelector('svg.av'); if(!sv) return;
     let cfg, op={lite:true,cara:'dientes'};
@@ -2387,7 +2405,7 @@ async function coRanking(i,finOff){ const kT=i; i=coPos(i);
       o.d.style.transition='none'; o.d.style.transform='translate('+dx/K+'px,'+dy/K+'px)'; o.d.getBoundingClientRect(); o.d.style.transition='transform 1.1s cubic-bezier(.25,.8,.25,1)'; o.d.style.transform=''; } });
     if(mov){ coRecoloca(ahora()+0.01); }
     /* caras: el que sube se alegra, el que baja llora; los demás, la cara de su sitio (1.º con gafas de sol) */
-    orden.forEach(f=>{ const o=filas[f.id], a=posA[f.id]||null, av=o.d.querySelector('.co-avr'); if(av) av.innerHTML=coAvHTML(f,avatarAnimo(f.pos,a,nTot));
+    orden.forEach(f=>{ const o=filas[f.id], a=posA[f.id]||null, av=o.d.querySelector('.co-avr'); if(av) coRankVivo(av,f,a,nTot);
       if(a&&f.pos<a) o.d.classList.add('sub2'); if(a&&f.pos>a) o.d.classList.add('baja'); o.d.classList.toggle('lider',f.pos===1); });
     if(yoN&&posA[yoN.id]&&yoN.pos>posA[yoN.id]) [0,0.1,0.2].forEach((d,k)=>coBlip([587,494,392][k],ahora()+0.35+d,0.25,0.07,'triangle'));
     const yoA=yoN&&ini.findIndex(q=>q.f.yo), sube=yoN&&yoA>=0&&yoN.pos-1<yoA;
@@ -3133,7 +3151,7 @@ function coParar(vuelve){
 }
 /* (19-nov, Iago) 8 compañeros inventados para probar: cada uno con su nivel; puntos por fase con la misma escala (0–1000) */
 /* (20-nov-2026 18:14, Iago) bots: si al empezar hay menos de 5 jugadores, se completan hasta 5 (el servidor fija cuántos).
-   Nombre de compositor (para que se sepa que son bots) y nivel al azar en cada partida, de 2 a 9,5: puede tocar uno que
+   Nombre de compositor (para que se sepa que son bots) y nivel al azar en cada partida (21-nov: de 4 a 9, ver NIV): puede tocar uno que
    lo hace fatal o uno que es un crack, pero NUNCA llega al pleno (si un alumno lo hace perfecto, siempre gana al bot).
    Todo sale de la semilla de la partida: todos ven los mismos bots y los mismos puntos. */
 const CO_COMPOSITORES=['J. S. Bach','Händel','Haydn','Mozart','Beethoven','Vivaldi','Scarlatti','Chopin','Schubert','Liszt','Mendelssohn','Fanny Mendelssohn','Verdi','Clara Schumann','Chaikovski','Brahms','Debussy','Ravel','Rossini','Puccini','Grieg','Dvořák','Albéniz','Falla','Purcell','Monteverdi','Hildegard von Bingen','Rajmáninov'];
@@ -3141,7 +3159,11 @@ function coBots(n,sem,est){
   let a=(sem*2654435761)>>>0; const rnd=()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
   const noms=CO_COMPOSITORES.slice(); for(let i=noms.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const x=noms[i]; noms[i]=noms[j]; noms[j]=x; }
   const q=(x,paso)=>Math.floor(Math.max(0,Math.min(1000,x))/paso)*paso;   /* hacia abajo: nunca redondea al pleno */
-  return noms.slice(0,Math.max(0,n)).map((nombre,i)=>{ const s=0.2+0.75*rnd(), r=()=>Math.min(0.94,Math.max(0.02,s+(rnd()-0.5)*0.3));
+  /* (21-nov 10:10, Iago) «que sean retadores, entre 4 y 9»: el nivel sale de cómo les van los dictados a sus alumnos (medias de
+     los últimos meses: p10 ≈ 5,4 · p25 ≈ 6,5 · mediana ≈ 7,8 · p75 ≈ 8,8), al azar pero con esos estadios y recortado a 4–9 */
+  const NIV=[[0,4],[.05,4.6],[.1,5.4],[.25,6.5],[.5,7.6],[.75,8.4],[.9,8.8],[1,9.1]];
+  const nivel=()=>{ const u=rnd(); for(let k=1;k<NIV.length;k++) if(u<=NIV[k][0]){ const [u0,g0]=NIV[k-1],[u1,g1]=NIV[k]; return g0+(g1-g0)*(u-u0)/(u1-u0); } return 9; };
+  return noms.slice(0,Math.max(0,n)).map((nombre,i)=>{ const s=Math.min(.9,Math.max(.4,nivel()/10)), r=()=>Math.min(0.94,Math.max(0.02,s+(rnd()-0.5)*0.24));
     let ton=[400,300,300].reduce((t,v)=>t+(rnd()<s?v:0),0); if(ton>=1000) ton=700;
     const cad=rnd()<s?(rnd()<0.6?1000:700):0;
     return {id:'bot'+i,nombre,grupo:'bot',p:[q(1000*r(),1000/12),q(1000*r(),125),ton,q(1000*r(),100),cad,rnd()<s?(rnd()<0.6?1000:700):0].map(Math.round),ms:[0,0,0,0,0,0].map(()=>Math.round(12000+45000*rnd()))}; });

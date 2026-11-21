@@ -333,5 +333,8 @@ html.co-on,html.co-on body{overflow:hidden}
 /* (21-nov 09:56, Iago) avatares vivos del lobby: la sombra va pintada una vez (box-shadow) en vez de filtro, para no recalcularla con el fondo en movimiento */
 #co .mono .pg .av.av3vh{filter:none}#co .mono .pg .av.av3vh .av3v::before{content:'';position:absolute;left:8.6%;top:8.6%;width:82.8%;height:82.8%;border-radius:50%;box-shadow:0 6px 12px rgba(0,0,0,.38)}
 
+/* (21-nov 10:10, Iago) la barra de frases y emojis, más grande donde hay sitio (se veía muy pequeña en pantallas grandes) */
+@media (min-width:1100px) and (min-height:760px){ #coDock{padding:12px 16px 8px;gap:8px} #coDock .fr{gap:7px} #coDock .fr button{padding:9px 14px;font-size:15px;border-radius:10px} #coDock .em{gap:4px} #coDock .em button{width:56px;height:54px;font-size:36px;border-radius:10px} }
+
 #co .logo .tt .pro{font-size:30px;align-self:center;font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.05em;margin:0 .22em 0 .18em;background:linear-gradient(180deg,#fff3c2,#f5d061 45%,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:480px){#co .logo .tt .pro{font-size:17px}}
