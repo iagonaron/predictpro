@@ -2328,6 +2328,18 @@ let CO_RX=null;
 function coRxCapa(){ let l=document.getElementById('coRxCapa'); if(!l){ l=el('div','co-rx-capa'); l.id='coRxCapa'; (ROOT||document.body).appendChild(l); } return l; }
 function coRxFlota(emo,nombre,yo,id){
   const av=id&&document.querySelector('.co-avr[data-avid="'+String(id).replace(/"/g,'')+'"]');
+  /* (21-nov 13:08, Iago) en la clasificación, lo que se lanza va por el carril de su fila, hacia la derecha, y se desvanece antes de
+     los puntos. Una vez lanzado sigue su carril aunque la fila se recoloque (va suelto en la pantalla, no dentro de la fila). */
+  const filaR=av&&av.closest&&av.closest('.co-rank .fila');
+  if(filaR&&av.getBoundingClientRect().width){ const esEmo=CO_EMO.indexOf(emo)>=0, r=av.getBoundingClientRect(), rf=filaR.getBoundingClientRect(), del=filaR.querySelector('.del');
+    av.classList.remove('agita'); void av.offsetWidth; av.classList.add('agita');
+    const x0=r.right+12, yc=rf.top+rf.height/2+(Math.random()-0.5)*rf.height*0.3, xFin=(del&&del.getBoundingClientRect().width?del.getBoundingClientRect().left:rf.right-360)-24, dist=Math.max(90,xFin-x0);
+    const d=document.createElement('div'); d.className='co-flota2 carril'+(esEmo?' emo':''); if(!esEmo) d.style.background=coAvColor(id);
+    d.innerHTML=coEsc(emo)+(esEmo?'':'<small>'+coEsc(yo?'Tú':(nombre||''))+'</small>'); d.style.left=x0+'px'; d.style.top=yc+'px'; document.body.appendChild(d);
+    d.animate([{transform:'translate(0,-50%) scale(.6)',opacity:0},{transform:'translate('+(dist*0.07)+'px,-50%) scale(1.06)',opacity:1,offset:.1},
+      {transform:'translate('+(dist*0.45)+'px,calc(-50% - 6px)) scale(1)',opacity:1,offset:.45},{transform:'translate('+(dist*0.82)+'px,calc(-50% + 4px)) scale(1)',opacity:1,offset:.78},
+      {transform:'translate('+dist+'px,-50%) scale(.85)',opacity:0}],{duration:2800,easing:'cubic-bezier(.3,.5,.5,1)'}).onfinish=()=>d.remove();
+    return; }
   if(av&&av.getBoundingClientRect().width){ const esEmo=CO_EMO.indexOf(emo)>=0, r=av.getBoundingClientRect(), x0=r.left+r.width/2, y0=r.top+r.height*0.12;
     av.classList.remove('agita'); void av.offsetWidth; av.classList.add('agita');
     const d=document.createElement('div'); d.className='co-flota2'+(esEmo?' emo':''); if(!esEmo) d.style.background=coAvColor(id);
