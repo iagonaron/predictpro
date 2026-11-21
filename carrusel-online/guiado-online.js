@@ -199,7 +199,7 @@ function expr(x){ x=x||{}; const r={};
 /* ---------------- el dibujo ---------------- */
 function render(cfg,op){ op=op||{}; const o=Object.assign(norm(cfg),cfg&&cfg.__raw?cfg:{} ,op.forzar||{}); const id=++UID, c=op.anillo||o.color, R=o.ropa, g0=op.gesto||'';
   if(op.profe){ Object.assign(o,PROFE); }
-  if(op.cara) o.cara=op.cara; if(op.gafas) o.gafas=op.gafas;
+  if(op.cara) o.cara=op.cara; if(op.gafas&&!op.profe) o.gafas=op.gafas;   /* (21-nov) el profe nunca con gafas de sol, tampoco de líder */
   const h=pelo(o.pelo,o.peloC), gr=gorro(o.gorro,o.gorroC), cp=comp([(op.profe&&o.compCara==='barba')?'nada':o.compCara],o.peloC,o.color);   /* el profe lleva su propia barba (BARBA_PROFE) */
   const conGorro=['ninguno','diadema','auriculares','bandana'].indexOf(o.gorro)<0;
   const peloDe=conGorro?'':h.de, peloAt=(conGorro&&o.pelo==='afro')?'<circle cx="100" cy="96" r="58" fill="'+o.peloC+'"/>':(conGorro&&o.pelo==='mono'?'':h.at);
@@ -207,9 +207,9 @@ function render(cfg,op){ op=op||{}; const o=Object.assign(norm(cfg),cfg&&cfg.__r
   const cabeza='<circle cx="100" cy="94" r="46" fill="'+o.color+'"/>'+(op.profe?'<ellipse cx="84" cy="62" rx="12" ry="6" fill="#fff" opacity=".35" transform="rotate(-24 84 62)"/>':'');
   const esc='<g transform="translate(100 90.5) scale(1.08) translate(-100 -94)">';
   const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
-  return '<svg class="av av3 '+(op.quieto?'quieto ':'')+(op.vivoFondo?'mueve ':'')+g0+(op.dir<0?' izq':'')+'" viewBox="-16 -16 232 232"><defs><clipPath id="v3c'+id+'"><circle cx="100" cy="100" r="96"/></clipPath></defs>'+
+  return '<svg class="av av3 '+(op.entra?'entra ':'')+(op.quieto?'quieto ':'')+(op.vivoFondo?'mueve ':'')+g0+(op.dir<0?' izq':'')+'" viewBox="-16 -16 232 232"><defs><clipPath id="v3c'+id+'"><circle cx="100" cy="100" r="96"/></clipPath></defs>'+
     '<g clip-path="url(#v3c'+id+')">'+fondo(o.fondo,o.fondoC,o.color,id)+'<g class="resp"><g class="cab">'+esc+peloAt+gr.at+'</g>'+cp.at+'</g>'+rp.at+rp.de+cp.cu+
-    '<g class="cab">'+cabeza+cp.de+(o.compCara==='barba'?(op.profe?BARBA_PROFE(o.peloC):BARBA(o.peloC))+(op.profe?CEJAS_PROFE(o.peloC,o.cara,g0):''):'')+cara(o.cara,g0,op.dir)+gafas(o.gafas)+esc+peloDe+gr.de+'</g></g>'+(g0==='llorar'?'':brazos(g0,R,o.color))+'</g></g>'+
+    '<g class="cab">'+cabeza+cp.de+(o.compCara==='barba'?(op.profe?BARBA_PROFE(o.peloC):BARBA(o.peloC))+(op.profe?CEJAS_PROFE(o.peloC,o.cara,g0):''):'')+cara(o.cara,g0,op.dir)+gafas(o.gafas)+esc+peloDe+gr.de+'</g></g>'+(g0==='llorar'?'':'<g class="brz">'+brazos(g0,R,o.color)+'</g>')+'</g></g>'+
     '<circle cx="100" cy="100" r="95" fill="none" stroke="'+c+'" stroke-width="7"/>'+badge+'</svg>'; }
 /* ---------------- CSS (una vez) ---------------- */
 function css(){ if(document.getElementById('av3-css')) return; const s=document.createElement('style'); s.id='av3-css'; s.textContent=
@@ -231,6 +231,16 @@ function css(){ if(document.getElementById('av3-css')) return; const s=document.
  '.av3.mueve .nb-sube{animation:av3sube 9s ease-in-out infinite alternate}@keyframes av3sube{to{transform:translateY(-16px)}}'+
  '.av3.mueve .nb-ola{animation:av3ola 12s ease-in-out infinite alternate}@keyframes av3ola{to{transform:translateX(-18px) translateY(6px)}}'+
  '.av3.quieto *{animation:none!important}'+
+ /* (21-nov 07:32, Iago) «que se mueva de verdad»: con op.entra, los brazos suben desde abajo y la mirada y la cabeza giran con suavidad */
+ '.av3.entra .brz{animation:av3brz .42s cubic-bezier(.2,.9,.3,1.15) both;transform-box:view-box;transform-origin:100px 230px}'+
+ '@keyframes av3brz{from{transform:translateY(60px) rotate(8deg);opacity:0}to{transform:none;opacity:1}}'+
+ '.av3.entra.mirar .ojos>g{animation:av3mirD .4s ease-out both}.av3.entra.mirar.izq .ojos>g{animation-name:av3mirI}'+
+ '@keyframes av3mirD{from{transform:translateX(0)}to{transform:translateX(6px)}}@keyframes av3mirI{from{transform:translateX(0)}to{transform:translateX(-6px)}}'+
+ '.av3.entra.mirar .cab{animation:av3tiltD .5s ease-out both}.av3.entra.mirar.izq .cab{animation-name:av3tiltI}'+
+ '@keyframes av3tiltD{to{transform:rotate(5deg)}}@keyframes av3tiltI{to{transform:rotate(-5deg)}}'+
+ /* en el lobby, mirar a quien reacciona de verdad (la animación de reposo tapaba el giro) y ladear un poco la cabeza */
+ '#co .mono.mira-i .av3 .mira,#co .mono.mira-d .av3 .mira,#co .mono.mira-a .av3 .mira{animation:none}#co .mono .av3 .mira{transition:transform .3s ease}'+
+ '#co .mono.mira-i .av3 .cab{transform:rotate(-5deg)}#co .mono.mira-d .av3 .cab{transform:rotate(5deg)}'+
  '#co .mono.parpadea .av3 .ojos{transform:scaleY(.12)}#co .mono.mira-i .av3 .mirada,#co .mono.mira-i .av3 .mira{transform:translateX(-6px)}#co .mono.mira-d .av3 .mira{transform:translateX(6px)}#co .mono.mira-a .av3 .mira{transform:translateY(-4px)}'+
  '@media (prefers-reduced-motion:reduce){.av3 *{animation:none!important}}'+
  /* editor */
@@ -257,20 +267,21 @@ function generoDe(nom){ const n=String(nom||'').trim().split(/\s+/)[0].normalize
 /* ---------------- editor «Personalizar» ---------------- */
 let ED=null;
 function editor(p){ css(); p=p||{}; const nom=p.nombre||'', gen=generoDe(nom), lab=n=>{ const q=String(n).split('|'); return q.length>1?(gen==='chico'?q[0]:q[1]):n; };
-  ED={cfg:norm(p.cfg), tab:'color', p};
+  ED={cfg:norm(p.cfg), tab:(p.elegirIns&&!p.ins)?'ins':'color', p, ins:p.ins||null, insNom:null};   /* (21-nov) elegirIns: si su ficha no tiene instrumento, lo elige aquí */
   let w=document.getElementById('av3Ed'); if(w) w.remove();
   w=document.createElement('div'); w.id='av3Ed'; document.body.appendChild(w);
   w.innerHTML='<div class="caja" role="dialog" aria-label="Personaliza tu avatar"><div class="ti"><b>Personaliza tu avatar</b><button type="button" class="x" data-no="1" aria-label="Cerrar">✕</button></div>'+
     '<div class="pv"></div><div class="ed"><div class="tabs"></div><div class="panel"></div></div><div class="pie"><button type="button" class="no" data-no="1">Cancelar</button><button type="button" class="si">Guardar mi avatar</button></div></div>';
-  const TABS=[['color','Color'],['fondo','Fondo'],['cara','Cara base'],['pelo','Peinado'],['gorro','Gorro'],['gafas','Gafas'],['ropa','Ropa'],['comp','Complementos']];
-  const av=(extra,opt)=>render(Object.assign({},ED.cfg,extra||{}),Object.assign({ins:p.ins},opt||{}));
+  const TABS=(p.elegirIns?[['ins','Instrumento']]:[]).concat([['color','Color'],['fondo','Fondo'],['cara','Cara base'],['pelo','Peinado'],['gorro','Gorro'],['gafas','Gafas'],['ropa','Ropa'],['comp','Complementos']]);
+  const av=(extra,opt)=>render(Object.assign({},ED.cfg,extra||{}),Object.assign({ins:ED.ins},opt||{}));
   const ops=(lista,campo)=>'<div class="grid">'+lista.map(([k,n])=>'<div class="op'+(ED.cfg[campo]===k?' on':'')+'" data-campo="'+campo+'" data-k="'+k+'">'+av({[campo]:k},{quieto:true,vivoFondo:campo==='fondo'}).replace('class="av av3 quieto mueve','class="av av3 mueve')+lab(n)+'</div>').join('')+'</div>';
   const cols=(campo,lista,tit)=>'<div class="h">'+tit+'</div><div class="cols">'+lista.map(c=>'<button type="button" class="'+(ED.cfg[campo]===c?'on':'')+'" style="background:'+c+'" data-campo="'+campo+'" data-k="'+c+'"></button>').join('')+'</div>';
   function pinta(){
     w.querySelector('.pv').style.setProperty('--c',ED.cfg.color);
-    w.querySelector('.pv').innerHTML='<div class="gr">'+av({},{vivoFondo:true})+'</div><div class="n">'+(nom||'Tú')+'</div><div class="i">Tu instrumento sale solo, de tu ficha</div><div class="bo">¡Vamos!</div>';
+    w.querySelector('.pv').innerHTML='<div class="gr">'+av({},{vivoFondo:true})+'</div><div class="n">'+(nom||'Tú')+'</div><div class="i">'+(p.elegirIns?(ED.insNom?ED.insNom:'Elige tu instrumento'):'Tu instrumento sale solo, de tu ficha')+'</div><div class="bo">¡Vamos!</div>';
     w.querySelector('.tabs').innerHTML=TABS.map(([k,n])=>'<button type="button" class="'+(ED.tab===k?'on':'')+'" data-tab="'+k+'">'+n+'</button>').join('');
     let h=''; const T=ED.tab;
+    if(T==='ins') h='<div class="h">¿Qué instrumento tocas? Saldrá en tu avatar en todas las partidas</div><div class="grid">'+Object.keys(AV_INSTR).map(k=>'<div class="op'+(ED.insNom===k?' on':'')+'" data-ins="'+k+'">'+render(ED.cfg,{ins:AV_INSTR[k],quieto:true})+k+'</div>').join('')+'</div>';
     if(T==='color') h='<div class="h">Color del personaje (también el del anillo y el de sus mensajes)</div>'+ops(COLS.map(c=>[c,'']),'color');
     if(T==='fondo') h=ops(FONDOS,'fondo')+(ED.cfg.fondo==='liso'?'<div style="margin-top:10px">'+cols('fondoC',FONDO_C,'Color del fondo liso')+'</div>':'');
     if(T==='cara') h='<div class="h">Es la cara que pones normalmente; luego reaccionas a lo que pasa y vuelves a ella</div>'+ops(CARAS,'cara');
@@ -281,10 +292,11 @@ function editor(p){ css(); p=p||{}; const nom=p.nombre||'', gen=generoDe(nom), l
     if(T==='comp') h='<div class="h">De la cara (elige uno)</div>'+ops(COMP_CARA,'compCara')+'<div class="h" style="margin-top:12px">Al cuello (elige uno)</div>'+ops(COMP_CUELLO,'compCuello');
     const pan=w.querySelector('.panel'), y=pan.scrollTop; pan.innerHTML=h; pan.scrollTop=y; }
   const cerrar=()=>{ w.remove(); ED=null; try{ p.onCerrar&&p.onCerrar(); }catch(e){} };
-  w.addEventListener('click',async ev=>{ if(ev.target===w){ cerrar(); return; } const t=ev.target.closest('[data-tab],[data-campo],[data-no],.si'); if(!t) return;
+  w.addEventListener('click',async ev=>{ if(ev.target===w){ cerrar(); return; } const t=ev.target.closest('[data-tab],[data-campo],[data-ins],[data-no],.si'); if(!t) return;
     if(t.dataset.no){ cerrar(); return; }
-    if(t.classList.contains('si')){ t.disabled=true; let ok=true; try{ if(p.onGuardar) ok=await p.onGuardar(Object.assign({v:3},ED.cfg)); }catch(e){ ok=false; } t.disabled=false; if(ok!==false) cerrar(); return; }
+    if(t.classList.contains('si')){ t.disabled=true; let ok=true; try{ if(p.onGuardar) ok=await p.onGuardar(Object.assign({v:3},ED.cfg),ED.insNom); }catch(e){ ok=false; } t.disabled=false; if(ok!==false) cerrar(); return; }
     if(t.dataset.tab){ ED.tab=t.dataset.tab; w.querySelector('.panel').scrollTop=0; pinta(); return; }
+    if(t.dataset.ins){ ED.insNom=t.dataset.ins; ED.ins=AV_INSTR[t.dataset.ins]||null; pinta(); return; }
     ED.cfg[t.dataset.campo]=t.dataset.k; pinta(); });
   pinta(); }
 /* ---------------- API ---------------- */
@@ -1149,7 +1161,7 @@ function dibujaToncom(host,T){
   const cp=T.compas.split('/');
   const celda=(k,lab,sol)=>'<div class="tc" data-k="'+k+'"><div class="lab">'+lab+'</div><div class="val"><span class="q">?</span><span class="sol pcg-oc">'+sol+'</span></div></div>';
   // (19-nov-2026, Iago) letrerito: puede haber tonalidades de hasta 5 alteraciones
-  host.innerHTML='<div class="pcg-ton-aviso">Puede haber tonalidades de hasta 5 alteraciones</div><div class="pcg-ton">'+celda('ton','Tonalidad',T.tonalidad)+celda('arm','Armadura',armaduraHTML(T.key.sig))+
+  host.innerHTML='<div class="pcg-ton-aviso">Puede haber tonalidades de hasta 7 alteraciones</div><div class="pcg-ton">'+celda('ton','Tonalidad',T.tonalidad)+celda('arm','Armadura',armaduraHTML(T.key.sig))+
     celda('com','Compás','<span class="cp"><span>'+cp[0]+'</span><span>'+cp[1]+'</span></span>')+'</div>';
   const c=k=>host.querySelector('.tc[data-k="'+k+'"]');
   return { ton:c('ton'), arm:c('arm'), com:c('com'),
@@ -1201,9 +1213,9 @@ const TIPO_NOMBRE={PM:'Perfecto mayor',Pm:'Perfecto menor',Aum:'Aumentado',Dis:'
 function penta(host,W,H){ const VF=Vex.Flow; const box=el('div','pcg-nota'); host.appendChild(box);
   const ren=new VF.Renderer(box,VF.Renderer.Backends.SVG); ren.resize(W,H); return {box,ctx:ren.getContext()}; }
 /* un acorde en una x FIJA (así el acorde completo y la nota sola caen en el mismo sitio) */
-function acordeEn(ctx,stave,notas,X,clase,colorIdx,color){
+function acordeEn(ctx,stave,notas,X,clase,colorIdx,color,dur){
   const VF=Vex.Flow;
-  const sn=new VF.StaveNote({keys:notas.map(armVexKey),duration:'w',clef:'treble'});
+  const sn=new VF.StaveNote({keys:notas.map(armVexKey),duration:dur||'w',clef:'treble'});
   notas.forEach((n,k)=>{ if(n.acc!==0) sn.addModifier(new VF.Accidental(armAccSym(n.acc)),k); });
   if(colorIdx!=null){ try{ sn.setKeyStyle(colorIdx,{fillStyle:color,strokeStyle:color}); }catch(e){} }
   const v=new VF.Voice({num_beats:4,beat_value:4}); v.setStrict(false); v.addTickables([sn]);
@@ -1248,7 +1260,7 @@ function dibujaArmonico(host,a,b){
   const ord=[0,1,2].map(k=>armSpell(rl,k,r0+iv[k]));
   const Asol=acordeEn(P2.ctx,st2,[mid],84,'pcga2mid',0,morado);   // (30-sep-2026) un poco más a la derecha: sitio para las etiquetas
   const Afull=acordeEn(P2.ctx,st2,n2,84,'pcga2full',1,morado);
-  const Aord=acordeEn(P2.ctx,st2,ord,226,'pcga2ord');
+  const Aord=acordeEn(P2.ctx,st2,ord,226,'pcga2ord',null,null,'q');   /* (21-nov 07:24, Iago) ordenado: notitas negras en gris (sin plica, por CSS) */
   const svg2=$('svg',P2.box); ajustaSVG(svg2,W2,H2,28,122);
   [Asol.g,Afull.g,Aord.g].forEach(g=>g.classList.add('pcg-oc'));
   // (30-sep-2026, Iago) el texto de cada escucha («Nota central y nota grave»…) a la derecha, en el hueco del pentagrama,
@@ -1947,9 +1959,10 @@ function coDnMidi(dn,sharp,key){
   return m+(sharp===true?1:(typeof sharp==='number'?sharp:0));   /* (19-nov) también bemol: sharp = -1 */
 }
 /* glifo de la alteración escrita: si la nota ya lleva alteración en la armadura, la contraria es becuadro */
+function coKeyAcc(dn,key){ const L=CO_LET[((dn%7)+7)%7], si=CO_SH.indexOf(L), fi=CO_FL.indexOf(L); return (key.sig>0&&si>=0&&si<key.sig)?1:((key.sig<0&&fi>=0&&fi<-key.sig)?-1:0); }
 function coAltGlyph(dn,d,key){ if(d===true) d=1; if(!d) return null;
-  const L=CO_LET[((dn%7)+7)%7], si=CO_SH.indexOf(L), fi=CO_FL.indexOf(L), kS=key.sig>0&&si>=0&&si<key.sig, kF=key.sig<0&&fi>=0&&fi<-key.sig;
-  if(d>0) return kF?'accidentalNatural':'accidentalSharp'; return kS?'accidentalNatural':'accidentalFlat'; }
+  const ab=coKeyAcc(dn,key)+d;   /* (21-nov) la alteración que se escribe es la absoluta: ♯, ♭ o ♮ (si quita la de la armadura) */
+  return ab>0?'accidentalSharp':(ab<0?'accidentalFlat':'accidentalNatural'); }
 function coMidiDn(m,key){
   for(let dn=14;dn<=46;dn++) if(coDnMidi(dn,false,key)===m) return {dn,sharp:false};
   for(let dn=14;dn<=46;dn++) if(coDnMidi(dn,true,key)===m) return {dn,sharp:true};
@@ -2374,7 +2387,7 @@ function coMelUI(D,key,mel){
     }
     return e;
   }
-  function pon(i,dn){ if(bloq||rev||i<1||i>8) return; dn=Math.max(topdn-13,Math.min(topdn+5,dn)); const a=ans[i]||{dn,sharp:false}; a.dn=dn; ans[i]=a; sel=i; dibuja(); coTic(); }
+  function pon(i,dn){ if(bloq||rev||i<1||i>8) return; dn=Math.max(topdn-13,Math.min(topdn+5,dn)); const a=ans[i]||{dn,sharp:false}; if(a.dn!==dn) a.sharp=false; a.dn=dn; ans[i]=a;   /* (21-nov 07:28, Iago) la nota nueva no hereda la alteración de la anterior */ sel=i; dibuja(); coTic(); }
   function borra(i){ if(bloq||rev||i<1||i>8) return; ans[i]=null; dibuja(); }
   try{ if(window.__CO) window.__melUI={pon:(i,dn)=>pon(i,dn),mel,topdn,key,ans,sol,midi:(dn,sh)=>coDnMidi(dn,sh,key),xy:(i,dn)=>{ const m=svg.getScreenCTM(); return [m.a*P[i].cx+m.e, m.d*yDn(dn)+m.f]; }}; }catch(e){}
   function punto(ev){ return coPuntoSVG(svg,ev); }
@@ -2444,16 +2457,19 @@ function coMelUI(D,key,mel){
   // ♯ y borrar
   const tools=el('div','co-tools'); ESC.hoja.appendChild(tools);
   /* (19-nov 20:59, Iago) sostenido y también bemol */
-  const bS=el('button','co-btn','<b>♯</b><span>Sostenido</span>'), bF=el('button','co-btn','<b>♭</b><span>Bemol</span>'), bB=el('button','co-btn','<b>⌫</b><span>Borrar</span>');
+  /* (21-nov 07:26, Iago) ♭ ♮ ♯ en el centro, solo el símbolo; sin botón de borrar (sigue la tecla ⌫) */
+  const bS=el('button','co-btn co-acc','<b>♯</b>'), bF=el('button','co-btn co-acc','<b>♭</b>'), bN=el('button','co-btn co-acc','<b>♮</b>'), bB={disabled:false};
+  bS.title='Sostenido'; bF.title='Bemol'; bN.title='Becuadro'; tools.classList.add('co-tools-c');
   const bU=el('button','co-btn co-ud','<b>▲</b>'), bD=el('button','co-btn co-ud','<b>▼</b>'); bU.title='Subir la nota elegida'; bD.title='Bajar la nota elegida';
-  tools.appendChild(bS); tools.appendChild(bF); tools.appendChild(bB);
+  tools.appendChild(bF); tools.appendChild(bN); tools.appendChild(bS);
   const mueve=d=>{ if(bloq||rev) return; const a=ans[sel]; if(!a||a.fijo) return; const nd=Math.max(topdn-13,Math.min(topdn+5,a.dn+d)); if(nd!==a.dn){ a.dn=nd; dibuja(); coTic(); } };
   bU.onclick=()=>mueve(1); bD.onclick=()=>mueve(-1);
-  const sube=a=>a.sharp===true||a.sharp===1;
-  bS.onclick=()=>{ if(bloq||rev) return; const a=ans[sel]; if(a&&!a.fijo){ a.sharp=sube(a)?0:1; dibuja(); coTic(); } };
-  bF.onclick=()=>{ if(bloq||rev) return; const a=ans[sel]; if(a&&!a.fijo){ a.sharp=a.sharp===-1?0:-1; dibuja(); coTic(); } };
-  bB.onclick=()=>borra(sel);
-  function pintaBtn(){ const a=ans[sel]; bS.classList.toggle('on',!!(a&&sube(a))); bF.classList.toggle('on',!!(a&&a.sharp===-1)); bS.disabled=bF.disabled=!a||bloq; bB.disabled=!a||bloq; bU.disabled=bD.disabled=!a||bloq; }
+  const off=a=>a.sharp===true?1:(typeof a.sharp==='number'?a.sharp:0);
+  /* cada botón pone la alteración ABSOLUTA (♯ +1, ♮ 0, ♭ −1) respecto a la armadura; pulsar el que ya está la quita */
+  const absA=a=>coKeyAcc(a.dn,key)+off(a), escrita=a=>off(a)!==0;
+  const ponAlt=v=>{ if(bloq||rev) return; const a=ans[sel]; if(!a||a.fijo) return; a.sharp=(escrita(a)&&absA(a)===v)?0:v-coKeyAcc(a.dn,key); dibuja(); coTic(); };
+  bS.onclick=()=>ponAlt(1); bN.onclick=()=>ponAlt(0); bF.onclick=()=>ponAlt(-1);
+  function pintaBtn(){ const a=ans[sel]; [[bS,1],[bN,0],[bF,-1]].forEach(([b,v])=>{ b.classList.toggle('on',!!(a&&escrita(a)&&absA(a)===v)); b.disabled=!a||bloq; }); bU.disabled=bD.disabled=!a||bloq; }
   function onKey(e){ if(bloq||rev) return;
     if(e.key==='ArrowLeft'){ sel=Math.max(1,sel-1); dibuja(); e.preventDefault(); }
     else if(e.key==='ArrowRight'){ sel=Math.min(8,sel+1); dibuja(); e.preventDefault(); }
@@ -2539,7 +2555,7 @@ function coTonUI(B,T){
   const tk=T.key, sol={ton:NOM[tk.tonic[0]]+(ACC[tk.tonic.slice(1)]||'')+' '+(tk.mode==='minor'?'m':'M'),
     arm:tk.sig===0?'—':(Math.abs(tk.sig)+(tk.sig>0?'♯':'♭')), com:T.compas};
   const RN=['Si','La','Sol','Fa','Mi','Re','Do','—'];   /* '—' abajo (sin contestar); Do justo encima */
-  const RA=[]; for(let k=5;k>=1;k--) RA.push(k+'♯'); RA.push('—'); for(let k=1;k<=5;k++) RA.push(k+'♭');   /* (19-nov) hasta 5 */
+  const RA=[]; for(let k=7;k>=1;k--) RA.push(k+'♯'); RA.push('—'); for(let k=1;k<=7;k++) RA.push(k+'♭');   /* (19-nov) hasta 5 */
   const tn={n:'—',acc:'',mm:''}, resp={ton:null,arm:'—',com:null}; let bloq=false; const ru={};
   const etq=()=>{ resp.ton=tn.n==='—'?null:(tn.n+tn.acc+' '+(tn.mm||'?'));
     /* como en Teoría at home: la casilla elegida de la rueda dice la tonalidad entera (Sol♯ m) */
@@ -2635,9 +2651,11 @@ function coArmUI(A,a,bb){
     if(rc&&tx){ tx.setAttribute('x',(+rc.getAttribute('x')-6)); tx.setAttribute('text-anchor','end'); tx.classList.add('co-etq-izq'); } });
   try{ A.verParentesis(); }catch(e){}
   const gO=sv('g',{class:'co-ord'},svg), ordN=new Map(); let selO=null, foco='voz';   /* (19-nov 21:33, Iago) en el paréntesis también alteraciones: la última nota puesta, en violeta y seleccionada */
-  const pintaOrd=()=>{ gO.innerHTML=''; ordN.forEach((a,dn)=>{ const y=yDn(dn), col=(!b2&&foco==='ord'&&dn===selO)?VIO:'#16132b';
-      for(let yy=yL0-10;yy>=y-1;yy-=10) sv('line',{x1:A.cxO-13,x2:A.cxO+13,y1:yy,y2:yy,stroke:'#16132b','stroke-width':1.6},gO);
-      for(let yy=yL4+10;yy<=y+1;yy+=10) sv('line',{x1:A.cxO-13,x2:A.cxO+13,y1:yy,y2:yy,stroke:'#16132b','stroke-width':1.6},gO);
+  /* (21-nov 07:23, Iago) «Ordénalo si quieres», en gris y discreto, encima del pentagrama entre el paréntesis; se va al poner notas */
+  const pista=sv('text',{x:A.cxO,y:yL0-20,'text-anchor':'middle','font-size':11,'font-weight':600,fill:'#a6a1b8',stroke:'none','font-family':'"Helvetica Neue",Arial,sans-serif',class:'co-ord-pista'},svg); pista.textContent='Ordénalo si quieres';
+  const pintaOrd=()=>{ pista.style.display=(ordN.size||b2)?'none':''; gO.innerHTML=''; ordN.forEach((a,dn)=>{ const y=yDn(dn), col=(!b2&&foco==='ord'&&dn===selO)?VIO:'#8f8aa3';   /* (21-nov 07:24, Iago) lo ordenado, en gris */
+      for(let yy=yL0-10;yy>=y-1;yy-=10) sv('line',{x1:A.cxO-13,x2:A.cxO+13,y1:yy,y2:yy,stroke:'#8f8aa3','stroke-width':1.6},gO);
+      for(let yy=yL4+10;yy<=y+1;yy+=10) sv('line',{x1:A.cxO-13,x2:A.cxO+13,y1:yy,y2:yy,stroke:'#8f8aa3','stroke-width':1.6},gO);
       /* (19-nov 23:03, Iago) cabezas pequeñas, rellenas y en cursiva, como la fantasma: es un borrador */
       const gg=sv('g',{transform:'translate('+A.cxO+','+y+') scale(.78) skewX(-12) translate('+(-A.cxO)+','+(-y)+')'},gO);
       const h=coGlyph(gg,'noteheadBlack',A.cxO,y,col); const AG={'-1':'accidentalFlat','0':'','1':'accidentalSharp','2':'accidentalNatural'}[String(a)]; if(AG) coGlyph(gg,AG,h.x0-3,y,col,'r'); }); };
@@ -2718,6 +2736,7 @@ async function coArm(b){
   sonidoUI('atencion'); cartel('Otra vez, el acorde entero','Comprueba tus notas'); await espera(0.5);
   t=ahora()+0.1; A.luz([0,1,2]); await hasta(bloque(t,m2,2.2)+S(0.6)); A.luz([]);
   /* (19-nov 23:03, Iago) sin textos ni esperas «medio quietas»: solo el tiempo hasta la solución (se puede seguir cambiando) */
+  if(CO&&CO.rush) coFinRush();   /* (21-nov) «Adelantar» en el armónico: la cuenta «Solución en» se calcula ya con el reloj corrido (antes se quedaba en 5 casi un minuto) */
   cartel('',''); A.parpadea(2,false);
   enTiempo(coT(b+corr-0.15),()=>I.bloquea());
   { const q=coHasta(b+corr), t0=ahora()+S(Math.max(0,q-5)); for(let k=0;k<5;k++) sonidoUI(k%2?'tac':'tic',t0+S(k)+0.01);
@@ -2748,7 +2767,7 @@ const CO_CAD_TXT={autentica:['Cadencia auténtica','Final conclusivo'],plagal:['
 function coCadOpciones(B){
   const ops=$('.bon-ops',ESC.hoja);
   ops.querySelectorAll('.op').forEach(o=>{ const id=o.dataset.id, c=CAD4.find(x=>x.id===id), t=CO_CAD_TXT[id]; o.classList.add('nv');
-    o.innerHTML='<b>'+t[0]+'</b><i>'+t[1]+'</i><span>'+c.rn+'</span>'; });
+    o.innerHTML='<b>'+t[0]+'</b><span>'+c.rn+'</span>'; });
 }
 function coCadUI(B,gen){
   /* (19-nov, Iago) se puede contestar y cambiar en todo momento; si aciertas ya en la 1.ª escucha (sin ver la partitura)
@@ -2797,7 +2816,7 @@ async function coCad(b){
   const res=I.cierra(); coEnvia(4,res);
   await coEn(b+sc.corr);
   B.bajos(false); B.solucion(); I.marca();
-  await coCorreccion(()=>{ const t0=ahora(); cartel(gen.titulo+' · '+gen.rn+' · '+res.puntos+' puntos',gen.expl); tocaCadencia(t0+0.1,gen,B,N-2); return L2+0.8; },10,2);
+  await coCorreccion(()=>{ const t0=ahora(); cartel(gen.titulo+' · '+gen.rn+' · '+res.puntos+' puntos',''); tocaCadencia(t0+0.1,gen,B,N-2); return L2+0.8; },10,2);
   await coRanking(4,b+CO.slot[4]);
 }
 
@@ -3183,15 +3202,15 @@ async function coMod(b){
   R.verOpciones();
   sonidoUI('inicio'); cartel('¿En qué modo está?','Escucha y elige: si aciertas ya en la 1.ª escucha, puntúas más'); await espera(2.0);
   await hasta(tocaModos(ahora()+0.1,gen,R,false)+S(0.5));
-  I.finPrimera(); R.verRecetas(); sonidoUI('escribe'); cartel('¿En qué modo está?','Ahora con la receta: fíjate en las notas que brillan'); coAvisaTarde('mod ops',b+sc.ops);
-  await espera(0.8); await hasta(tocaModos(ahora()+0.1,gen,R,true)+S(0.4));
+  I.finPrimera(); R.verRecetas(); sonidoUI('escribe'); cartel('¿En qué modo está?','Otra escucha, ahora con la receta');   /* (21-nov 07:19, Iago) sin notas destacadas */ coAvisaTarde('mod ops',b+sc.ops);
+  await espera(0.8); await hasta(tocaModos(ahora()+0.1,gen,R,false)+S(0.4));
   await coEn(b+sc.fin); coAvisaTarde('mod fin',b+sc.fin);
   enTiempo(coT(b+sc.corr-0.15),()=>I.bloquea());
   await coFinEjercicio('','',true);
   const res=I.cierra(); coEnvia(5,res);
   await coEn(b+sc.corr);
   R.solucion(); I.marca();
-  await coCorreccion(()=>{ const D=modDeletrea(gen); cartel(D.tonica+' '+MODE_LABEL[gen.mode].toLowerCase()+' · '+res.puntos+' puntos',MODE_EXPL[gen.mode]);
+  await coCorreccion(()=>{ const D=modDeletrea(gen); cartel(D.tonica+' '+MODE_LABEL[gen.mode].toLowerCase()+' · '+res.puntos+' puntos','');   /* (21-nov, Iago) sin definiciones de texto */
     const t0=ahora()+0.1, bt=60/gen.tempo; gen.notes.slice(0,5).forEach((n,i)=>nota(t0+S(i*bt),n.midi,0.75,S(bt*0.92))); return 5*bt+0.6; });
   await coRanking(5,b+CO.slot[5]);
 }

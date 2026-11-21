@@ -518,7 +518,7 @@ html.pc-pantalla #pcgBonusIpad{display:none}
 #pcg .pcg-slot.co-ko rect{fill:rgba(220,38,38,.75)}
 
 /* ---------- clasificación entre ejercicios ---------- */
-.co-rank{position:absolute;left:80px;right:80px;top:258px;height:470px;z-index:7;border-radius:30px;background:rgba(22,23,31,.96);color:#fff;padding:18px 90px 14px;
+.co-rank{position:absolute;left:80px;right:80px;top:258px;height:470px;z-index:7;border-radius:30px;background:#16171f;color:#fff;padding:18px 90px 14px;
   opacity:0;transition:opacity .45s;display:flex;flex-direction:column;justify-content:center;gap:0}
 .co-rank.on{opacity:1}
 .pcg-ej.arriba .co-rank{top:150px;height:500px}
@@ -805,7 +805,22 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 /* (20-nov 22:15, Iago) «Adelantar» (solo en la individual): junto a «Pausa»; mientras salta, nada se mueve a la vista */
 #pcg.online:not(.co-solo) .pcg-ctrl #coBAdel{display:none}
 #coBAdel[hidden]{display:none!important}
+#coBAdel{position:fixed;right:16px;bottom:14px;z-index:31}   /* (21-nov 07:17, Iago) «Adelantar» a la derecha */
 #pcg.co-rush #pcgStage{visibility:hidden}
+
+/* (21-nov 07:24, Iago) el acorde ordenado de la solución: notitas negras en gris, como el borrador del alumno */
+#pcg .pcga2ord path,#pcg .pcga2ord rect,#pcg .pcga2ord text{fill:#8f8aa3;stroke:#8f8aa3}
+#pcg .pcga2ord .vf-stem{display:none}
+#pcg .pcga2ord .vf-notehead{transform-box:fill-box;transform-origin:center;transform:scale(.78) skewX(-12deg)}
+
+/* (21-nov 07:26, Iago) melódico: ♭ ♮ ♯ en el centro, solo el símbolo, cuadrados */
+.co-tools.co-tools-c{left:50%;right:auto;transform:translateX(-50%)}
+.co-tools .co-acc{width:54px;height:54px;padding:0;justify-content:center}
+.co-tools .co-acc b{font-size:30px}
+#pcg .co-ord-pista{stroke:none!important;fill:#a6a1b8!important}
+/* (21-nov 07:29, Iago) «se ve la clasificación mientras se corrige»: al salir la clasificación, el ejercicio se funde y desaparece */
+.pcg-hoja.co-rk{opacity:0;transition:opacity .35s ease;pointer-events:none}
+.pcg-ej:has(.co-rank.on) .pcg-velo,.pcg-ej:has(.co-rank.on) .pcg-lado{opacity:0;transition:opacity .35s ease}
 
 /* ===== CARRUSEL PRO ONLINE (grado profesional) · 20-nov-2026 ===== */
 /* «PRO» en mayúsculas y dorado (Iago, 19-nov 23:11) */
@@ -830,11 +845,9 @@ html.co-rx #pcg .pcg-pie{bottom:96px}   /* con la barra de emojis, «Siguiente e
 .pcg-mod{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .pcg-mod .mod-part{width:100%;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 .pcg-mod .mod-roll{width:96%;height:100%;max-height:300px}
-.pcg-mod .mb{fill:#c4b5fd;opacity:0;transition:opacity .5s,fill .5s}
+.pcg-mod .mb{fill:#f9a8d4;opacity:0;transition:opacity .5s,fill .5s}   /* (21-nov, Iago) rosa, nada de violeta */
 .pcg-mod .mb.vista{opacity:.45}
-.pcg-mod .mb.on{opacity:1;fill:#7c3aed;transition:none}
-.pcg-mod .mb.brilla{fill:#ff4fa3;opacity:.95;filter:drop-shadow(0 0 10px rgba(255,79,163,.85))}
-.pcg-mod .mb.brilla.on{fill:#e11d74}
+.pcg-mod .mb.on{opacity:1;fill:#db2777;transition:none}
 .pcg-mod .mod-pauta{width:100%}
 .pcg-mod .mod-pauta svg{width:100%!important;height:auto!important;display:block}
 .pcg-mod .mod-lab{font-size:24px;color:#2a2517;font-weight:600}

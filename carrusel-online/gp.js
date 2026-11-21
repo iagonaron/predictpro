@@ -77,15 +77,16 @@ function renderMelodico(seed){
   datosMelodico=[{key,mel}];
 }
 
-/* ---------- TonCom: 22 tonalidades (hasta 5 alteraciones) y 2/4, 3/4, 6/8, 9/8 ---------- */
+/* ---------- TonCom: 30 tonalidades (hasta 7 alteraciones; 21-nov-2026, Iago) y 2/4, 3/4, 6/8, 9/8 ---------- */
+Object.assign(TONIC_PC,{'D#':3,'A#':10,'Gb':6,'Cb':11});
 const GP_TON_KEYS=[
   ['Do M','C','major','C',0],['La m','A','minor','C',0],
   ['Sol M','G','major','G',1],['Mi m','E','minor','G',1],['Re M','D','major','D',2],['Si m','B','minor','D',2],
   ['La M','A','major','A',3],['Fa♯ m','F#','minor','A',3],['Mi M','E','major','E',4],['Do♯ m','C#','minor','E',4],
-  ['Si M','B','major','B',5],['Sol♯ m','G#','minor','B',5],
+  ['Si M','B','major','B',5],['Sol♯ m','G#','minor','B',5],['Fa♯ M','F#','major','F#',6],['Re♯ m','D#','minor','F#',6],['Do♯ M','C#','major','C#',7],['La♯ m','A#','minor','C#',7],
   ['Fa M','F','major','F',-1],['Re m','D','minor','F',-1],['Si♭ M','Bb','major','Bb',-2],['Sol m','G','minor','Bb',-2],
   ['Mi♭ M','Eb','major','Eb',-3],['Do m','C','minor','Eb',-3],['La♭ M','Ab','major','Ab',-4],['Fa m','F','minor','Ab',-4],
-  ['Re♭ M','Db','major','Db',-5],['Si♭ m','Bb','minor','Db',-5],
+  ['Re♭ M','Db','major','Db',-5],['Si♭ m','Bb','minor','Db',-5],['Sol♭ M','Gb','major','Gb',-6],['Mi♭ m','Eb','minor','Gb',-6],['Do♭ M','Cb','major','Cb',-7],['La♭ m','Ab','minor','Cb',-7],
 ].map(([name,tonic,mode,vfsig,sig])=>({name,tonic,mode,vfsig,sig}));
 function renderToncom(seed){
   let key=pick(GP_TON_KEYS); { const q=GP_QS.get('key'); if(q) key=GP_TON_KEYS.find(k=>k.name===q)||key; }
