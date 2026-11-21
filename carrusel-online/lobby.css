@@ -330,5 +330,8 @@ html.co-on,html.co-on body{overflow:hidden}
 #co .ap{display:inline-flex;align-items:center;gap:6px;color:#4ade80;font-weight:800;white-space:nowrap;padding:0 6px}#co .ap .ic{width:18px;height:18px}#co .ap.anf{color:#ffd23f}
 #co .cuando.lob{display:inline-block;font-size:13.5px;font-weight:700;color:#1a1238;background:#fff;border-radius:8px;padding:6px 11px;margin-top:8px}
 
+/* (21-nov 09:56, Iago) avatares vivos del lobby: la sombra va pintada una vez (box-shadow) en vez de filtro, para no recalcularla con el fondo en movimiento */
+#co .mono .pg .av.av3vh{filter:none}#co .mono .pg .av.av3vh .av3v::before{content:'';position:absolute;left:8.6%;top:8.6%;width:82.8%;height:82.8%;border-radius:50%;box-shadow:0 6px 12px rgba(0,0,0,.38)}
+
 #co .logo .tt .pro{font-size:30px;align-self:center;font-family:"Helvetica Neue",Arial,sans-serif;font-style:normal;font-weight:900;letter-spacing:.05em;margin:0 .22em 0 .18em;background:linear-gradient(180deg,#fff3c2,#f5d061 45%,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (max-width:480px){#co .logo .tt .pro{font-size:17px}}
