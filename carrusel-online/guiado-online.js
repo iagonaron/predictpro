@@ -2192,7 +2192,7 @@ function coMidiDn(m,key){
 /* ---------- el horario de la partida (sale de los propios ejercicios: todos los clientes calculan lo mismo) ---------- */
 function coSchedRit(){ const M=modeloRitmo(), R=M.totalQ*M.spq, pr=M.spq*M.beatQ, P=0.3+5*pr+R+0.5, p1=3, p2=p1+P+9, fin=p2+P, tot=Math.ceil(R+0.4+1.5)+1;   /* (19-nov, Iago) online: corregido y adelante, sin tiempo de libreta */
   return {M,R,pr,P,p1,p2,fin,velo:fin,corr:fin+5,end:fin+5+tot}; }   /* (19-nov 21:21, Iago) sin pausa antes del 5·4·3·2·1 de la 2.ª escucha y solo los 5 s de «Solución en» */
-function coSchedMel(){ const P1=0.3+5+0.15+(10*4-2+0.4), P2=0.3+5+0.15+(10*3-1.5+0.4), p1=3, p2=p1+P1+9, fin=p2+P2;   /* (19-nov 21:27, Iago) ya escrito todo lo dado: directamente el 5·4·3·2·1 */
+function coSchedMel(){ const P1=0.3+5+0.15+(10*6-3+0.4), P2=0.3+5+0.15+(10*4-2+0.4), p1=3, p2=p1+P1+9, fin=p2+P2;   /* (19-nov 21:27, Iago) ya escrito todo lo dado: directamente el 5·4·3·2·1 */
   return {p1,p2,fin,velo:fin,corr:fin+5,end:fin+5+22}; }
 function coSchedTon(){ const T=datosToncom, key={tpc:TONIC_PC[T.key.tonic],mode:T.key.mode,sig:T.key.sig}, compas=TON_COMPAS_G[T.compas]||TON_COMPAS_G['2/4'];
   const dict=genTonDictadoG(key,compas,mulberry32(((Number(SEMILLA)||0)*31+7)>>>0)), pt=(compas.comp?1.5:1)*(60/compas.bpm);
@@ -2764,10 +2764,10 @@ async function coMel(b){
   const sc=CO.sch[1], p1=sc.p1, p2=sc.p2, fin=sc.fin, velo=sc.velo, corr=sc.corr;
   D.verClave(); D.verNota(0); D.verNota(9);   /* (19-nov 21:27, Iago) clave, armadura, primera y última nota ya escritas: directamente el 5·4·3·2·1 */
   await coEn(b+p1); coAvisaTarde('mel 1ª',b+p1);
-  await coPaseMel(D,mel.seq,2,2,'1ª escucha','Escribe las otras ocho notas');
+  await coPaseMel(D,mel.seq,3,3,'1ª escucha','Escribe las otras ocho notas');   /* (22-nov 16:09, Iago: «Melódico online como en clase») 3 s + 3 s, como en el aula (antes 2 + 2) */
   await escribir(coHasta(b+p2),'','','Próxima repetición');   /* (19-nov 21:21, Iago) sin pausa antes del 5·4·3·2·1 */
   await coEn(b+p2); coAvisaTarde('mel 2ª',b+p2);
-  await coPaseMel(D,mel.seq,1.5,1.5,'2ª escucha','');
+  await coPaseMel(D,mel.seq,2,2,'2ª escucha','');   /* (22-nov, Iago) 2 s + 2 s, como en el aula (antes 1,5 + 1,5) */
   await coEn(b+fin);
   enTiempo(coT(b+corr-0.15),()=>I.bloquea());
   await coFinEjercicio('','',true);
