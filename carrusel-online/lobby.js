@@ -23,7 +23,7 @@ function cuentaId(){
 }
 const CUENTA=cuentaId();
 /* apertura (19-nov-2026, Iago): elemental desde el viernes 20-nov a las 17:30 (cambiado el 20-nov 08:40; antes 19:00); el servidor también lo impide. Tester/Protester siempre. */
-const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL=/(^|\.)gp\.lmathome\.es$/i.test(location.hostname)?'':'https://gp.lmathome.es/piel/carrusel/carrusel-online-ge.mp4?v=4';   /* (20-nov-2026 12:58, Iago) el tráiler, con un botón discreto «Ver vídeo» */
+const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL='https://'+'ge.lmathome.es/piel/carrusel/'+(/(^|\.)gp\.lmathome\.es$/i.test(location.hostname)?'carrusel-pro-online-1080.mp4':'carrusel-online-ge-1080.mp4')+'?v=1';   /* (24-nov-2026 17:09, Iago: «todos los vídeos que se vean, que sean el mismo, que esté cargado») el MP4 1080p del portal, cargado entero antes de verse; deshacer: lobby.js.bak60 */   /* (20-nov-2026 12:58, Iago) el tráiler, con un botón discreto «Ver vídeo» */
   /* (20-nov-2026, Iago) Selector propio de DÍA y HORA para anunciar partidas (el mismo en ordenador, iPad y móvil):
      calendario del mes con los días pasados apagados y HOY marcado; la hora con DOS RUEDAS verticales como en el iPhone
      (horas 8–22 y minutos de 5 en 5), que se arrastran con el dedo o el ratón, giran con la rueda del ratón o se tocan.
@@ -195,8 +195,40 @@ const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de no
 function esTester(){ try{ const s=JSON.parse(localStorage.getItem('lmpro_session')||'null'); return !!(s&&/tester/i.test(String(s.nombre||'')+' '+String(s.apellidos||''))); }catch(e){ return false; } }
 /* (19-nov) la apertura la decide el servidor (lista → abierto): así el Tester pasa aunque su nombre de sesión no diga «tester» */
 const cerrado=()=>ST.abierto===true?false:(Date.now()<ABRE&&!esTester());
+/* (24-nov-2026) vídeo MP4 a pantalla completa: primero se descarga entero («Cargando vídeo» + barra real) y luego se reproduce desde memoria */
+function abreMp4L(src0){
+  if(!src0||document.getElementById('co-vidfull')) return;
+  const ov=document.createElement('div'); ov.id='co-vidfull';
+  ov.style.cssText='position:fixed;inset:0;z-index:2147483646;background:#000;display:flex;align-items:center;justify-content:center';
+  ov.innerHTML='<div class="cg" style="width:min(420px,80vw);text-align:center;color:#fff"><div style="font-size:18px;font-weight:700;margin-bottom:14px">Cargando vídeo</div>'+
+    '<div style="height:8px;border-radius:6px;background:rgba(255,255,255,.14);overflow:hidden"><div class="br" style="height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#f97316,#ec4899,#8b5cf6,#38bdf8);transition:width .25s linear"></div></div>'+
+    '<div class="pc" style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.6)">0 %</div></div>'+
+    '<video playsinline preload="auto" style="display:none;width:100%;height:100%;object-fit:contain;background:#000"></video>'+
+    '<button type="button" class="go" style="display:none;position:absolute;padding:16px 28px;border-radius:12px;border:0;background:#f97316;color:#fff;font-weight:700;font-size:20px;font-family:inherit;cursor:pointer">▶ Reproducir</button>'+
+    '<button type="button" class="x" aria-label="Cerrar el vídeo" title="Cerrar el vídeo" style="position:absolute;top:16px;right:16px;width:52px;height:52px;border-radius:12px;border:1.5px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff;font-size:26px;line-height:1;cursor:pointer;z-index:2">✕</button>';
+  document.body.appendChild(ov);
+  const v=ov.querySelector('video'), br=ov.querySelector('.br'), pc=ov.querySelector('.pc'), go=ov.querySelector('.go'); let url=null, vivo=true, ctl=null;
+  try{ ctl=new AbortController(); }catch(e){}
+  const tec=e=>{ if(e.key==='Escape'){ e.stopPropagation(); cierra(); } else if(e.target===document.body||ov.contains(e.target)) e.stopPropagation(); };
+  function cierra(){ vivo=false; try{ ctl&&ctl.abort(); }catch(e){} try{ v.pause(); }catch(e){} removeEventListener('keydown',tec,true);
+    if(url){ try{ URL.revokeObjectURL(url); }catch(e){} } try{ if(document.fullscreenElement===ov) document.exitFullscreen(); }catch(e){} if(ov.parentNode) ov.parentNode.removeChild(ov); }
+  addEventListener('keydown',tec,true); ov.querySelector('.x').onclick=cierra;
+  const pon=f=>{ br.style.width=Math.round(f*100)+'%'; pc.textContent=Math.round(f*100)+' %'; };
+  function arranca(src){ if(!vivo) return; ov.querySelector('.cg').style.display='none'; v.style.display='block'; v.controls=true; v.src=src;
+    const p=v.play(); if(p&&p.catch) p.catch(()=>{ go.style.display='block'; }); }
+  go.onclick=()=>{ go.style.display='none'; v.play().catch(()=>{}); };
+  v.onended=()=>setTimeout(cierra,600);
+  fetch(src0,ctl?{signal:ctl.signal}:{}).then(r=>{ if(!r.ok) throw new Error('http '+r.status);
+      const tot=+r.headers.get('content-length')||0; if(!r.body||!r.body.getReader||!tot) return r.blob();
+      const rd=r.body.getReader(), tr=[]; let n=0;
+      const lee=()=>rd.read().then(x=>{ if(x.done) return new Blob(tr,{type:'video/mp4'}); tr.push(x.value); n+=x.value.length; pon(Math.min(1,n/tot)); return lee(); });
+      return lee(); })
+    .then(b=>{ if(!vivo) return; pon(1); url=URL.createObjectURL(b); arranca(url); })
+    .catch(()=>{ if(!vivo) return; pc.textContent='Cargando…'; v.preload='auto'; v.src=src0; v.oncanplaythrough=()=>{ v.oncanplaythrough=null; arranca(src0); }; try{ v.load(); }catch(e){} });
+}
 function videoHTML(u){
   if(!u) return '<p class="muted" style="margin:6px 0 0">El vídeo de presentación estará aquí muy pronto.</p>';
+  if(/\.mp4(\?|$)/i.test(u)) return '<button type="button" class="btn vvb" data-vidfull style="margin-top:10px">▶ Ver vídeo</button>';
   const y=u.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{11})/);
   return '<div class="vid">'+(y?'<iframe src="https://www.youtube-nocookie.com/embed/'+y[1]+'?rel=0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>':'<video src="'+esc(u)+'" controls playsinline preload="metadata" poster="'+esc(u.replace(/\.mp4$/,'.jpg'))+'"></video>')+'</div>';
 }
@@ -314,7 +346,8 @@ function pintaLobby(){
     (ST.solo||cerrado()?'':'<p class="muted" style="font-size:13px">Cada partida dura unos 10 minutos y tiene seis partes, en orden sorpresa. Si la terminas, su tiempo se suma a tu actitud (mismos topes de siempre).'+(VIDEO_URL?' <button type="button" class="btn peq vvb" id="bVid">'+I.play+(ST.vid?'Ocultar vídeo':'Ver vídeo')+'</button>':'')+'</p>'+(ST.vid&&VIDEO_URL?'<div class="card">'+videoHTML(VIDEO_URL)+'</div>':''));
   if(enInput){ const h=document.getElementById('hora'); if(h&&valorHora) h.value=valorHora; }
   enlaza();
-  const bv=document.getElementById('bVid'); if(bv) bv.onclick=()=>{ ST.vid=!ST.vid; pintaLobby(); if(ST.vid) setTimeout(()=>{ const v=document.querySelector('#co .vid'); if(v) v.scrollIntoView({behavior:'smooth',block:'center'}); },60); };
+  const bv=document.getElementById('bVid'); if(bv) bv.onclick=()=>abreMp4L(VIDEO_URL);   /* (24-nov) a pantalla completa y cargado entero */
+  document.querySelectorAll('[data-vidfull]').forEach(b=>{ b.onclick=()=>abreMp4L(VIDEO_URL); });
 }
 function minHora(){ const d=new Date(Date.now()+11*6e4); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16); }
 function pintaTiempos(){ /* los textos de «cuándo» no cambian cada segundo; reservado */ }
