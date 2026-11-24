@@ -23,7 +23,7 @@ function cuentaId(){
 }
 const CUENTA=cuentaId();
 /* apertura (19-nov-2026, Iago): elemental desde el viernes 20-nov a las 17:30 (cambiado el 20-nov 08:40; antes 19:00); el servidor también lo impide. Tester/Protester siempre. */
-const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL='https://'+'ge.lmathome.es/piel/carrusel/'+(/(^|\.)gp\.lmathome\.es$/i.test(location.hostname)?'carrusel-pro-online-1080.mp4':'carrusel-online-ge-1080.mp4')+'?v=1';   /* (24-nov-2026 17:09, Iago: «todos los vídeos que se vean, que sean el mismo, que esté cargado») el MP4 1080p del portal, cargado entero antes de verse; deshacer: lobby.js.bak60 */   /* (20-nov-2026 12:58, Iago) el tráiler, con un botón discreto «Ver vídeo» */
+const ABRE=Date.parse('2026-11-24T20:00:00+01:00'), ABRE_TXT='el martes 24 de noviembre a las 20:00', VIDEO_URL='https://'+'ge.lmathome.es/piel/carrusel/'+(/(^|\.)gp\.lmathome\.es$/i.test(location.hostname)?'carrusel-pro-online-1080.mp4?v=2':'carrusel-online-ge-1080.mp4?v=1');   /* (24-nov-2026 17:09, Iago: «todos los vídeos que se vean, que sean el mismo, que esté cargado») el MP4 1080p del portal, cargado entero antes de verse; deshacer: lobby.js.bak60 */   /* (20-nov-2026 12:58, Iago) el tráiler, con un botón discreto «Ver vídeo» */
   /* (20-nov-2026, Iago) Selector propio de DÍA y HORA para anunciar partidas (el mismo en ordenador, iPad y móvil):
      calendario del mes con los días pasados apagados y HOY marcado; la hora con DOS RUEDAS verticales como en el iPhone
      (horas 8–22 y minutos de 5 en 5), que se arrastran con el dedo o el ratón, giran con la rueda del ratón o se tocan.
