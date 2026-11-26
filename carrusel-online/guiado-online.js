@@ -53,7 +53,7 @@ function fondo(f,b,c,id){
   if(f==='nebulosa'||f==='galaxia'){ [[22,30],[60,18],[150,26],[176,60],[30,100],[170,120],[44,150],[140,160],[90,14],[118,40],[80,180],[186,170]].forEach(([x,y],k)=>{ s+='<circle class="nb-brilla" style="animation-delay:'+(k*.37).toFixed(2)+'s" cx="'+x+'" cy="'+y+'" r="'+(k%3?0.9:1.5)+'" fill="#fff" opacity="'+(k%2?.5:.85)+'"/>'; }); }
   return s; }
 /* ---------------- PELO ---------------- */
-const PEINADOS=[['ninguno','Calvo'],['rapado','Rapado'],['corto','Corto'],['flequillo','Flequillo'],['raya','Raya al lado'],['tupe','Tupé'],['punta','De punta'],['rizos','Rizos'],['afro','Afro'],['ondulado','Ondulado'],['melena','Melena corta'],['mediaMelena','Media melena'],['largo','Largo'],['coletas','Coletas'],['mono','Moño'],['trenza','Trenza'],['cresta','Cresta'],['rastas','Rastas']];
+const PEINADOS=[['ninguno','Calvo'],['rapado','Rapado'],['corto','Corto'],['flequillo','Flequillo'],['raya','Raya al lado'],['tupe','Tupé'],['punta','De punta'],['rizos','Rizos'],['afro','Afro'],['ondulado','Ondulado'],['melena','Melena corta'],['mediaMelena','Media melena'],['largo','Largo'],['coletas','Coletas'],['mono','Moño'],['trenza','Trenza'],['cresta','Cresta'],['rastas','Rastas'],['flequilloPunk','Flequillo punk'],['flequilloAbierto','Flequillo abierto'],['flequilloColeta','Flequillo y coleta'],['dobleFlequillo','Doble flequillo'],['flequilloLado','Flequillo de lado'],['crestaPunk','Cresta punk']];   /* (26-nov-2026, Iago) más peinados */
 const CAP='M56 94 C54 36 146 36 144 94 C136 72 120 62 100 62 C80 62 64 72 56 94 Z';
 function pelo(p,P){ const D=osc(P,.25); let at='',de='';
   switch(p){
@@ -73,6 +73,13 @@ function pelo(p,P){ const D=osc(P,.25); let at='',de='';
    case 'mono': at='<circle cx="100" cy="42" r="19" fill="'+P+'"/>'; de='<path d="'+CAP+'" fill="'+P+'"/><path d="M84 52 C94 46 106 46 116 52" stroke="'+D+'" stroke-width="3" fill="none"/>'; break;
    case 'trenza': { let t=''; for(let k=0;k<6;k++) t+='<ellipse cx="'+(140+k*2.5)+'" cy="'+(112+k*15)+'" rx="10" ry="9" fill="'+(k%2?D:P)+'"/>'; de='<path d="'+CAP+'" fill="'+P+'"/>'+t+'<circle cx="155" cy="200" r="5" fill="#ff5fa2"/>'; break; }
    case 'cresta': de='<path d="M57 92 C56 40 144 40 143 92 C134 74 120 66 100 66 C80 66 66 74 57 92 Z" fill="'+P+'" opacity=".35"/><path d="M90 66 L86 30 L96 40 L100 18 L106 40 L116 30 L112 66 Z" fill="'+P+'"/>'; break;
+   /* (26-nov-2026, Iago) flequillos variados y cresta punk; nada baja de la frente (no tapan los ojos) */
+   case 'flequilloPunk': de='<path d="M56 94 C54 36 146 36 144 94 L141 70 L134 82 L128 62 L118 81 L112 59 L102 80 L95 57 L85 80 L80 61 L70 79 L66 63 L59 78 Z" fill="'+P+'"/><path d="M97 54 L93 64 M114 54 L113 64 M80 58 L81 66" stroke="'+D+'" stroke-width="2.4" stroke-linecap="round"/>'; break;
+   case 'flequilloAbierto': de='<path d="M56 94 C54 38 146 38 144 94 C141 82 134 72 122 66 C114 62 106 60 100 61 C94 60 86 62 78 66 C66 72 59 82 56 94 Z" fill="'+P+'"/><path d="M99 61 C88 62 74 70 66 84 C74 78 84 76 92 77 C96 72 98 67 99 61 Z M101 61 C112 62 126 70 134 84 C126 78 116 76 108 77 C104 72 102 67 101 61 Z" fill="'+P+'"/><path d="M100 61 V52" stroke="'+D+'" stroke-width="2.5" stroke-linecap="round"/>'; break;
+   case 'flequilloColeta': at='<path d="M128 62 C158 56 176 88 168 126 C164 146 152 160 146 154 C156 130 154 96 132 80 Z" fill="'+P+'"/><path d="M152 112 C156 126 154 140 148 150" stroke="'+D+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>'; de='<path d="M56 94 C54 36 146 36 144 94 L140 82 L132 74 L122 80 L112 70 L100 79 L88 70 L78 80 L68 74 L60 82 Z" fill="'+P+'"/><rect x="135" y="60" width="9" height="12" rx="3" fill="#ff5fa2" transform="rotate(-28 139 66)"/>'; break;
+   case 'dobleFlequillo': at='<path d="M50 92 C48 36 152 36 150 92 L152 124 L48 124 Z" fill="'+P+'"/>'; de='<path d="M56 94 C54 36 146 36 144 94 L144 80 C120 83 80 83 56 80 Z" fill="'+P+'"/><path d="M55 79 L67 80 L65 124 C61 127 56 126 53 121 Z M145 79 L133 80 L135 124 C139 127 144 126 147 121 Z" fill="'+P+'"/><path d="M68 80 L68 74 M132 80 L132 74" stroke="'+D+'" stroke-width="2"/>'; break;
+   case 'flequilloLado': de='<path d="M56 96 C52 36 148 36 144 92 C138 76 124 68 106 68 C86 68 68 78 56 96 Z" fill="'+P+'"/><path d="M146 70 C134 48 92 46 62 80 C66 84 70 84 74 80 C94 64 118 60 146 70 Z" fill="'+P+'"/><path d="M128 60 C112 56 92 60 80 70" stroke="'+D+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>'; break;
+   case 'crestaPunk': de='<path d="M57 92 C56 40 144 40 143 92 C134 74 120 66 100 66 C80 66 66 74 57 92 Z" fill="'+P+'" opacity=".3"/><path d="M84 70 L70 26 L89 45 L94 6 L104 41 L117 13 L116 47 L134 28 L119 72 Z" fill="'+P+'"/><path d="M94 14 L98 40 M115 22 L111 44 M76 36 L88 50" stroke="'+D+'" stroke-width="2.4" stroke-linecap="round"/>'; break;
    case 'rastas': { let s=''; [-38,-26,26,38].forEach((dx,k)=>{ s+='<rect x="'+(100+dx-5)+'" y="80" width="10" height="'+(76+(k%2)*14)+'" rx="5" fill="'+(k%2?D:P)+'"/>'; }); at=s; de='<path d="'+CAP+'" fill="'+P+'"/><path d="M70 64 C76 56 90 52 100 52 C110 52 124 56 130 64" stroke="'+D+'" stroke-width="3" fill="none"/>'; break; }
   }
   return {at,de}; }
@@ -127,7 +134,7 @@ function gafas(g){ if(g==='sol') return '<rect x="72" y="82" width="25" height="
   if(g==='redondas') return '<circle cx="85" cy="90" r="11" stroke="#1c1530" stroke-width="3" fill="rgba(255,255,255,.18)"/><circle cx="115" cy="90" r="11" stroke="#1c1530" stroke-width="3" fill="rgba(255,255,255,.18)"/><path d="M96 89 h8" stroke="#1c1530" stroke-width="3"/>';
   if(g==='pasta') return '<rect x="71" y="81" width="27" height="19" rx="4" stroke="#1c1530" stroke-width="4.5" fill="rgba(255,255,255,.15)"/><rect x="102" y="81" width="27" height="19" rx="4" stroke="#1c1530" stroke-width="4.5" fill="rgba(255,255,255,.15)"/><path d="M98 88 h4" stroke="#1c1530" stroke-width="4"/>';
   return ''; }
-const COMPS=[['nada','Ninguno'],['pecas','Pecas'],['mofletes','Mofletes'],['barba','Barba'],['bigote','Bigote'],['pendientes','Pendientes'],['pajarita','Pajarita'],['corbata','Corbata'],['bufanda','Bufanda'],['collar','Collar']];
+const COMPS=[['nada','Ninguno'],['pecas','Pecas'],['mofletes','Mofletes'],['barba','Barba'],['bigote','Bigote'],['pendientes','Pendientes'],['aros','Aros'],['pendLargos','Pendientes largos'],['perlas','Perlas'],['estrellas','Estrellas'],['pajarita','Pajarita'],['corbata','Corbata'],['bufanda','Bufanda'],['collar','Collar']];
 const AL_CUELLO=['pajarita','corbata','bufanda','collar'];
 const PRENDAS=[['camiseta','Camiseta'],['sudadera','Sudadera'],['camisa','Camisa'],['chaqueta','Chaqueta'],['jersey','Jersey de cuello alto']];
 const CUELLOS=[['nada','Nada'],['pajarita','Pajarita'],['corbata','Corbata'],['bufanda','Bufanda'],['collar','Collar']];
@@ -153,6 +160,11 @@ function comp(list,P,c){ let at='',de='',cu='';
    if(k==='barba') de+=BARBA(P);
    if(k==='bigote') de+='<path d="M86 101 q7 -6 14 -1 q7 -5 14 1 q-7 4 -14 0 q-7 4 -14 0z" fill="'+P+'"/>';
    if(k==='pendientes') de+='<circle cx="57" cy="110" r="3.4" fill="#facc15"/><circle cx="143" cy="110" r="3.4" fill="#facc15"/>';
+   /* (26-nov-2026, Iago) más pendientes */
+   if(k==='aros') de+='<circle cx="56" cy="115" r="6.5" fill="none" stroke="#facc15" stroke-width="2.8"/><circle cx="144" cy="115" r="6.5" fill="none" stroke="#facc15" stroke-width="2.8"/>';
+   if(k==='pendLargos') de+='<g><path d="M57 108 V120 M143 108 V120" stroke="#facc15" stroke-width="2" stroke-linecap="round"/><circle cx="57" cy="108" r="2.6" fill="#facc15"/><circle cx="143" cy="108" r="2.6" fill="#facc15"/><path d="M57 119 l-4.5 7 l4.5 6 l4.5 -6z M143 119 l-4.5 7 l4.5 6 l4.5 -6z" fill="#a855f7"/></g>';
+   if(k==='perlas') de+='<circle cx="57" cy="111" r="4.4" fill="#f8fafc"/><circle cx="143" cy="111" r="4.4" fill="#f8fafc"/><circle cx="55.6" cy="109.6" r="1.3" fill="#fff"/><circle cx="141.6" cy="109.6" r="1.3" fill="#fff"/>';
+   if(k==='estrellas') de+='<path d="M57 104 l2 4.6 l5 .5 l-3.8 3.3 l1.2 4.9 l-4.4 -2.6 l-4.4 2.6 l1.2 -4.9 l-3.8 -3.3 l5 -.5z M143 104 l2 4.6 l5 .5 l-3.8 3.3 l1.2 4.9 l-4.4 -2.6 l-4.4 2.6 l1.2 -4.9 l-3.8 -3.3 l5 -.5z" fill="#facc15"/>';
   });
   return {at,de,cu}; }
 /* ---------------- BRAZOS (gestos) ---------------- */
@@ -164,7 +176,7 @@ function brazos(g,R,c){ const arm=(d,hx,hy)=>'<g class="brazo"><path d="'+d+'" s
   if(g==='pensar') return arm('M146 200 Q150 158 116 128',112,124)+'<g fill="'+c+'" opacity=".9"><circle cx="150" cy="54" r="4"/><circle cx="160" cy="42" r="6"/><circle cx="174" cy="28" r="9"/></g>';
   if(g==='bostezar') return arm('M146 200 Q148 160 118 124',112,118);
   return ''; }
-const COMP_CARA=[['nada','Ninguno'],['pecas','Pecas'],['mofletes','Mofletes'],['barba','Barba'],['bigote','Bigote'],['pendientes','Pendientes']];
+const COMP_CARA=[['nada','Ninguno'],['pecas','Pecas'],['mofletes','Mofletes'],['barba','Barba'],['bigote','Bigote'],['pendientes','Pendientes'],['aros','Aros'],['pendLargos','Pendientes largos'],['perlas','Perlas'],['estrellas','Estrellas']];
 const COMP_CUELLO=[['nada','Ninguno'],['pajarita','Pajarita'],['corbata','Corbata'],['bufanda','Bufanda'],['collar','Collar']];
 const INS_ARTE={piano:'piano',clave:'piano',violin:'violin',viola:'violin',chelo:'violin',contrabajo:'violin',guitarra:'guitarra',bajo:'guitarra',trompeta:'trompeta',trombon:'trombon',trompa:'trompa',tuba:'tuba',saxo:'saxo',flauta:'flauta',clarinete:'flauta',oboe:'flauta',fagot:'flauta',acordeon:'acordeon',percu:'percu',canto:'canto',arpa:'arpa'};
 function insBadge(k,c,f,b){ const A=(typeof AV_INS_ARTE!=='undefined')&&AV_INS_ARTE[INS_ARTE[k]||k]; if(!A) return ''; const id=++UID;
@@ -208,7 +220,7 @@ function render(cfg,op){ op=op||{}; const o=Object.assign(norm(cfg),cfg&&cfg.__r
   const rp=ropa(o.prenda,R,o.compCuello);
   const cabeza='<circle cx="100" cy="94" r="46" fill="'+o.color+'"/>'+(op.profe?'<ellipse cx="84" cy="62" rx="12" ry="6" fill="#fff" opacity=".35" transform="rotate(-24 84 62)"/>':'');
   const esc='<g transform="translate(100 90.5) scale(1.08) translate(-100 -94)">';
-  const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c,o.fondo,o.fondoC,o.color):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
+  const badge=op.sinBadge?'':(op.profe?BADGE_PROFE:(op.bot?badgeBot(c,o.fondo,o.fondoC,o.color):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):'')));   /* (25-nov-2026) sinBadge: en el aviso de partida va la espiral en su lugar */
   return '<svg class="av av3 '+(op.entra?'entra ':'')+(op.quieto?'quieto ':'')+(op.vivoFondo?'mueve ':'')+g0+(op.dir<0?' izq':'')+'" viewBox="-16 -16 232 232"><defs><clipPath id="v3c'+id+'"><circle cx="100" cy="100" r="96"/></clipPath></defs>'+
     '<g clip-path="url(#v3c'+id+')">'+fondo(o.fondo,o.fondoC,o.color,id)+'<g class="resp"><g class="cab">'+esc+peloAt+gr.at+'</g>'+cp.at+'</g>'+rp.at+rp.de+cp.cu+
     '<g class="cab">'+cabeza+cp.de+(o.compCara==='barba'?(op.profe?BARBA_PROFE(o.peloC):BARBA(o.peloC))+(op.profe?CEJAS_PROFE(o.peloC,o.cara,g0):''):'')+cara(o.cara,g0,op.dir)+gafas(o.gafas)+esc+peloDe+gr.de+'</g></g>'+(g0==='llorar'?'':'<g class="brz">'+brazos(g0,R,o.color)+'</g>')+'</g></g>'+
@@ -387,9 +399,9 @@ function vivo(host,cfg,op){ css(); op=op||{}; let o,cej0; const E={}, UL={};
   const brazo=k=>'<g data-r="b'+k+'" visibility="hidden"><path data-r="bp'+k+'" stroke="'+R+'" stroke-width="17" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle data-r="bm'+k+'" r="11.5" fill="'+osc(o.color,.14)+'"/></g>';
   const nota='<g fill="'+c+'"><ellipse cx="0" cy="0" rx="4.4" ry="3.3" transform="rotate(-22)"/><path d="M3.6 -1.2 V-15 q5.5 1.5 6.5 6.5" stroke="'+c+'" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>';
   const chispa='<path d="M0 -8 Q1.2 -1.2 8 0 Q1.2 1.2 0 8 Q-1.2 1.2 -8 0 Q-1.2 -1.2 0 -8Z" fill="#ffd23f"/>';
-  const badge=op.profe?BADGE_PROFE:(op.bot?badgeBot(c,o.fondo,o.fondoC,o.color):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):''));
+  const badge=op.sinBadge?'':(op.profe?BADGE_PROFE:(op.bot?badgeBot(c,o.fondo,o.fondoC,o.color):(op.ins?insBadge(op.ins,c,o.fondo,o.fondoC):'')));   /* (25-nov-2026) sinBadge: en el aviso de partida va la espiral en su lugar */
   const F='<div class="av3v-fw"><svg class="av3v-f av3 quieto" '+vb+' aria-hidden="true" style="animation-delay:-'+(hash(String(cfg&&cfg.color)+o.fondo+id)%40)+'s">'+fondo(o.fondo,o.fondoC,o.color,id)+'</svg></div>';
-  const P='<svg class="av3v-p" '+vb+' aria-hidden="true"><defs><clipPath id="v3p'+id+'"><circle cx="100" cy="100" r="96"/></clipPath><clipPath id="v3b'+id+'"><path data-r="bocaC"/></clipPath></defs>'+
+  const P='<svg class="av3v-p" '+vb+' aria-hidden="true"><defs><clipPath id="v3p'+id+'">'+(op.cuadrado?'<rect x="0" y="0" width="200" height="200" rx="30"/>':'<circle cx="100" cy="100" r="96"/>')+'</clipPath><clipPath id="v3b'+id+'"><path data-r="bocaC"/></clipPath></defs>'+
     '<g clip-path="url(#v3p'+id+')"><g data-r="cuerpo">'+
       '<g data-r="cabB"><g data-r="cabB2">'+esc+peloAt+gr.at+'</g>'+cp.at+'</g></g>'+rp.at+rp.de+cp.cu+
       '<g data-r="cab"><g data-r="craneo"><circle cx="100" cy="94" r="46" fill="'+o.color+'"/>'+(op.profe?'<ellipse cx="84" cy="62" rx="12" ry="6" fill="#fff" opacity=".35" transform="rotate(-24 84 62)"/>':'')+bA+'</g>'+
@@ -405,15 +417,15 @@ function vivo(host,cfg,op){ css(); op=op||{}; let o,cej0; const E={}, UL={};
           '<g data-r="xn" visibility="hidden"><g data-r="xn0">'+nota+'</g><g data-r="xn1">'+nota+'</g><g data-r="xn2">'+nota+'</g></g></g>'+
       '</g>'+brazo('L')+brazo('R')+
     '</g></g></svg>';
-  const A='<svg class="av3v-a" '+vb+' aria-hidden="true"><circle cx="100" cy="100" r="95" fill="none" stroke="'+c+'" stroke-width="7"/>'+badge+'</svg>';
+  const A='<svg class="av3v-a" '+vb+' aria-hidden="true">'+(op.cuadrado?'':'<circle cx="100" cy="100" r="95" fill="none" stroke="'+c+'" stroke-width="7"/>')+badge+'</svg>';   /* (25-nov-2026) cuadrado: llena el cuadrado del aviso */
   if(!document.getElementById('av3v-css')){ const st=document.createElement('style'); st.id='av3v-css'; st.textContent='.av3v{position:relative;display:block;width:100%;height:100%}.av3v>svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}'+
     '.av3v.lite .av3v-p{animation:av3vR 3.6s ease-in-out infinite;transform-origin:50% 88%}@keyframes av3vR{50%{transform:scale(1.012)}}'+
     /* (21-nov 09:56, Iago) «los fondos, con ligera animación suave, sin que roben protagonismo»: el fondo entero deriva y gira muy despacio */
-    '.av3v .av3v-fw{position:absolute;left:8.62%;top:8.62%;width:82.76%;height:82.76%;border-radius:50%;overflow:hidden;transform:translateZ(0)}'+
+    '.av3v.cuad .av3v-fw{left:0!important;top:0!important;width:100%!important;height:100%!important;border-radius:15%!important}.av3v .av3v-fw{position:absolute;left:8.62%;top:8.62%;width:82.76%;height:82.76%;border-radius:50%;overflow:hidden;transform:translateZ(0)}'+
     '.av3v .av3v-fw>svg.av3v-f{position:absolute;left:-10.42%;top:-10.42%;width:120.84%;height:120.84%;overflow:visible;animation:av3vF 38s ease-in-out infinite alternate;will-change:transform}'+
     '@keyframes av3vF{0%{transform:rotate(-7deg) scale(1.1) translate(-2.5%,1.5%)}50%{transform:rotate(3deg) scale(1.16) translate(2%,-2%)}100%{transform:rotate(8deg) scale(1.1) translate(1%,2.5%)}}'+
     '@media (prefers-reduced-motion:reduce){.av3v .av3v-p,.av3v .av3v-fw>svg.av3v-f{animation:none}}'; document.head.appendChild(st); }
-  host.innerHTML='<div class="av3v'+(op.lite?' lite':'')+'">'+F+P+A+'</div>';
+  host.innerHTML='<div class="av3v'+(op.lite?' lite':'')+(op.cuadrado?' cuad':'')+'">'+F+P+A+'</div>';
   Object.keys(E).forEach(x=>delete E[x]); Object.keys(UL).forEach(x=>delete UL[x]);
   [].forEach.call(host.querySelectorAll('[data-r]'),n=>{ E[n.getAttribute('data-r')]=n; }); }
   arma(cfg);
