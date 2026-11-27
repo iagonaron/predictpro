@@ -2549,14 +2549,19 @@ function coRitmoUI(D,M){
   pool.forEach(cell=>{
     const b=el('button','co-card'); coMini(b,cell,spec.compound);
     let ini=null, fan=null, sobre=-1;
-    const slotEn=(x,y)=>{ const n=document.elementFromPoint(x,y); const sl=n&&n.closest&&n.closest('.co-slot'); return sl?slots.findIndex(q=>q.el===sl):-1; };
+    /* (27-nov-2026, Iago: «en cualquier momento se tiene que poder arrastrar una célula al pulso que quiera») antes solo valía soltar justo dentro
+       de la casilla (y la figura que arrastras va por encima del dedo, así que a menudo se soltaba debajo y no entraba). Ahora manda la
+       columna: cualquier punto por encima de las cartas, a la altura del pentagrama, cae en el pulso más cercano (margen de 40 px). */
+    const slotEn=(x,y)=>{ try{ const rb=bd.getBoundingClientRect(), rp=pal.getBoundingClientRect(); if(y<rb.top-80||y>rp.top+12) return -1;
+      let k=-1, dmin=1e9; slots.forEach((q,i)=>{ const r=q.el.getBoundingClientRect(); const d=x<r.left?r.left-x:(x>r.right?x-r.right:0); if(d<dmin){ dmin=d; k=i; } });
+      return dmin<=40?k:-1; }catch(_){ return -1; } };
     b.addEventListener('pointerdown',e=>{ if(bloq) return; ini={x:e.clientX,y:e.clientY}; try{ b.setPointerCapture(e.pointerId); }catch(_){} });
     b.addEventListener('pointermove',e=>{ if(!ini||bloq) return;
       if(!fan&&Math.hypot(e.clientX-ini.x,e.clientY-ini.y)>8){ fan=el('div','co-arrastre'); coMini(fan,cell,spec.compound); fan.style.setProperty('--fig-h',getComputedStyle(wrap).getPropertyValue('--fig-h')||'90px'); document.body.appendChild(fan); fan.querySelectorAll('.co-mini').forEach(coRecorta); }   /* (20-nov, Iago) la figura que arrastras se ve entera (antes salía diminuta) */
       if(fan){ fan.style.left=e.clientX+'px'; fan.style.top=e.clientY+'px'; fan.style.visibility='hidden'; const k=slotEn(e.clientX,e.clientY); fan.style.visibility='';
         if(k!==sobre){ if(sobre>=0) slots[sobre].el.classList.remove('drop'); sobre=k; if(k>=0) slots[k].el.classList.add('drop'); } } });
     const fin=e=>{ if(!ini) return; const arr=!!fan; if(fan){ fan.remove(); fan=null; } if(sobre>=0) slots[sobre].el.classList.remove('drop');
-      if(arr){ if(sobre>=0) pon(sobre,cell); } else pon(sel,cell); ini=null; sobre=-1; };
+      if(arr){ const k=(e&&e.clientX!=null)?slotEn(e.clientX,e.clientY):sobre; if(k>=0) pon(k,cell); else if(sobre>=0) pon(sobre,cell); } else pon(sel,cell); ini=null; sobre=-1; };
     b.addEventListener('pointerup',fin);
     b.addEventListener('click',e=>{ if(e.detail===0&&!bloq) pon(sel,cell); });   /* teclado (Intro/espacio) */ b.addEventListener('pointercancel',()=>{ if(fan){ fan.remove(); fan=null; } ini=null; });
     pal.appendChild(b);
